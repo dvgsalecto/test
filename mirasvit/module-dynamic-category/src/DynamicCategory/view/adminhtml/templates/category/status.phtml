@@ -1,0 +1,25 @@
+<?php
+/** @var Mirasvit\DynamicCategory\Block\Adminhtml\Category\QueueStatus $block */
+
+$categoryList = $block->getCategoryList();
+?>
+<?php if ($block->isRequireReindex() || $block->getCategoryList()): ?>
+    <div class="mst-dynamic-category__status">
+        <?php if ($block->isRequireReindex()): ?>
+            <div class="category-queue-current">
+                <?= __('The current category is in the queue to reindex.') ?>&nbsp;<a href="<?= $block->getForceLink(); ?>"><?= __('Force Reindex') ?></a>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($categoryList): ?>
+            <div class="category-queue-list">
+                <?php foreach ($categoryList as $cat): ?>
+                    <div class="queue-item">
+                        <span><?= __('The dynamic category "<b>%1</b>" is pending reindex in the queue.', $cat['name']); ?></span>
+                        <span><a href="<?= $cat['link'] ?>"><?= __('Force Reindex') ?></a></span>
+                    </div>
+                <?php endforeach ?>
+            </div>
+        <?php endif ?>
+    </div>
+<?php endif ?>
