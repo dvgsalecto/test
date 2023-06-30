@@ -6,7 +6,7 @@ import { IndexListView } from "./IndexListView"
 import { SearchBarView } from "./SearchBarView"
 import { ItemListView } from "./ItemListView"
 import { SidebarView } from "./SidebarView"
-import { PagingView } from "./PagingView";
+import { PagingView } from "./PagingView"
 
 const EMPTY_RESULT = {
     indexes:    [],
@@ -146,6 +146,24 @@ export class PageView {
             success:  (data: Result) => {
                 this.loading(false)
                 this.result(data)
+
+                let shouldSwitchActiveIndex = false
+
+                _.each(data.indexes, index => {
+                    if (index.identifier == this.activeIndex() && index.totalItems === 0) {
+                        shouldSwitchActiveIndex = true
+                    }
+                })
+
+                if (shouldSwitchActiveIndex) {
+                    const idx = _.find(data.indexes, idx => {
+                        return idx.totalItems > 0
+                    })
+                    if (idx) {
+                        this.activeIndex(idx.identifier)
+                    }
+                }
+
                 this.time((new Date().getTime() - ts) / 1000)
             },
         })

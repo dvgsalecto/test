@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -33,17 +33,20 @@ class Add extends Action implements ViewInterface
     private $session;
     private $product;
     private $productRepository;
+    private $serializer;
 
     public function __construct(
         CheckoutCart $cart,
         CheckoutSession $session,
         ProductRepositoryInterface $productRepository,
+        \Magento\Framework\Serialize\Serializer\Json $serializer,
         Context $context
     ) {
         parent::__construct($context);
         $this->cart                 = $cart;
         $this->session              = $session;
         $this->productRepository    = $productRepository;
+        $this->serializer    = $serializer;
     }
 
     public function execute()
@@ -79,7 +82,7 @@ class Add extends Action implements ViewInterface
 
         if ($this->getRequest()->isAjax()) {
             $response = $this->getResponse();
-            return $response->representJson(\Zend_Json::encode(
+            return $response->representJson($this->serializer->serialize(
                 [
                     'success' => $success,
                     'message' => $message

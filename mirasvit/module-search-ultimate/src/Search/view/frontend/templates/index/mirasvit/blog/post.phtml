@@ -4,24 +4,22 @@
 ?>
 <div class="mst-search__index mst-search__index-external-wordpress-post">
     <?= $block->getPager() ?>
-    <ol class="blog__post-list">
+    <ul>
         <?php /** @var \Mirasvit\Blog\Model\Post $post */ ?>
         <?php foreach ($block->getCollection() as $post): ?>
-            <li class="blog__post-item">
-                <header class="blog__post-header">
-                    <h1 class="blog__post-title">
-                        <a href="<?= $post->getUrl() ?>"><?= $post->getName() ?></a>
-                    </h1>
-                </header>
-
-                <div class="blog__post-excerpt">
-                    <?= $post->getShortContent() ?>
-
-                    <a class="read-more" href="<?= $post->getUrl() ?>"><?= __('Read more...') ?></a>
+            <li>
+                <div class="mst-search__index-title">
+                    <a href="<?= $post->getUrl() ?>"><?= $post->getName() ?></a>
                 </div>
+
+                <div class="mst-search__index-content">
+                    <?= $this->truncate($block->stripTags($post->getShortContent() ? $post->getShortContent() : $post->getContent())) ?>
+                </div>
+
+                <a style="float: right" href="<?= $post->getUrl() ?>"><?= __('Read more...') ?></a>
             </li>
         <?php endforeach ?>
-    </ol>
+    </ul>
     <?= $block->getPager() ?>
 </div>
 

@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -20,7 +20,6 @@ namespace Mirasvit\Search\Service;
 use Magento\Search\Model\SynonymAnalyzer;
 use Magento\Search\Model\SynonymGroupFactory;
 use Magento\Search\Model\SynonymGroupRepository;
-use Mirasvit\Search\Repository\SynonymRepository as mstSynonymRepository;
 use Mirasvit\Core\Service\YamlService;
 
 class SynonymService
@@ -33,12 +32,14 @@ class SynonymService
 
     private $cloudService;
 
+    private $yamlService;
+
     public function __construct(
         SynonymGroupRepository $synonymRepository,
-        SynonymGroupFactory $synonymFactory,
-        SynonymAnalyzer $synonymAnalyzer,
-        CloudService $cloudService,
-        YamlService $yamlService
+        SynonymGroupFactory    $synonymFactory,
+        SynonymAnalyzer        $synonymAnalyzer,
+        CloudService           $cloudService,
+        YamlService            $yamlService
     ) {
         $this->synonymRepository = $synonymRepository;
         $this->synonymFactory    = $synonymFactory;
@@ -47,26 +48,25 @@ class SynonymService
         $this->yamlService       = $yamlService;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSynonyms(array $terms, int $storeId): array
     {
         $result = [];
         foreach ($terms as $term) {
-            $term = trim($term);
+            $term     = trim($term);
             $synonyms = $this->synonymAnalyzer->getSynonymsForPhrase($term);
             if (empty($synonyms)) {
                 continue;
             }
 
-            foreach (explode(' ', $term) as $key => $word ) {
+            foreach (explode(' ', $term) as $key => $word) {
                 if (!isset($synonyms[$key])) {
                     continue;
                 }
 
                 if (count($synonyms[$key]) > 1) {
-                    unset($synonyms[$key][array_search($word, $synonyms[$key])]);
+                    if (array_search($word, $synonyms[$key]) !== false) {
+                        unset($synonyms[$key][array_search($word, $synonyms[$key])]);
+                    }
                     $tmp = [$word => $synonyms[$key]];
                 } else {
                     $tmp = [$word => ''];
@@ -80,10 +80,7 @@ class SynonymService
         return $result;
     }
 
-    /**
-     * @param array|int $storeIds
-     */
-    public function import(string $file, $storeIds): \Generator
+    public function import(string $file, array $storeIds): \Generator
     {
         $result = [
             'synonyms' => 0,
@@ -95,12 +92,15 @@ class SynonymService
         if (file_exists($file)) {
             $content = file_get_contents($file);
         } else {
-            $file = explode('/', $file);
-            $file = end($file);
+            $file    = explode('/', $file);
+            $file    = end($file);
             $content = $this->cloudService->get('search', 'synonym', $file);
         }
 
         if (!$content) {
+            $result['errors']++;
+            $result['message'] = __("The file is empty or doesn't exists.");
+            yield $result;
             yield $result;
         } else {
             if (strlen($content) > 10000 && php_sapi_name() != "cli") {
@@ -116,23 +116,29 @@ class SynonymService
 
                 foreach ($storeIds as $storeId) {
                     $result['total'] = count($synonyms);
+
                     foreach ($synonyms as $synonym) {
-                        try {
-                            $group = implode(',', [$synonym['term'], $synonym['synonyms']]);
-                            $model = $this->synonymFactory->create()
-                                ->setSynonymGroup($group)
-                                ->setStoreId(1)
-                                ->setWebsiteId($storeId);
-
-                            $this->synonymRepository->save($model);
-
-                            $result['synonyms']++;
-                        } catch (\Exception $e) {
+                        if (!is_array($synonym) || !isset($synonym['term']) || !isset($synonym['synonyms'])) {
                             $result['errors']++;
+                            yield $result;
+                        } else {
+                            try {
+                                $group = implode(',', [$synonym['term'], $synonym['synonyms']]);
+                                $model = $this->synonymFactory->create()
+                                    ->setSynonymGroup($group)
+                                    ->setStoreId(1)
+                                    ->setWebsiteId((int)$storeId);
 
-                            $result['message'] = $e->getMessage();
+                                $this->synonymRepository->save($model);
+
+                                $result['synonyms']++;
+                            } catch (\Exception $e) {
+                                $result['errors']++;
+
+                                $result['message'] = $e->getMessage();
+                            }
+                            yield $result;
                         }
-                        yield $result;
                     }
                 }
             }

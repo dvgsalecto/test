@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -27,10 +27,12 @@ class StopwordService
 
     private $cloudService;
 
+    private $yamlService;
+
     public function __construct(
         StopwordRepository $stopwordRepository,
-        CloudService $cloudService,
-        YamlService $yamlService
+        CloudService       $cloudService,
+        YamlService        $yamlService
     ) {
         $this->stopwordRepository = $stopwordRepository;
         $this->cloudService       = $cloudService;
@@ -40,8 +42,11 @@ class StopwordService
     public function isStopword(string $term, int $storeId): bool
     {
         $collection = $this->stopwordRepository->getCollection()
-            ->addFieldToFilter('term', $term)
-            ->addFieldToFilter('store_id', [0, $storeId]);
+            ->addFieldToFilter('term', $term);
+
+        if ($storeId !== 0) {
+            $collection->addFieldToFilter('store_id', [0, $storeId]);
+        }
 
         return $collection->getSize() ? true : false;
     }
@@ -75,7 +80,7 @@ class StopwordService
                     try {
                         $stopword = $this->stopwordRepository->create()
                             ->setTerm((string)$stopword)
-                            ->setStoreId($storeId);
+                            ->setStoreId((int)$storeId);
 
                         $this->stopwordRepository->save($stopword);
 

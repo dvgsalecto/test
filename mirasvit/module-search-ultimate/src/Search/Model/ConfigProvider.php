@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -21,14 +21,14 @@ namespace Mirasvit\Search\Model;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\ScopeInterface;
-use Mirasvit\Search\Api\Data\QueryConfigProviderInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Mirasvit\Search\Service\SynonymService;
-use Mirasvit\Search\Service\StopwordService;
 use Mirasvit\Search\Service\StemmingService;
+use Mirasvit\Search\Service\StopwordService;
+use Mirasvit\Search\Service\SynonymService;
 
-class ConfigProvider implements QueryConfigProviderInterface
+class ConfigProvider extends AbstractConfigProvider
 {
     private $scopeConfig;
 
@@ -42,25 +42,29 @@ class ConfigProvider implements QueryConfigProviderInterface
 
     private $stemmingService;
 
+    private $serializer;
+
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
-        Filesystem $filesystem,
+        ScopeConfigInterface  $scopeConfig,
+        Filesystem            $filesystem,
         StoreManagerInterface $storeManager,
-        SynonymService $synonymService,
-        StopwordService $stopwordService,
-        StemmingService $stemmingService
+        SynonymService        $synonymService,
+        StopwordService       $stopwordService,
+        StemmingService       $stemmingService,
+        Json                  $serializer
     ) {
-        $this->scopeConfig      = $scopeConfig;
-        $this->filesystem       = $filesystem;
-        $this->storeManager     = $storeManager;
-        $this->synonymService   = $synonymService;
-        $this->stopwordService  = $stopwordService;
-        $this->stemmingService  = $stemmingService;
+        $this->scopeConfig     = $scopeConfig;
+        $this->filesystem      = $filesystem;
+        $this->storeManager    = $storeManager;
+        $this->synonymService  = $synonymService;
+        $this->stopwordService = $stopwordService;
+        $this->stemmingService = $stemmingService;
+        $this->serializer      = $serializer;
     }
 
     public function getStoreId(): int
     {
-        return (int) $this->storeManager->getStore()->getId();
+        return (int)$this->storeManager->getStore()->getId();
     }
 
     public function getEngine(): string
@@ -71,7 +75,7 @@ class ConfigProvider implements QueryConfigProviderInterface
     public function getLongTailExpressions(): array
     {
         if ($this->scopeConfig->getValue('search/advanced/long_tail_expressions', ScopeInterface::SCOPE_STORE) !== null) {
-            $data = \Zend_Json::decode(
+            $data = $this->serializer->unserialize(
                 $this->scopeConfig->getValue('search/advanced/long_tail_expressions', ScopeInterface::SCOPE_STORE)
             );
         } else {
@@ -88,7 +92,7 @@ class ConfigProvider implements QueryConfigProviderInterface
     public function getReplaceWords(): array
     {
         if ($this->scopeConfig->getValue('search/advanced/replace_words', ScopeInterface::SCOPE_STORE) !== null) {
-            $data = \Zend_Json::decode(
+            $data = $this->serializer->unserialize(
                 $this->scopeConfig->getValue('search/advanced/replace_words', ScopeInterface::SCOPE_STORE)
             );
         } else {
@@ -128,7 +132,7 @@ class ConfigProvider implements QueryConfigProviderInterface
     {
         $result = [];
         if ($this->scopeConfig->getValue('search/advanced/wildcard_exceptions', ScopeInterface::SCOPE_STORE) !== null) {
-            $data = \Zend_Json::decode(
+            $data = $this->serializer->unserialize(
                 $this->scopeConfig->getValue('search/advanced/wildcard_exceptions', ScopeInterface::SCOPE_STORE)
             );
         } else {
@@ -169,10 +173,7 @@ class ConfigProvider implements QueryConfigProviderInterface
         return (bool)$this->scopeConfig->getValue('search/multi_store_mode/enabled', ScopeInterface::SCOPE_STORE);
     }
 
-    /**
-     * @return array
-     */
-    public function getEnabledMultiStores()
+    public function getEnabledMultiStores(): array
     {
         return explode(
             ',',
@@ -180,32 +181,21 @@ class ConfigProvider implements QueryConfigProviderInterface
         );
     }
 
-    /**
-     * Stopwords paths
-     * @return string Full path to directory with stopwords
-     */
-    public function getStopwordDirectoryPath()
+    public function getStopwordDirectoryPath(): string
     {
         return $this->filesystem->getDirectoryRead(DirectoryList::VAR_DIR)
-            ->getAbsolutePath('sphinx/stopwords');
+            ->getAbsolutePath('stopwords');
     }
 
-    /**
-     * Synonyms path
-     * @return string Full path to directory with synonyms
-     */
-    public function getSynonymDirectoryPath()
+    public function getSynonymDirectoryPath(): string
     {
         return $this->filesystem->getDirectoryRead(DirectoryList::VAR_DIR)
-            ->getAbsolutePath('sphinx/synonyms');
+            ->getAbsolutePath('synonyms');
     }
 
-    /**
-     * @return bool
-     */
-    public function isFastMode()
+    public function isFastMode(): bool
     {
-        return $this->scopeConfig->isSetFlag('searchautocomplete/general/fast_mode');
+        return (bool)$this->scopeConfig->isSetFlag('searchautocomplete/general/fast_mode');
     }
 
     public function getTabsThreshold(): int
@@ -228,25 +218,6 @@ class ConfigProvider implements QueryConfigProviderInterface
         return $this->stemmingService->singularize($term);
     }
 
-    public function applyLongTail(string $term): string
-    {
-        $expressions = $this->getLongTailExpressions();
-
-        foreach ($expressions as $expr) {
-            $matches = null;
-            preg_match_all($expr['match_expr'], $term, $matches);
-
-            foreach ($matches[0] as $math) {
-                $math = preg_replace($expr['replace_expr'], $expr['replace_char'], $math);
-                if ($math) {
-                    $term = $math;
-                }
-            }
-        }
-
-        return $term;
-    }
-
     public function getIgnoredIps(): array
     {
         $ignoredIps = [];
@@ -255,9 +226,7 @@ class ConfigProvider implements QueryConfigProviderInterface
             $ignoredIps = preg_split('/\s*\,+\s*/', $this->scopeConfig->getValue('search/feature/ignored_ips'));
         }
 
-        $ignoredIps = array_unique($ignoredIps);
-
-        return $ignoredIps;
+        return array_unique($ignoredIps);
     }
 
     public function isAsciiFoldingAllowed(): bool
@@ -265,9 +234,14 @@ class ConfigProvider implements QueryConfigProviderInterface
         return (bool)$this->scopeConfig->getValue('search/feature/allow_ascii_folding', ScopeInterface::SCOPE_STORE);
     }
 
-    public function getProductsPerPage() : int
+    public function isContentWidgetIndexationEnabled(): bool
     {
-        return (int) $this->scopeConfig->getValue('catalog/frontend/grid_per_page', ScopeInterface::SCOPE_STORE);
+        return (bool)$this->scopeConfig->getValue('search/feature/content_widget_indexation', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getProductsPerPage(): int
+    {
+        return (int)$this->scopeConfig->getValue('catalog/frontend/grid_per_page', ScopeInterface::SCOPE_STORE);
     }
 
     public function isSearchIn(): bool
@@ -283,5 +257,16 @@ class ConfigProvider implements QueryConfigProviderInterface
     public function getMinProductsQtyToDisplay(): int
     {
         return (int)$this->scopeConfig->getValue('search/feature/min_products_qty_to_display', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getIp(): string
+    {
+        if (isset($_SERVER['HTTP_CLIENT_IP']) && !empty($_SERVER['HTTP_CLIENT_IP'])) {
+            return $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            return $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            return $_SERVER['REMOTE_ADDR'];
+        }
     }
 }

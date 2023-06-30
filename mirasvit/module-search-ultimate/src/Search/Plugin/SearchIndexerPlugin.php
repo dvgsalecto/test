@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -35,15 +35,6 @@ class SearchIndexerPlugin
         $this->indexRepository = $indexRepository;
     }
 
-    /**
-     * @param DataProvider $dataProvider
-     * @param array        $attributeData
-     * @param array|null   $productData
-     * @param array|null   $productAdditional
-     * @param int|null     $storeId
-     *
-     * @return mixed
-     */
     public function afterPrepareProductIndex(
         $dataProvider,
         $attributeData,
@@ -52,6 +43,10 @@ class SearchIndexerPlugin
         $storeId = null
     ) {
         if ($productData === null || count($productData) === 0) {
+            return $attributeData;
+        }
+
+        if (!$this->getIndex()) {
             return $attributeData;
         }
 
@@ -88,7 +83,7 @@ class SearchIndexerPlugin
         return $attributeData;
     }
 
-    private function getIndex(): IndexInterface
+    private function getIndex(): ?IndexInterface
     {
         return $this->indexRepository->getByIdentifier('catalogsearch_fulltext');
     }

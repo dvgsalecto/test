@@ -17,9 +17,15 @@
             type="Mirasvit\SearchElastic\Plugin\AddAsciiFoldingPlugin"/>
     </type>
 
+    <type name="Magento\Elasticsearch\Model\Adapter\FieldMapper\Product\FieldProvider\StaticField">
+        <plugin name="mstPutAnalyzer" type="Mirasvit\SearchElastic\Plugin\PutAnalyzerPlugin"/>
+    </type>
+
+
     <type name="Mirasvit\SearchAutocomplete\InstantProvider\ConfigMaker">
         <arguments>
             <argument name="makers" xsi:type="array">
+                <item name="elasticsearch8" xsi:type="object">Mirasvit\SearchElastic\InstantProvider\ConfigProvider</item>
                 <item name="elasticsearch7" xsi:type="object">Mirasvit\SearchElastic\InstantProvider\ConfigProvider</item>
                 <item name="elasticsearch6" xsi:type="object">Mirasvit\SearchElastic\InstantProvider\ConfigProvider</item>
             </argument>

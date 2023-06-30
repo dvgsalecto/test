@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 if (isset($_SERVER) && is_array($_SERVER) && isset($_SERVER['REQUEST_URI'])) {
     /** mp comment start */
-    if (! Mirasvit\Core\Service\CompatibilityService::isMarketplace()) {
+    if (!Mirasvit\Core\Service\CompatibilityService::isMarketplace()) {
         if (strpos($_SERVER['REQUEST_URI'], 'searchautocomplete/ajax/typeahead') !== false) {
             require_once 'InstantProvider/TypeaheadProvider.php';
         }
@@ -29,7 +29,7 @@ if (isset($_SERVER) && is_array($_SERVER) && isset($_SERVER['REQUEST_URI'])) {
     }
     /** mp comment end */
     if (strpos($_SERVER['REQUEST_URI'], 'search/ajax/suggest') !== false) {
-        return \Zend_Json::encode([]);
+        return "[]";
     }
 }
 

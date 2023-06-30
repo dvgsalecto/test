@@ -29,7 +29,7 @@
 
                 <block class="Mirasvit\Search\Block\Index\Magento\Catalog\Category" name="magento_catalog_category" template="index/magento/catalog/category.phtml"/>
                 <block class="Mirasvit\Search\Block\Index\Base" name="external_wordpress_post" template="index/external/wordpress/post.phtml">
-                    <block class="Magento\Theme\Block\Html\Pager" name="pager" as="pager" cacheable="false"/>
+                    <block class="Magento\Theme\Block\Html\Pager" name="pager" as="pager"/>
                 </block>
                 <block class="Mirasvit\Search\Block\Index\Base" name="magento_cms_page" template="index/magento/cms/page.phtml"/>
                 <block class="Mirasvit\Search\Block\Index\Base" name="ves_blog_post" template="index/ves/blog/post.phtml"/>

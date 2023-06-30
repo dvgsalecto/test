@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -17,21 +17,15 @@
 
 namespace Mirasvit\Search\Index\Magento\Catalog\Product\InstantProvider;
 
-use Magento\Catalog\Block\Product\ReviewRendererInterface;
 use Magento\Catalog\Helper\Image as ImageHelper;
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Pricing\Price\FinalPrice;
-use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator;
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\State as StateEmulator;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
-use Magento\Framework\Pricing\Render;
-use Magento\Framework\View\LayoutInterface;
-use Magento\Review\Block\Product\ReviewRenderer;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Theme\Model\View\Design;
-use Mirasvit\SearchAutocomplete\InstantProvider\EmulatorService;
-use Mirasvit\SearchAutocomplete\Model\ConfigProvider;
+use Mirasvit\Search\Service\MapperService;
+use Magento\Tax\Helper\Data as TaxHelper;
+use Magento\Catalog\Helper\Data as CatalogHelper;
+use Magento\Tax\Model\Config as TaxConfig;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -44,352 +38,405 @@ class Mapper
 
     const UNSET_STOCK = 0;
 
-    private $config;
+    private $attributeIds = [];
 
-    private $storeManager;
+    private $pkField      = '';
+
+    private $resource;
+
+    private $mapperService;
 
     private $imageHelper;
 
-    private $design;
+    private $pricingHelper;
 
-    private $layout;
+    private $taxHelper;
 
-    /**
-     * @var \Magento\Framework\Pricing\Render
-     */
-    private $priceRender;
-
-    private $reviewRenderer;
-
-    private $productBlock;
-
-    private $emulatorService;
-
-    private $stateEmulator;
-
-    private $stockRegistry;
+    private $catalogHelper;
 
     public function __construct(
-        ConfigProvider         $config,
-        StoreManagerInterface  $storeManager,
-        ImageHelper            $imageHelper,
-        Design                 $design,
-        LayoutInterface        $layout,
-        ReviewRenderer         $reviewRenderer,
-        EmulatorService        $emulatorService,
-        StateEmulator          $stateEmulator,
-        StockRegistryInterface $stockRegistry,
-        PricingHelper          $pricingHelper
+        ResourceConnection $resource,
+        MapperService      $mapperService,
+        ImageHelper        $imageHelper,
+        PricingHelper      $pricingHelper,
+        TaxHelper          $taxHelper,
+        CatalogHelper      $catalogHelper
     ) {
-        $this->config          = $config;
-        $this->storeManager    = $storeManager;
-        $this->imageHelper     = $imageHelper;
-        $this->design          = $design;
-        $this->layout          = $layout;
-        $this->reviewRenderer  = $reviewRenderer;
-        $this->emulatorService = $emulatorService;
-        $this->stateEmulator   = $stateEmulator;
-        $this->stockRegistry   = $stockRegistry;
-        $this->pricingHelper   = $pricingHelper;
+        $this->resource      = $resource;
+        $this->mapperService = $mapperService;
+        $this->imageHelper   = $imageHelper;
+        $this->pricingHelper = $pricingHelper;
+        $this->taxHelper     = $taxHelper;
+        $this->catalogHelper = $catalogHelper;
     }
 
-    public function getProductName(Product $product): string
+    public function mapProductSku(int $storeId, array $productIds): array
     {
-        return $this->clearString((string)$product->getName());
+        $data = $this->resource->getConnection()->fetchPairs(
+            $this->resource->getConnection()
+                ->select()
+                ->from([$this->resource->getTableName('catalog_product_entity')], ['entity_id', 'sku'])
+                ->where('entity_id IN(?)', $productIds)
+        );
+
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = '';
+        }
+
+        foreach ($data as $productId => $sku) {
+            $map[$productId] = $this->mapperService->clearString((string)$sku);
+        }
+
+        return $map;
     }
 
-    public function getProductSku(Product $product): string
+    public function mapProductName(int $storeId, array $productIds): array
     {
-        if (!$this->config->isShowSku()) {
-            return '';
+        $data = $this->attributeSelectQuery($storeId, $productIds, 'name', 'varchar');
+
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = '';
         }
 
-        return $this->clearString((string)$product->getSku());
+        foreach ($data as $productId => $name) {
+            $map[$productId] = $this->mapperService->clearString((string)$name);
+        }
+
+        return $map;
     }
 
-    public function getProductUrl(Product $product, int $storeId): string
+    public function mapProductUrl(int $storeId, array $productIds): array
     {
-        $url     = $product->setStore($storeId)->getProductUrl();
-        $baseUrl = $this->storeManager->getStore($storeId)->getBaseUrl();
+        $data = $this->resource->getConnection()->fetchPairs(
+            $this->resource->getConnection()
+                ->select()
+                ->from([$this->resource->getTableName('url_rewrite')], ['entity_id', 'request_path'])
+                ->where('entity_id IN(?)', $productIds)
+                ->where('entity_type = ? ', ProductUrlRewriteGenerator::ENTITY_TYPE)
+                ->where('store_id IN(?)', [$storeId])
+                ->where('redirect_type = 0')
+                ->group('entity_id')
+        );
 
-        if (strripos($url, $baseUrl) === false || strripos($url, $this->getAdminPath()) !== false) {
-            $url = str_replace('/' . $this->getAdminPath() . '/', '/', $url);
-            $url = preg_replace('~\/key\/.*~', '', $url);
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = $this->mapperService->getBaseUrl($storeId) . 'catalog/product/view/id/' . $productId . '/';
         }
 
-        if (strripos($url, $this->config->getProductUrlSuffix($storeId)) === false) {
-            $url .= $this->config->getProductUrlSuffix($storeId);
+        foreach ($data as $productId => $requestPath) {
+            $map[$productId] = $this->mapperService->getBaseUrl($storeId) . $requestPath;
         }
 
-        $p = strpos($url, "?");
-        if ($p !== false) { //remove GET params (sometimes they are present)
-            $url = substr($url, 0, $p);
-        }
-
-        return $url;
+        return $map;
     }
 
-    public function getDescription(Product $product): string
+    public function mapProductImage(int $storeId, array $productIds): array
     {
-        if (!$this->config->isShowShortDescription()) {
-            return '';
-        }
-
-        $result = $product->getDataUsingMethod('description');
-        if (!$result) {
-            $result = $product->getDataUsingMethod('short_description');
-        }
-
-        $result = preg_replace('/<style>.*<\/style>/', '', (string)$result);
-
-        return $this->clearString((string)$result);
-    }
-
-    public function getProductImage(Product $product, int $storeId): string
-    {
-        if (!$this->config->isShowImage()) {
-            return '';
-        }
-
         $emulation = ObjectManager::getInstance()->get('\Magento\Store\Model\App\Emulation');
         $emulation->startEnvironmentEmulation($storeId, 'frontend', true);
 
-        $image = $this->imageHelper->init($product, 'upsell_products_list')
-            ->setImageFile($product->getImage())
-            ->getUrl();
+        $data = $this->attributeSelectQuery($storeId, $productIds, 'thumbnail', 'varchar');
 
-        if (!$image || strpos($image, '/.') !== false) {
-            try {
-                $image = $this->imageHelper->getDefaultPlaceholderUrl('thumbnail');
-            } catch (\Exception $e) {
-                $this->design->setDesignTheme('Magento/backend', 'adminhtml');
-                $image = $this->imageHelper->getDefaultPlaceholderUrl('thumbnail');
-            } finally {
-                $emulation->stopEnvironmentEmulation();
+        $placeholder = $this->imageHelper->getDefaultPlaceholderUrl('thumbnail');
+
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = $placeholder;
+        }
+
+        foreach ($data as $productId => $path) {
+            if ($path == '' || $path == 'no_selection') {
+                continue;
             }
+
+            $image = (string)$this->imageHelper->init(null, 'upsell_products_list')
+                ->setImageFile($path)
+                ->getUrl();
+
+            if ($image == '') {
+                $image = $placeholder;
+            }
+
+            $map[$productId] = $image;
         }
 
         $emulation->stopEnvironmentEmulation();
 
-        return $image;
+        return $map;
     }
 
-    public function getPrice(Product $product, int $storeId, $applyMultipleCurrencies): array
+    public function mapProductPrice(int $storeId, array $productIds): array
     {
-        if (!$this->config->isShowPrice()) {
-            return [];
+        $priceDisplayType = $this->taxHelper->getPriceDisplayType($storeId);
+
+        $data = $this->resource->getConnection()->fetchAll(
+            $this->resource->getConnection()
+                ->select()
+                ->from(['cpip' => $this->resource->getTableName('catalog_product_index_price')], ['*'])
+                ->join(['s' => $this->resource->getTableName('store')], 's.website_id = cpip.website_id', [])
+                ->where('entity_id IN(?)', $productIds)
+                ->where('s.store_id = ?', $storeId)
+                ->group('entity_id')
+        );
+
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = '';
         }
 
-        if ($applyMultipleCurrencies) {
-            $result          = [];
-            $initialCurrency = $this->storeManager->getStore()->getCurrentCurrency()->getCode();
-            $store           = $this->storeManager->getStore($storeId);
-            $currencyCodes   = $store->getAvailableCurrencyCodes();
+        $taxClassIds = $this->attributeSelectQuery($storeId, $productIds, 'tax_class_id', 'int');
 
-            foreach ($currencyCodes as $currencyCode) {
-                $store->getCurrentCurrency()->load($currencyCode);
-                $formattedPrice        = $this->pricingHelper->currencyByStore($product->getFinalPrice(), $storeId, true, false);
-                $result[$currencyCode] = $this->applyPriceTemplate($product->getId(), $formattedPrice);
+        foreach ($data as $item) {
+            $productId = $item['entity_id'];
+
+            $price = 0;
+            if ($item['max_price'] != 0) {
+                $price = $item['max_price'];
+            }
+            if ($item['min_price'] != 0) {
+                $price = $item['min_price'];
+            }
+            if ($item['final_price'] != 0) {
+                $price = $item['final_price'];
             }
 
-            unset($store);
-            $this->storeManager->getStore()->getCurrentCurrency()->load($initialCurrency);
-
-            return $result;
-        }
-
-        $priceRenderer = $this->getPriceRenderer();
-        $price         = '';
-        if ($priceRenderer) {
-            //            try {
-            //                $this->stateEmulator->emulateAreaCode('frontend',
-            //                    function (&$price, $product, $priceRenderer, $storeId) {
-            //                        /** @var \Magento\Framework\Pricing\Render $priceRenderer */
-            //                        if ($product->getId() == 1) {
-            //                        }
-            //                        $price = $priceRenderer->render(
-            //                            FinalPrice::PRICE_CODE,
-            //                            $product,
-            //                            [
-            //                                'include_container'     => true,
-            //                                'display_minimal_price' => true,
-            //                                'zone'                  => Render::ZONE_ITEM_LIST,
-            //                                'list_category_page'    => true,
-            //                            ]
-            //                        );
-            //                    },
-            //                    [&$price, $product, $priceRenderer, $storeId]
-            //                );
-            //            } catch (\Exception $e) {
-            $emulation = ObjectManager::getInstance()->get('\Magento\Store\Model\App\Emulation');
-            $emulation->startEnvironmentEmulation($storeId, 'frontend', true);
-            $price = $priceRenderer->render(
-                FinalPrice::PRICE_CODE,
-                $product,
-                [
-                    'include_container'     => true,
-                    'display_minimal_price' => true,
-                    'zone'                  => Render::ZONE_ITEM_LIST,
-                    'list_category_page'    => true,
-                ]
-            );
-            $emulation->stopEnvironmentEmulation();
-            //            }
-        }
-
-        return [$price];
-    }
-
-    public function getRating(Product $product, int $storeId, array $reviews): string
-    {
-        if (!$this->config->isShowRating()) {
-            return '';
-        }
-
-        $rating = '';
-        if (array_key_exists($product->getId(), $reviews)) {
-            /** @var \Magento\Review\Model\Review\Summary $summary */
-            $summary = $reviews[$product->getId()];
-
-            $product->setData('reviews_count', $summary)
-                ->setData('rating_summary', $summary);
-            if (!is_string($product->getRatingSummary())) {
-                $product->setData('reviews_count', $summary->getReviewsCount())
-                    ->setData('rating_summary', $summary->getRatingSummary());
+            if ($item['min_price'] != 0
+                && $item['final_price'] != 0
+                && $item['min_price'] < $item['final_price']) {
+                $price = $item['min_price'];
             }
 
-            $emulation = ObjectManager::getInstance()->get('\Magento\Store\Model\App\Emulation');
+            if ($price <= 0) {
+                continue;
+            }
+
+            if ($priceDisplayType === TaxConfig::DISPLAY_TYPE_INCLUDING_TAX) {
+                $product = new \Magento\Framework\DataObject([
+                    'tax_class_id' => $taxClassIds[$productId],
+                ]);
+
+                $price = $this->catalogHelper->getTaxPrice($product, $price, true, null, null, null, $storeId, null, true);
+            }
 
             try {
-                $emulation->startEnvironmentEmulation($storeId, 'frontend', true);
-                $rating = $this->reviewRenderer->getReviewsSummaryHtml($product, ReviewRendererInterface::SHORT_VIEW);
+                $map[$productId] = $this->pricingHelper->currencyByStore($price, $storeId, true, false);
             } catch (\Exception $e) {
-                $this->stateEmulator->emulateAreaCode(
-                    'frontend',
-                    function (&$rating, $product, $storeId) {
-                        $rating = $this->reviewRenderer->getReviewsSummaryHtml($product, ReviewRendererInterface::SHORT_VIEW);
-                    },
-                    [&$rating, $product, $storeId]
+                $map[$productId] = (string)$price;
+            }
+        }
+
+        return $map;
+    }
+
+    public function mapProductDescription(int $storeId, array $productIds): array
+    {
+        $descriptionData = $this->attributeSelectQuery($storeId, $productIds, 'description', 'text');
+
+        $shortDescriptionData = $this->attributeSelectQuery($storeId, $productIds, 'short_description', 'text');
+
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = '';
+
+            if (isset($descriptionData[$productId]) && $descriptionData[$productId] != '') {
+                $map[$productId] = $this->mapperService->clearString(
+                    (string)$descriptionData[$productId]
                 );
-            } finally {
-                $emulation->stopEnvironmentEmulation();
-            }
-
-            $emulation->stopEnvironmentEmulation();
-        }
-
-        return $rating;
-    }
-
-    public function getCart(Product $product, int $storeId): array
-    {
-        if (!$this->config->isShowCartButton() || $this->getStockStatus($product, $storeId) == self::OUT_OF_STOCK) {
-            return [
-                'visible' => false,
-                'label'   => '',
-                'url'     => '',
-            ];
-        }
-
-        $cart = [
-            'visible' => true,
-            'label'   => $this->emulatorService->getStoreText('Add to Cart', $storeId),
-            'url'     => '',
-        ];
-
-        $baseUrl = $this->storeManager->getStore($storeId)->getBaseUrl();
-
-        $cart['url'] = $baseUrl . 'searchautocomplete/cart/add/id/' . $product->getId();
-
-        //        //        $params = $this->productBlock->getAddToCartPostParams($product);
-        //
-        //        $baseUrl = parse_url($this->storeManager->getStore($storeId)->getBaseUrl())['host'];
-        //
-        //        $adminUrl = rtrim($this->getAdminUrl(), '/');
-        //        if (strripos($params['action'], $adminUrl) !== false) {
-        //            $params['action'] = str_ireplace($adminUrl, $baseUrl, $params['action']);
-        //        }
-        //
-        //        $adminPath = $this->getAdminPath();
-        //        if (strripos($params['action'], $adminPath) !== false) {
-        //            $params['action'] = str_ireplace($adminPath, '', $params['action']);
-        //        }
-        //
-        //        $cart['params'] = $params;
-
-        return $cart;
-    }
-
-    public function getStockStatus(Product $product, int $storeId): int
-    {
-        $stockStatus = self::UNSET_STOCK;
-        if ($this->config->isShowStockStatus()) {
-            if ($product->getStockStatus() === null) {
-                $stockItem   = $this->stockRegistry->getStockItem($product->getId())->setStoreId($storeId);
-                $stockStatus = (int)$stockItem->getIsInStock() + 1;
-            } else {
-                $stockStatus = (int)$product->getStockStatus() + 1;
+            } elseif (isset($shortDescriptionData[$productId]) && $shortDescriptionData[$productId] != '') {
+                $map[$productId] = $this->mapperService->clearString(
+                    (string)$shortDescriptionData[$productId]
+                );
             }
         }
 
-        return $stockStatus;
+        return $map;
     }
 
-    private function clearString(string $string): string
+    public function mapProductRating(int $storeId, array $productIds): array
     {
-        return html_entity_decode(strip_tags($string));
-    }
+        $data = $this->resource->getConnection()->fetchPairs(
+            $this->resource->getConnection()->select()->from(
+                [$this->resource->getTableName('rating_option_vote_aggregated')],
+                [
+                    'entity_pk_value',
+                    'value' => new \Zend_Db_Expr('AVG(percent)'),
+                ]
+            )->where('entity_pk_value IN (?)', $productIds)
+                ->where('store_id = ?', $storeId)
+                ->group('entity_pk_value')
+        );
 
-    private function getAdminPath(): string
-    {
-        $url = ObjectManager::getInstance()->get('\Magento\Backend\Helper\Data')
-            ->getHomePageUrl();
-
-        $components = parse_url($url);
-        $components = explode('/', trim($components['path'], '/'));
-
-        return array_shift($components);
-    }
-
-    private function getPriceRenderer(): \Magento\Framework\Pricing\Render
-    {
-        if ($this->priceRender) {
-            return $this->priceRender;
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = 0;
         }
 
-        $this->priceRender = $this->layout->getBlock('product.price.render.default');
+        foreach ($data as $productId => $rating) {
+            $map[$productId] = $rating;
+        }
 
-        if (!$this->priceRender) {
-            $this->priceRender = $this->layout->createBlock(
-                \Magento\Framework\Pricing\Render::class,
-                'product.price.render.default',
-                ['data' => ['price_render_handle' => 'catalog_product_prices']]
+        return $map;
+    }
+
+    public function mapProductReviews(int $storeId, array $productIds): array
+    {
+        $data = $this->resource->getConnection()->fetchPairs(
+            $this->resource->getConnection()->select()->from(
+                [$this->resource->getTableName('review')],
+                [
+                    'entity_id',
+                    'value' => new \Zend_Db_Expr('COUNT(review_id)'),
+                ]
+            )->where('status_id=1')
+                ->where('entity_id IN (?)', $productIds)
+                ->group('entity_id')
+        );
+
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = 0;
+        }
+
+        foreach ($data as $productId => $reviews) {
+            $map[$productId] = $reviews;
+        }
+
+        return $map;
+    }
+
+    public function mapProductCart(int $storeId, array $productIds): array
+    {
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = $this->mapperService->getBaseUrl($storeId) . 'searchautocomplete/cart/add/id/' . $productId;
+        }
+
+        $stockMap = $this->mapProductStockStatus($storeId, $productIds);
+
+        foreach ($stockMap as $productId => $stockStatus) {
+            if ($stockStatus == self::OUT_OF_STOCK) {
+                $map[$productId] = '';
+            }
+        }
+
+        return $map;
+    }
+
+    public function mapProductStockStatus(int $storeId, array $productIds): array
+    {
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = self::UNSET_STOCK;
+        }
+
+        $data = $this->resource->getConnection()->fetchPairs(
+            $this->resource->getConnection()->select()
+                ->from(
+                    ['e' => $this->resource->getTableName('catalog_product_entity')],
+                    ['entity_id']
+                )->joinInner(
+                    ['stock' => $this->resource->getTableName('cataloginventory_stock_status')],
+                    'stock.product_id = e.entity_id',
+                    ['stock_status']
+                )
+                ->where('e.entity_id IN (?)', $productIds)
+                ->group('e.entity_id')
+        );
+
+        foreach ($data as $productId => $stockStatus) {
+            $map[$productId] = $stockStatus == 1 ? self::IN_STOCK : self::OUT_OF_STOCK;
+        }
+
+        if ($this->resource->getConnection()->isTableExists($this->resource->getTableName('inventory_source_item'))) {
+            $data = $this->resource->getConnection()->fetchPairs(
+                $this->resource->getConnection()->select()
+                    ->from(
+                        ['e' => $this->resource->getTableName('catalog_product_entity')],
+                        ['entity_id']
+                    )->joinInner(
+                        ['isi' => $this->resource->getTableName('inventory_source_item')],
+                        'isi.sku = e.sku',
+                        ['status' => 'MAX(status)']
+                    )
+                    ->where('e.entity_id IN (?)', $productIds)
+                    ->group('e.entity_id')
+            );
+
+            foreach ($data as $productId => $stockStatus) {
+                if ($map[$productId] == self::OUT_OF_STOCK) {
+                    $map[$productId] = $stockStatus == 1 ? self::IN_STOCK : self::OUT_OF_STOCK;
+                }
+            }
+        }
+
+        return $map;
+    }
+
+    private function attributeSelectQuery(int $storeId, array $productIds, string $attribute, string $type): array
+    {
+        $map = [];
+        foreach ($productIds as $productId) {
+            $map[$productId] = '';
+        }
+
+        $mainTable = 'catalog_product_entity_' . $type;
+
+        foreach ([$storeId, 0, 1] as $sid) {
+            $query = $this->resource->getConnection()
+                ->select()
+                ->from(['ev' => $this->resource->getTableName($mainTable)], ['entity_id', 'value'])
+                ->where('ev.attribute_id = ?', $this->getAttributeId($attribute))
+                ->where('ev.store_id = ?', $sid)
+                ->where('ev.entity_id IN(?)', $productIds)
+                ->order('ev.store_id')
+                ->group('ev.entity_id');
+
+            if ($this->getPkField() == 'row_id') {
+                $query = $this->resource->getConnection()
+                    ->select()
+                    ->from(['e' => $this->resource->getTableName('catalog_product_entity')], ['entity_id'])
+                    ->joinLeft(['ev' => $this->resource->getTableName($mainTable)], 'e.row_id = ev.row_id', ['value'])
+                    ->where('ev.attribute_id = ?', $this->getAttributeId($attribute))
+                    ->where('ev.store_id = ?', $sid)
+                    ->where('e.entity_id IN(?)', $productIds)
+                    ->order('ev.store_id')
+                    ->group('e.entity_id');
+            }
+
+            $data = $this->resource->getConnection()->fetchPairs($query);
+
+            foreach ($data as $productId => $value) {
+                if ($map[$productId] == '' || $map[$productId] == 'no_selection') {
+                    $map[$productId] = $value;
+                }
+            }
+        }
+
+        return $map;
+    }
+
+    private function getAttributeId(string $attributeCode): int
+    {
+        if (count($this->attributeIds) == 0) {
+            $this->attributeIds = $this->resource->getConnection()->fetchPairs(
+                $this->resource->getConnection()->select()
+                    ->from(['ea' => $this->resource->getTableName('eav_attribute')], ['attribute_code', 'attribute_id'])
+                    ->joinLeft(['eet' => $this->resource->getTableName('eav_entity_type')], 'eet.entity_type_id = ea.entity_type_id', [])
+                    ->where('eet.entity_type_code = ?', 'catalog_product')
             );
         }
 
-        $this->priceRender->setData('is_product_list', true);
-
-        return $this->priceRender;
+        return (int)$this->attributeIds[$attributeCode];
     }
 
-    private function getAdminUrl(): string
+    private function getPkField(): string
     {
-        $url = ObjectManager::getInstance()->get('\Magento\Backend\Helper\Data')
-            ->getHomePageUrl();
+        if ($this->pkField == '') {
+            $this->pkField = (string)$this->resource->getConnection()->getAutoIncrementField($this->resource->getTableName('catalog_product_entity'));
+        }
 
-        $components = parse_url($url);
-
-        return $components['host'] . '/' . $this->getAdminPath();
-    }
-
-    private function applyPriceTemplate($productId, $formattedPrice): string
-    {
-        return '<div class="price-box price-final_price" data-role="priceBox" data-product-id="' . $productId . '" data-price-box="product-id-' . $productId . '">
-            <span class="price-container price-final_price tax weee">
-                <span id="product-price-' . $productId . '" data-price-amount="' . (int)$formattedPrice . '" data-price-type="finalPrice" class="price-wrapper ">
-                    <span class="price">' . $formattedPrice . '</span>
-                </span>
-            </span>
-        </div>';
+        return $this->pkField;
     }
 }

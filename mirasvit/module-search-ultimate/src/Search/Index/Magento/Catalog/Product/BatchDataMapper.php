@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -20,14 +20,14 @@ namespace Mirasvit\Search\Index\Magento\Catalog\Product;
 
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
+use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory;
 use Magento\Eav\Model\Entity as EavEntity;
 use Magento\Elasticsearch\Model\Adapter\BatchDataMapper\ProductDataMapper;
 use Mirasvit\Search\Api\Data\Index\BatchDataMapperInterface;
 use Mirasvit\Search\Api\Data\IndexInterface;
+use Mirasvit\Search\Api\Data\QueryConfigProviderInterface;
 use Mirasvit\Search\Index\AbstractBatchDataMapper;
 use Mirasvit\Search\Index\Context;
-use Mirasvit\Search\Api\Data\QueryConfigProviderInterface;
-use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory;
 
 class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapperInterface
 {
@@ -46,12 +46,12 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
     private $longTailApplicableAttributes;
 
     public function __construct(
-        ProductDataMapper $productDataMapper,
-        EavEntity $eavEntity,
-        Attribute $attribute,
+        ProductDataMapper            $productDataMapper,
+        EavEntity                    $eavEntity,
+        Attribute                    $attribute,
         QueryConfigProviderInterface $configProvider,
-        CollectionFactory $collectionFactory,
-        Context $context
+        CollectionFactory            $collectionFactory,
+        Context                      $context
     ) {
         $this->productDataMapper = $productDataMapper;
         $this->eavEntity         = $eavEntity;
@@ -65,12 +65,24 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
     public function map(array $documentData, $storeId, array $context = [])
     {
         $documentData = $this->productDataMapper->map($documentData, $storeId, $context);
-        $documentData = $this->recursiveMap($documentData, $this->getLongTailApplicableAttributes());
 
+        if (!$this->getIndex()) {
+            return $documentData;
+        }
+
+        $documentData = $this->recursiveMap($documentData, $this->getLongTailApplicableAttributes());
         $documentData = $this->addCategoryData($documentData);
         $documentData = $this->addCustomOptions($documentData);
         $documentData = $this->addBundledOptions($documentData);
         $documentData = $this->addProductIdData($documentData);
+
+        foreach ($documentData as $id => $values) {
+            foreach ($values as $attr => $val) {
+                if (is_string($val) && strlen($val) > 32000) {
+                    $documentData[$id][$attr] = substr($val, 0, 32000); // prevent ES saving error
+                }
+            }
+        }
 
         return $documentData;
     }
@@ -132,15 +144,17 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
             }
 
             if (is_array($documentData[$row['product_id']]['_misc'])) {
-                $documentData[$row['product_id']]['_misc'] = implode(' ', strip_tags($documentData[$row['product_id']]['_misc']));
+                $documentData[$row['product_id']]['_misc'] = implode(' ', $documentData[$row['product_id']]['_misc']);
             }
-            $documentData[$row['product_id']]['_misc'] .= ' ' . strip_tags((string) $row['category']);
+
+            $documentData[$row['product_id']]['_misc'] .= ' ' . strip_tags((string)$row['category']);
+            $documentData[$row['product_id']]['_misc'] = strtolower($documentData[$row['product_id']]['_misc']);
         }
 
         return $documentData;
     }
 
-    private function getIndex(): IndexInterface
+    private function getIndex(): ?IndexInterface
     {
         return $this->context->getIndexRepository()->getByIdentifier('catalogsearch_fulltext');
     }
@@ -178,9 +192,9 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
             }
 
             foreach (['title', 'sku'] as $field) {
-                 if (!empty($row[$field])) {
-                       $documentData[$row['product_id']]['_misc'] .= ' ' . strip_tags($row[$field]);
-                 }
+                if (!empty($row[$field])) {
+                    $documentData[$row['product_id']]['_misc'] .= ' ' . strip_tags($row[$field]);
+                }
             }
         }
 
@@ -201,7 +215,7 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
 
         $connection->query('SET SESSION group_concat_max_len = 1000000;');
 
-        $select = $connection->select()
+        $select    = $connection->select()
             ->from(
                 ['main_table' => $resource->getTableName('catalog_product_entity')],
                 ['sku' => new \Zend_Db_Expr("group_concat(main_table.sku SEPARATOR ' ')")]
@@ -233,15 +247,15 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
         }
         $select->joinLeft(
             ['product_varchar' => $resource->getTableName('catalog_product_entity_varchar')],
-            'product_varchar.'. $joinField .' = cpr.child_id AND product_varchar.attribute_id IN ('. $attributeIds .')',
+            'product_varchar.' . $joinField . ' = cpr.child_id AND product_varchar.attribute_id IN (' . $attributeIds . ')',
             ['varchar_value' => new \Zend_Db_Expr("group_concat(product_varchar.value SEPARATOR ' ')")]
         )->joinLeft(
             ['product_text' => $resource->getTableName('catalog_product_entity_text')],
-            'product_text.'. $joinField .' = cpr.child_id AND product_text.attribute_id IN ('. $attributeIds .')',
+            'product_text.' . $joinField . ' = cpr.child_id AND product_text.attribute_id IN (' . $attributeIds . ')',
             ['text_value' => new \Zend_Db_Expr("group_concat(product_text.value SEPARATOR ' ')")]
         )->joinLeft(
             ['product_decimal' => $resource->getTableName('catalog_product_entity_decimal')],
-            'product_decimal.'. $joinField .' = cpr.child_id AND product_decimal.attribute_id IN ('. $attributeIds .')',
+            'product_decimal.' . $joinField . ' = cpr.child_id AND product_decimal.attribute_id IN (' . $attributeIds . ')',
             ['decimal_value' => new \Zend_Db_Expr("group_concat(product_decimal.value SEPARATOR ' ')")]
         )->group('cpr.parent_id');
 
@@ -250,14 +264,14 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
                 $documentData[$row['parent_id']]['_misc'] = '';
             }
             if (is_array($documentData[$row['parent_id']]['_misc'])) {
-                $documentData[$row['parent_id']]['_misc'] = implode(' ', strip_tags($documentData[$row['parent_id']]['_misc']));
+                $documentData[$row['parent_id']]['_misc'] = implode(' ', $documentData[$row['parent_id']]['_misc']);
             }
 
             $documentData[$row['parent_id']]['_misc'] .= $this->configProvider->applyLongTail($row['sku']);
-            $childrenData = $row['sku'] .' '. $row['varchar_value'] .' '. $row['text_value'] .' '. $row['decimal_value'];
+            $childrenData                             = $row['sku'] . ' ' . $row['varchar_value'] . ' ' . $row['text_value'] . ' ' . $row['decimal_value'];
 
             $childrenData = strip_tags($childrenData);
-            $childrenData = preg_replace('~[\n\r]~',' ', $childrenData);
+            $childrenData = preg_replace('~[\n\r]~', ' ', $childrenData);
             $childrenData = implode(' ', array_unique(array_filter(explode(' ', $childrenData))));
 
             $documentData[$row['parent_id']]['_misc'] .= ' ' . $childrenData;
@@ -289,12 +303,12 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
         return $documentData;
     }
 
-    private function getSearchableAttributes():array
+    private function getSearchableAttributes(): array
     {
         if (empty($this->searchableAttributes)) {
-            $resource   = $this->context->getResource();
-            $connection = $resource->getConnection();
-            $select = 'SELECT attribute_id FROM '. $resource->getTableName('catalog_eav_attribute') .' where is_searchable = 1';
+            $resource                   = $this->context->getResource();
+            $connection                 = $resource->getConnection();
+            $select                     = 'SELECT attribute_id FROM ' . $resource->getTableName('catalog_eav_attribute') . ' where is_searchable = 1';
             $this->searchableAttributes = array_keys($connection->fetchAssoc($select));
         }
 
@@ -304,10 +318,10 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
     private function getLongTailApplicableAttributes(): string
     {
         if (empty($this->longTailApplicableAttributes)) {
-            $applicable = [];
+            $applicable           = [];
             $attributesCollection = $this->collectionFactory->create()
                 ->addFieldToFilter('is_searchable', 1)
-                ->addFieldToFilter('frontend_input', ['in'=> ['text', 'textarea', 'texteditor']]);
+                ->addFieldToFilter('frontend_input', ['in' => ['text', 'textarea', 'texteditor']]);
 
             foreach ($attributesCollection as $attribute) {
                 $applicable[] = $attribute->getAttributeCode();
@@ -316,7 +330,7 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
             if (empty($applicable)) {
                 $this->longTailApplicableAttributes = '/sku$|name$|description$/';
             } else {
-                $this->longTailApplicableAttributes = '/'. implode('$|', $applicable) .'$/';
+                $this->longTailApplicableAttributes = '/' . implode('$|', $applicable) . '$/';
             }
         }
 

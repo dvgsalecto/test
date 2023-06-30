@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -37,7 +37,14 @@ class ScoreRuleApplyPlugin
 
     public function beforeQuery($subject, Request $request)
     {
+        return [$request];
+        
+        // magento 2.4.5
         if ($request->getName() != 'quick_search_container') {
+            return [$request];
+        }
+
+        if (!$this->isSortByRelevance($request)) {
             return [$request];
         }
 
@@ -46,7 +53,7 @@ class ScoreRuleApplyPlugin
             $request->getIndex(),
             $request->getQuery(),
             $request->getFrom(),
-            1000, //redeclare size to correctly apply search weights
+            $request->getSize(), //redeclare size to correctly apply search weights
             $request->getDimensions(),
             $request->getAggregation(),
             $request->getSort()
@@ -59,6 +66,10 @@ class ScoreRuleApplyPlugin
     {
         /** @var QueryResponse $response */
         if (empty($request->getQuery()->getShould())) {
+            return $response;
+        }
+
+        if (!$this->isSortByRelevance($request)) {
             return $response;
         }
 
@@ -93,5 +104,16 @@ class ScoreRuleApplyPlugin
             $response->getAggregations(),
             $response->getTotal()
         );
+    }
+
+    private function isSortByRelevance(Request $request): bool
+    {
+        foreach ($request->getSort() as $sort) {
+            if ($sort['field'] == 'relevance') {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

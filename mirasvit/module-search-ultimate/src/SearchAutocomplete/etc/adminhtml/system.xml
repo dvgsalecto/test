@@ -44,15 +44,6 @@
                         <label>Show Price</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="multicurrency_price" translate="label comment tooltip" type="select" sortOrder="55"
-                           showInDefault="1" showInWebsite="0" showInStore="0">
-                        <label>Switch currency for search autocomplete Fast Mode results</label>
-                        <comment>The price box will display the final price only. Special prices/other options are unavailable</comment>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <depends>
-                            <field id="show_price">1</field>
-                        </depends>
-                    </field>
 
                     <field id="show_image" translate="label comment tooltip" type="select" sortOrder="60"
                            showInDefault="1" showInWebsite="0" showInStore="0">

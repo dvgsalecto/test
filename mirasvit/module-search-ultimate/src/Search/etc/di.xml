@@ -28,7 +28,6 @@
             <argument name="pool" xsi:type="array">
                 <item name="en" xsi:type="object">Mirasvit\Search\Service\Stemming\EnStemmer</item>
                 <item name="nl" xsi:type="object">Mirasvit\Search\Service\Stemming\NlStemmer</item>
-                <item name="ru" xsi:type="object">Mirasvit\Search\Service\Stemming\RuStemmer</item>
             </argument>
         </arguments>
     </type>

@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -19,39 +19,39 @@ namespace Mirasvit\Search\Service;
 
 use Magento\Cms\Model\Template\FilterProvider as CmsFilterProvider;
 use Magento\Email\Model\TemplateFactory as EmailTemplateFactory;
-use Magento\Framework\App\State as AppState;
+use Magento\Framework\App\ObjectManager;
 use Magento\Store\Model\App\Emulation as AppEmulation;
 use Mirasvit\Core\Service\SerializeService;
-use Magento\Framework\App\ObjectManager;
+use Mirasvit\Search\Model\ConfigProvider;
 
 class ContentService
 {
+    private $configProvider;
+
     private $emulation;
 
     private $filterProvider;
 
     private $templateFactory;
 
-    private $appState;
-
     public function __construct(
-        AppEmulation $emulation,
-        CmsFilterProvider $filterProvider,
-        EmailTemplateFactory $templateFactory,
-        AppState $appState
+        ConfigProvider       $configProvider,
+        AppEmulation         $emulation,
+        CmsFilterProvider    $filterProvider,
+        EmailTemplateFactory $templateFactory
     ) {
+        $this->configProvider  = $configProvider;
         $this->emulation       = $emulation;
         $this->filterProvider  = $filterProvider;
         $this->templateFactory = $templateFactory;
-        $this->appState        = $appState;
     }
 
     public function processHtmlContent(int $storeId, string $html): string
     {
         if (strripos($html, 'mgz_pagebuilder') !== false) {
-            $json = str_ireplace(['[mgz_pagebuilder]', '[/mgz_pagebuilder]'], '', $html);
+            $json         = str_ireplace(['[mgz_pagebuilder]', '[/mgz_pagebuilder]'], '', $html);
             $contentArray = SerializeService::decode($json);
-            $content = [];
+            $content      = [];
 
             if (empty($contentArray)) {
                 $contentArray = [];
@@ -67,33 +67,36 @@ class ContentService
         }
 
         $html = $this->cleanHtml($html);
-        $this->emulation->stopEnvironmentEmulation();
 
-        try {
-            $this->emulation->startEnvironmentEmulation($storeId, 'frontend', true);
-            $template = $this->templateFactory->create();
-            $template->emulateDesign($storeId);
-            $template->setTemplateText($html)
-                ->setIsPlain(false);
-            $template->setTemplateFilter($this->filterProvider->getPageFilter());
+        if ($this->configProvider->isContentWidgetIndexationEnabled()) {
             $this->emulation->stopEnvironmentEmulation();
-            $html = $template->getProcessedTemplate([]);
-        } catch (\Exception $e) {
-            $state = ObjectManager::getInstance()->get('\Magento\Framework\App\State');
-            $state->emulateAreaCode(
-                'frontend',
-                function (&$html, $storeId) {
-                    $template = $this->templateFactory->create();
-                    $template->emulateDesign($storeId);
-                    $template->setTemplateText($html)
-                        ->setIsPlain(false);
-                    $template->setTemplateFilter($this->filterProvider->getPageFilter());
-                    $html = $template->getProcessedTemplate([]);
-                },
-                [&$html, $storeId]
-            );
-        } finally {
-            $this->emulation->stopEnvironmentEmulation();
+
+            try {
+                $this->emulation->startEnvironmentEmulation($storeId, 'frontend', true);
+                $template = $this->templateFactory->create();
+                $template->emulateDesign($storeId);
+                $template->setTemplateText($html)
+                    ->setIsPlain(false);
+                $template->setTemplateFilter($this->filterProvider->getPageFilter());
+                $this->emulation->stopEnvironmentEmulation();
+                $html = $template->getProcessedTemplate([]);
+            } catch (\Exception $e) {
+                $state = ObjectManager::getInstance()->get('\Magento\Framework\App\State');
+                $state->emulateAreaCode(
+                    'frontend',
+                    function (&$html, $storeId) {
+                        $template = $this->templateFactory->create();
+                        $template->emulateDesign($storeId);
+                        $template->setTemplateText($html)
+                            ->setIsPlain(false);
+                        $template->setTemplateFilter($this->filterProvider->getPageFilter());
+                        $html = $template->getProcessedTemplate([]);
+                    },
+                    [&$html, $storeId]
+                );
+            } finally {
+                $this->emulation->stopEnvironmentEmulation();
+            }
         }
 
         return (string)$html;

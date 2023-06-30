@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -22,6 +22,7 @@ use Magento\Catalog\Model\Layer;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Controller\Result\RawFactory;
 use Magento\Framework\Module\Manager as ModuleManager;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Layout\Element;
 use Magento\Framework\View\Result\Page;
 
@@ -38,16 +39,20 @@ class AjaxResponseService
 
     private $moduleManager;
 
+    private $serializer;
+
     public function __construct(
         Layer\Resolver $resolver,
         RawFactory $resultRawFactory,
         Http $request,
+        Json $serializer,
         ModuleManager $moduleManager
     ) {
         $this->resolver                = $resolver;
         $this->resultRawFactory        = $resultRawFactory;
         $this->request                 = $request;
         $this->moduleManager           = $moduleManager;
+        $this->serializer           = $serializer;
     }
 
     /**
@@ -96,7 +101,7 @@ class AjaxResponseService
     {
         $response = $this->resultRawFactory->create()
             ->setHeader('Content-type', 'text/plain')
-            ->setContents(\Zend_Json::encode($data));
+            ->setContents($this->serializer->serialize($data));
 
         return $response;
     }
@@ -107,7 +112,7 @@ class AjaxResponseService
         $productsHtml        = $this->getProductsHtml($page);
         $productsCount       = $this->getProductsCount();
         $leftNavHtml         = $this->getBlockHtml($page, 'catalog.leftnav', 'catalogsearch.leftnav');
-        
+
         $categoryViewData = '';
         $children         = $layout->getChildNames('category.view.container');
         foreach ($children as $child) {

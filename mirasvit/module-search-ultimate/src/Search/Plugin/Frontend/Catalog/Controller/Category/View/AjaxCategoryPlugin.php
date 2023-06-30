@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -35,9 +35,9 @@ class AjaxCategoryPlugin
     private $request;
 
     public function __construct(
-        ConfigProvider $configProvider,
+        ConfigProvider      $configProvider,
         AjaxResponseService $ajaxResponseService,
-        RequestInterface $request
+        RequestInterface    $request
     ) {
         $this->configProvider      = $configProvider;
         $this->ajaxResponseService = $ajaxResponseService;
@@ -52,7 +52,12 @@ class AjaxCategoryPlugin
      */
     public function afterExecute($subject, $page)
     {
-        if ($this->configProvider->isCategorySearch() && $this->request->isAjax()) {
+        if (
+            $this->configProvider->isCategorySearch()
+            && $this->request->isAjax()
+            && !$this->request->getParam('is_scroll')
+            && !$this->request->getParam('scrollAjax') //olegnax nav
+        ) {
             return $this->ajaxResponseService->getAjaxResponse($page);
         }
 

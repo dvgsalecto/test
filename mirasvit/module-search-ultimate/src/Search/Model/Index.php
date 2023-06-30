@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -23,6 +23,19 @@ use Mirasvit\Search\Api\Data\IndexInterface;
 
 class Index extends AbstractModel implements IndexInterface
 {
+    protected $serializer;
+
+    public function __construct(
+        \Magento\Framework\Model\Context $context,
+        \Magento\Framework\Registry $registry,
+        \Magento\Framework\Serialize\Serializer\Json $serializer,
+        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
+        \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
+        array $data = []
+    ) {
+        $this->serializer = $serializer;
+        parent::__construct($context, $registry, $resource, $resourceCollection, $data);
+    }
     public function getId(): int
     {
         return (int)parent::getData(self::ID);
@@ -65,7 +78,7 @@ class Index extends AbstractModel implements IndexInterface
         }
 
         try {
-            $data = (array)\Zend_Json::decode(parent::getData(self::ATTRIBUTES_SERIALIZED));
+            $data = (array)$this->serializer->unserialize(parent::getData(self::ATTRIBUTES_SERIALIZED));
         } catch (\Exception $e) {
             $data = [];
         }
@@ -75,12 +88,12 @@ class Index extends AbstractModel implements IndexInterface
 
     public function setAttributes(array $input): IndexInterface
     {
-        return parent::setData(self::ATTRIBUTES_SERIALIZED, \Zend_Json::encode($input));
+        return parent::setData(self::ATTRIBUTES_SERIALIZED, $this->serializer->serialize($input));
     }
 
     public function setProperties(array $input): IndexInterface
     {
-        return parent::setData(self::PROPERTIES_SERIALIZED, \Zend_Json::encode($input));
+        return parent::setData(self::PROPERTIES_SERIALIZED, $this->serializer->serialize($input));
     }
 
     public function getStatus(): int
@@ -107,7 +120,7 @@ class Index extends AbstractModel implements IndexInterface
     {
         $props = $this->getProperties();
         if (isset($props[$key]) && is_array($props[$key])) {
-            $props[$key] = \Zend_Json::encode($props[$key]);
+            $props[$key] = $this->serializer->serialize($props[$key]);
         }
 
         return $props[$key] ?? '';

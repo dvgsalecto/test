@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -23,50 +23,81 @@ use Mirasvit\SearchReport\Service\LogService;
 
 class BotDetectorService
 {
-    public $possibleInjectionTerms = [
-            'admin', 'wp', 'login', 'db', 'zip', 'rar', 'tar', 'gz', 'sql', '7z', 'bz2', 'bak',
-            'bck', 'database', 'sid', 'localhost', 'backup', 'magento', 'config', 'passwd',
-            'panel', 'mysql', 'admo', 'ajaxplorer', 'dump', 'select', 'where', 'union', 'teal', 'sweatshirt',
+    public  $possibleInjectionTerms
+        = [
+            'admin',
+            'wp',
+            'login',
+            'db',
+            'zip',
+            'rar',
+            'tar',
+            'gz',
+            'sql',
+            '7z',
+            'bz2',
+            'bak',
+            'bck',
+            'database',
+            'sid',
+            'localhost',
+            'backup',
+            'magento',
+            'config',
+            'passwd',
+            'panel',
+            'mysql',
+            'admo',
+            'ajaxplorer',
+            'dump',
+            'select',
+            'where',
+            'union',
+            'alter',
+            'drop',
+            'create',
+            'delete',
+            'exec',
         ];
 
     private $configProvider;
 
-    private $logService;
-
     public function __construct(
-        ConfigProvider $configProvider,
-        LogService $logService
+        ConfigProvider $configProvider
     ) {
-        $this->configProvider   = $configProvider;
-        $this->logService       = $logService;
+        $this->configProvider = $configProvider;
     }
 
     public function isBotQuery(string $query): bool
     {
-        $result = false;
-        $query   = filter_input(INPUT_GET, 'q', FILTER_UNSAFE_RAW);
+        $query = strtolower($query);
+
+        $isBot = false;
 
         if (empty($query)) {
-            return $result;
+            return false;
         }
 
         $ignoredIps = $this->configProvider->getIgnoredIps();
 
-        if (in_array($this->logService->getIp(), $ignoredIps)) {
-            $result = true;
-        } elseif (preg_match('~' . implode('|', $this->possibleInjectionTerms) . '~', $query)) {
-            $result = true;
-        } elseif (preg_match('~\.' . implode('|\.', $this->possibleInjectionTerms) . '~', $query)) {
-            $result = true;
-        } elseif (preg_match('~.*' . implode('|.*', $this->possibleInjectionTerms) . '~', $query)) {
-            $result = true;
-        } elseif (preg_match(
-            "~('(''|[^'])*')|(;)|(\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b)~i",
-            $query)
-        ) {
-            $result = true;
+        if (in_array($this->configProvider->getIp(), $ignoredIps)) {
+            return true;
         }
 
-        return $result;
+        foreach ($this->possibleInjectionTerms as $term) {
+            if (str_contains($query, $term)) {
+                return true;
+            }
+        }
+
+        $terms = array_unique(preg_split('#\s#siu', $query, -1, PREG_SPLIT_NO_EMPTY));
+        $terms = array_unique($terms);
+        foreach ($terms as $term) {
+            if ($this->configProvider->isStopword($term, 0)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

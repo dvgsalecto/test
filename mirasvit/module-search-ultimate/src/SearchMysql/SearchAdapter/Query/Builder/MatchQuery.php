@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -91,7 +91,7 @@ class MatchQuery
 
         $searchQuery = $this->queryService->build($query->getValue());
 
-        $exactMatchQuery = $this->compileQuery($columns, $searchQuery['built']);
+        $exactMatchQuery = $this->compileQuery($columns, $searchQuery['queryTree']);
 
         $scoreQuery = $this->getScoreQuery($columns, $query->getValue());
 

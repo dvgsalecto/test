@@ -7,7 +7,7 @@
         "mirasvit/module-report": "dev-master|*"
     },
     "type": "magento2-module",
-    "version": "2.0.97",
+    "version": "2.2.7",
     "license": [
         "proprietary"
     ],

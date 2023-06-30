@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -40,16 +40,14 @@ class ScoreRuleIndexer implements IndexerActionInterface
 
 
     public function __construct(
-        ResourceConnection $resource,
+        ResourceConnection  $resource,
         ScoreRuleRepository $scoreRuleRepository
     ) {
         $this->resource            = $resource;
         $this->scoreRuleRepository = $scoreRuleRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+
     public function executeFull()
     {
         foreach ($this->scoreRuleRepository->getCollection() as $scoreRule) {
@@ -59,12 +57,24 @@ class ScoreRuleIndexer implements IndexerActionInterface
         $this->executeZeroRule([]);
     }
 
-    /**
-     * @param ScoreRuleInterface $scoreRule
-     * @param array              $productIds
-     *
-     * @throws \Zend_Db_Exception
-     */
+    public function executeList(array $ids)
+    {
+        foreach ($this->scoreRuleRepository->getCollection() as $scoreRule) {
+            $this->execute($scoreRule, $ids);
+        }
+
+        $this->executeZeroRule($ids);
+    }
+
+    public function executeRow($id)
+    {
+        foreach ($this->scoreRuleRepository->getCollection() as $scoreRule) {
+            $this->execute($scoreRule, [$id]);
+        }
+
+        $this->executeZeroRule([$id]);
+    }
+
     public function execute(ScoreRuleInterface $scoreRule, array $productIds)
     {
         $connection = $this->resource->getConnection();
@@ -114,34 +124,6 @@ class ScoreRuleIndexer implements IndexerActionInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function executeList(array $ids)
-    {
-        foreach ($this->scoreRuleRepository->getCollection() as $scoreRule) {
-            $this->execute($scoreRule, $ids);
-        }
-
-        $this->executeZeroRule($ids);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function executeRow($id)
-    {
-        foreach ($this->scoreRuleRepository->getCollection() as $scoreRule) {
-            $this->execute($scoreRule, [$id]);
-        }
-
-        $this->executeZeroRule([$id]);
-    }
-
-    /**
-     * @return $this
-     * @throws \Zend_Db_Exception
-     */
     private function ensureIndexTable()
     {
         $tableName = $this->getIndexTable();
@@ -164,21 +146,12 @@ class ScoreRuleIndexer implements IndexerActionInterface
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    private function getIndexTable()
+    private function getIndexTable(): string
     {
         return $this->resource->getTableName(ScoreRuleInterface::INDEX_TABLE_NAME);
     }
 
-    /**
-     * @param ScoreRuleInterface $scoreRule
-     * @param array              $productIds
-     *
-     * @return array
-     */
-    public function getScoreFactors(ScoreRuleInterface $scoreRule, array $productIds)
+    private function getScoreFactors(ScoreRuleInterface $scoreRule, array $productIds): array
     {
         [$sign, $factor, $relatively] = explode('|', $scoreRule->getScoreFactor());
 
@@ -229,11 +202,6 @@ class ScoreRuleIndexer implements IndexerActionInterface
         return $result;
     }
 
-    /**
-     * @param array $productIds
-     *
-     * @throws \Zend_Db_Exception
-     */
     private function executeZeroRule(array $productIds)
     {
         $connection = $this->resource->getConnection();

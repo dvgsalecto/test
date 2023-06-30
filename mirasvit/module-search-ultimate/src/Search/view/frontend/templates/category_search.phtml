@@ -21,7 +21,7 @@
 	            'Mirasvit_Search/js/categorySearch',
 	        ], function ($, categorySearch) {
 	            $(document).ready(function () {
-                    new categorySearch($('#mst_categorySearch')).init(<?=\Zend_Json::encode($config)?>);
+                    new categorySearch($('#mst_categorySearch')).init(<?=$block->jsonEncode($config)?>);
                 });
 	        }
 	    );

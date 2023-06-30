@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -29,27 +29,24 @@ class Post implements ResolverInterface
 
     private $urlBuilder = null;
 
-    private $size = 0;
-
-    public function __construct() {
+    public function __construct()
+    {
         $this->objectManager = ObjectManager::getInstance();
     }
 
     public function resolve(
-        Field $field,
-        $context,
+        Field       $field,
+                    $context,
         ResolveInfo $info,
-        array $value = null,
-        array $args = null
+        array       $value = null,
+        array       $args = null
     ) {
-        if (empty($args)) {
-            if ($field->getName() == 'size') {
-                return $this->size;
-            }
+        $result = $value[$field->getName()] ?? null;
+        if (!$result) {
+            return null;
         }
 
-        $collection = $value['instance']->getSearchCollection();
-        $this->size = $collection->getSize();
+        $collection = $result['instance']->getSearchCollection();
         $collection->setPageSize($args['pageSize'])
             ->setCurPage($args['currentPage']);
 
@@ -62,7 +59,18 @@ class Post implements ResolverInterface
             ];
         }
 
-        return $items;
+        $totalCount = $collection->getSize();
+
+        return [
+            ...$result,
+            'items'       => $items,
+            'total_count' => $totalCount,
+            'page_info'   => [
+                'total_pages'  => ceil($totalCount / $args['pageSize']),
+                'page_size'    => $args['pageSize'],
+                'current_page' => $args['currentPage'],
+            ],
+        ];
     }
 
     private function getUrlBulder()

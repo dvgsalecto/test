@@ -9,9 +9,10 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
+
 
 
 namespace Mirasvit\Search\Controller\Adminhtml\Stopword;
@@ -30,12 +31,12 @@ class DoImport extends AbstractStopword
         $data = $this->getRequest()->getPostValue();
 
         if ($data) {
-            $generator = $this->stopwordService->import($this->directoryList->getPath('var') .'/stopwords/'. $data['dictionary'], $data['store_id']);
+            $generator = $this->stopwordService->import($data['dictionary'], $data['store_id']);
 
             $result = [
-                'stopwords'         => 0,
-                'errors'            => 0,
-                'error_message'     => '',
+                'stopwords'     => 0,
+                'errors'        => 0,
+                'error_message' => '',
             ];
 
             foreach ($generator as $result) {

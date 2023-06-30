@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -36,20 +36,18 @@ class Article implements ResolverInterface
     }
 
     public function resolve(
-        Field $field,
-        $context,
+        Field       $field,
+                    $context,
         ResolveInfo $info,
-        array $value = null,
-        array $args = null
+        array       $value = null,
+        array       $args = null
     ) {
-        if (empty($args)) {
-            if ($field->getName() == 'size') {
-                return $this->size;
-            }
+        $result = $value[$field->getName()] ?? null;
+        if (!$result) {
+            return null;
         }
 
-        $collection = $value['instance']->getSearchCollection();
-        $this->size = $collection->getSize();
+        $collection = $result['instance']->getSearchCollection();
         $collection->setPageSize($args['pageSize'])->setCurPage($args['currentPage']);
 
         $items = [];
@@ -57,6 +55,17 @@ class Article implements ResolverInterface
             $items[] = ['name' => $item->getName(), 'url' => $item->getUrl()];
         }
 
-        return $items;
+        $totalCount = $collection->getSize();
+
+        return [
+            ...$result,
+            'items'       => $items,
+            'total_count' => $totalCount,
+            'page_info'   => [
+                'total_pages'  => ceil($totalCount / $args['pageSize']),
+                'page_size'    => $args['pageSize'],
+                'current_page' => $args['currentPage'],
+            ],
+        ];
     }
 }

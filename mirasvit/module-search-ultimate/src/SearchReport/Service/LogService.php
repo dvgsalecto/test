@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -18,6 +18,7 @@
 namespace Mirasvit\SearchReport\Service;
 
 use Magento\Customer\Model\SessionFactory;
+use Mirasvit\Search\Model\ConfigProvider;
 use Mirasvit\SearchReport\Api\Data\LogInterface;
 use Mirasvit\SearchReport\Repository\LogRepository;
 
@@ -25,14 +26,18 @@ class LogService
 {
     const MAX_QUERY_LOG_SIZE = 50000;
 
+    private $configProvider;
+
     private $logRepository;
 
     private $sessionFactory;
 
     public function __construct(
-        LogRepository $logRepository,
+        ConfigProvider $configProvider,
+        LogRepository  $logRepository,
         SessionFactory $sessionFactory
     ) {
+        $this->configProvider = $configProvider;
         $this->logRepository  = $logRepository;
         $this->sessionFactory = $sessionFactory;
     }
@@ -49,7 +54,7 @@ class LogService
 
         $log->setQuery($query)
             ->setResults($results)
-            ->setIp($this->getIp())
+            ->setIp($this->configProvider->getIp())
             ->setSession($session->getSessionId())
             ->setSource($source);
 
@@ -79,16 +84,5 @@ class LogService
         }
 
         return null;
-    }
-
-    public function getIp(): string
-    {
-        if (isset($_SERVER['HTTP_CLIENT_IP']) && !empty($_SERVER['HTTP_CLIENT_IP'])) {
-            return $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            return $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            return $_SERVER['REMOTE_ADDR'];
-        }
     }
 }

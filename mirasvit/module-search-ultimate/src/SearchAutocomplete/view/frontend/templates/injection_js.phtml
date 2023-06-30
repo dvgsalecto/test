@@ -39,7 +39,7 @@ $config = $block->getJsConfig();
                     const $input = $(selector);
 
                     $input.each(function (index, searchInput) {
-                        new InPage($(searchInput), <?=\Zend_Json::encode($config)?>);
+                        new InPage($(searchInput), <?=$block->jsonEncode($config)?>);
                     });
                 });
             }
@@ -61,9 +61,9 @@ $config = $block->getJsConfig();
 
                     $input.each(function (index, searchInput) {
                         <?php if ($config['isTypeaheadEnabled']): ?>
-                        new typeahead($(searchInput)).init(<?=\Zend_Json::encode($config)?>);
+                        new typeahead($(searchInput)).init(<?=$block->jsonEncode($config)?>);
                         <?php endif ?>
-                        new autocomplete($(searchInput)).init(<?=\Zend_Json::encode($config)?>);
+                        new autocomplete($(searchInput)).init(<?=$block->jsonEncode($config)?>);
                     });
                 });
             }

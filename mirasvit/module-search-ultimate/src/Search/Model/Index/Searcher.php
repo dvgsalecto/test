@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -142,7 +142,6 @@ class Searcher
         }
 
         $requestBuilder = $this->requestBuilderFactory->create();
-
         $requestBuilder->bind('search_term', $queryText);
 
         $requestBuilder->bindDimension('scope', $this->scopeResolver->getScope());
@@ -165,6 +164,15 @@ class Searcher
             }
         } else {
             $requestBuilder->setRequestName($this->getInstance()->getIdentifier());
+        }
+
+        if ($this->getInstance()->getIdentifier() === 'catalogsearch_fulltext') {
+            $requestBuilder->setRequestName('quick_search_container');
+            $requestBuilder->bind('visibility', [3, 4]);
+
+            if (isset($_GET['cat']) && (int)$_GET['cat'] > 0) {
+                $requestBuilder->bind('category_ids', (int)$_GET['cat']);
+            }
         }
 
         $queryRequest = $requestBuilder->create();

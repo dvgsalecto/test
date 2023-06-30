@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -18,20 +18,21 @@ declare(strict_types=1);
 
 namespace Mirasvit\SearchAutocomplete\InstantProvider;
 
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as AttributeFactory;
 use Magento\Elasticsearch\Model\Adapter\FieldMapperInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem;
+use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Search\Model\ResourceModel\Query\CollectionFactory as QueryCollectionFactory;
 use Magento\Store\Model\StoreManagerInterface;
-use Mirasvit\Search\Repository\IndexRepository;
+use Mirasvit\Misspell\Model\ConfigProvider as MisspellConfigProvider;
 use Mirasvit\Search\Model\ConfigProvider as SearchConfigProvider;
+use Mirasvit\Search\Repository\IndexRepository;
+use Mirasvit\Search\Repository\StopwordRepository;
+use Mirasvit\Search\Repository\SynonymRepository;
 use Mirasvit\SearchAutocomplete\Model\ConfigProvider;
 use Mirasvit\SearchAutocomplete\Model\IndexProvider;
-use Mirasvit\Search\Repository\SynonymRepository;
-use Mirasvit\Search\Repository\StopwordRepository;
-use Magento\Search\Model\ResourceModel\Query\CollectionFactory as QueryCollectionFactory;
-use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as AttributeFactory;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
-use Mirasvit\Misspell\Model\ConfigProvider as MisspellConfigProvider;
 
 class ConfigMaker
 {
@@ -67,57 +68,59 @@ class ConfigMaker
 
     private $misspellConfigProvider;
 
+    private $serializer;
+
     public function __construct(
-        Filesystem $fs,
-        EmulatorService $emulatorService,
-        StoreManagerInterface $storeManager,
-        IndexProvider $indexProvider,
-        IndexRepository $indexRepository,
-        FieldMapperInterface $fieldMapper,
-        ConfigProvider $configProvider,
-        SearchConfigProvider $searchConfigProvider,
-        SynonymRepository $synonymRepository,
-        StopwordRepository $stopwordRepository,
-        QueryCollectionFactory $queryCollectionFactory,
-        AttributeFactory $attributeFactory,
+        Filesystem                $fs,
+        EmulatorService           $emulatorService,
+        StoreManagerInterface     $storeManager,
+        IndexProvider             $indexProvider,
+        IndexRepository           $indexRepository,
+        FieldMapperInterface      $fieldMapper,
+        ConfigProvider            $configProvider,
+        SearchConfigProvider      $searchConfigProvider,
+        SynonymRepository         $synonymRepository,
+        StopwordRepository        $stopwordRepository,
+        QueryCollectionFactory    $queryCollectionFactory,
+        AttributeFactory          $attributeFactory,
         CategoryCollectionFactory $categoryCollection,
-        MisspellConfigProvider $misspellConfigProvider,
-        array $makers = []
+        MisspellConfigProvider    $misspellConfigProvider,
+        Json                      $serializer,
+        array                     $makers = []
     ) {
-        $this->fs                       = $fs;
-        $this->emulatorService          = $emulatorService;
-        $this->storeManager             = $storeManager;
-        $this->indexProvider            = $indexProvider;
-        $this->indexRepository          = $indexRepository;
-        $this->configProvider           = $configProvider;
-        $this->searchConfigProvider     = $searchConfigProvider;
-        $this->fieldMapper              = $fieldMapper;
-        $this->synonymRepository        = $synonymRepository;
-        $this->stopwordRepository       = $stopwordRepository;
-        $this->queryCollectionFactory   = $queryCollectionFactory;
-        $this->attributeFactory         = $attributeFactory->create();
-        $this->categoryCollection       = $categoryCollection;
-        $this->misspellConfigProvider   = $misspellConfigProvider;
-        $this->configMakers             = $makers;
+        $this->fs                     = $fs;
+        $this->emulatorService        = $emulatorService;
+        $this->storeManager           = $storeManager;
+        $this->indexProvider          = $indexProvider;
+        $this->indexRepository        = $indexRepository;
+        $this->configProvider         = $configProvider;
+        $this->searchConfigProvider   = $searchConfigProvider;
+        $this->fieldMapper            = $fieldMapper;
+        $this->synonymRepository      = $synonymRepository;
+        $this->stopwordRepository     = $stopwordRepository;
+        $this->queryCollectionFactory = $queryCollectionFactory;
+        $this->attributeFactory       = $attributeFactory->create();
+        $this->categoryCollection     = $categoryCollection;
+        $this->misspellConfigProvider = $misspellConfigProvider;
+        $this->configMakers           = $makers;
+        $this->serializer             = $serializer;
     }
 
     public function ensure(): void
     {
-        $path = $this->fs->getDirectoryRead(DirectoryList::CONFIG)
+        $path             = $this->fs->getDirectoryRead(DirectoryList::CONFIG)
             ->getRelativePath('instant.json');
-        $fastModeEnabled = $this->configProvider->isFastModeEnabled();
+        $fastModeEnabled  = $this->configProvider->isFastModeEnabled();
         $typeaheadEnabled = $this->configProvider->isTypeAheadEnabled();
 
-        $this->setValue(-1, 'instant', false);
-        $this->setValue(-1, 'typeahead', false);
+        $this->setValue(0, 'instant', $fastModeEnabled);
+        $this->setValue(0, 'typeahead', $typeaheadEnabled);
 
         if ($fastModeEnabled) {
-            $this->setValue(-1, 'instant', true);
             $this->generateInstantConfig();
         }
 
         if ($typeaheadEnabled) {
-            $this->setValue(-1, 'typeahead', true);
             $this->generateTypeaheadConfig();
         }
 
@@ -132,16 +135,13 @@ class ConfigMaker
             ->isExist($path);
 
         $this->fs->getDirectoryWrite(DirectoryList::CONFIG)
-            ->writeFile($path, \Zend_Json::encode($this->configData));
+            ->writeFile($path, $this->serializer->serialize($this->configData));
 
         if ($isNew) {
             throw new \Exception('To avoid search autocomplete downtime please run search reindex.');
         }
     }
 
-    /**
-     * @param mixed $value
-     */
     protected function setValue(int $scope, string $path, $value): ConfigMaker
     {
         $this->configData["$scope/$path"] = $value;
@@ -160,13 +160,11 @@ class ConfigMaker
         }
 
         $this->attributeFactory->addFieldToFilter('is_filterable_in_search', 1);
-        $defaultSynonymsCollection = $this->synonymRepository->getCollection()->addFieldToFilter('store_id', 0);
-        $defaultStopwordsCollection = $this->stopwordRepository->getCollection()->addFieldToFilter('store_id', 0);
+
         foreach ($storeIds as $scopeId) {
             $buckets = [];
-
             foreach ($this->attributeFactory as $attribute) {
-                $attributeCode = $attribute->getAttributeCode();
+                $attributeCode                    = $attribute->getAttributeCode();
                 $buckets[$attributeCode]['label'] = $attribute->getStoreLabel($scopeId);
                 foreach ($attribute->getOptions() as $option) {
                     $label = $option->getStoreLabels($scopeId);
@@ -177,42 +175,28 @@ class ConfigMaker
                         unset($buckets[$attributeCode]);
                         continue 2;
                     } else {
-                        $buckets[$attributeCode]['options'][$option->getValue()] = (string) $label;
+                        $buckets[$attributeCode]['options'][$option->getValue()] = (string)$label;
                     }
                 }
             }
 
             foreach ($this->categoryCollection->create()->addAttributeToSelect('*')->setStore($scopeId) as $categoryData) {
-                $buckets['category_ids']['options'][$categoryData->getId()] = (string) $categoryData->getName();
+                $buckets['category_ids']['options'][$categoryData->getId()] = (string)$categoryData->getName();
             }
             $buckets['category_ids']['label'] = __('Categories');
             $this->setValue($scopeId, 'buckets', $buckets);
             unset($buckets);
 
-            $synonyms = [];
-            $stopwords = [];
-            $synonymsCollection = $this->synonymRepository->getCollection()->addFieldToFilter('store_id', $scopeId);
 
-            foreach ($synonymsCollection as $synonym) {
-                $synonyms[] = $synonym->getSynonymGroup();
+            $synonymList = [];
+            foreach ($this->synonymRepository->getCollection()->addFieldToFilter('store_id', [0, $scopeId]) as $synonym) {
+                $synonymList[] = $synonym->getSynonymGroup();
             }
 
-            foreach ($defaultSynonymsCollection as $synonym) {
-                $synonyms[] = $synonym->getSynonymGroup();
+            $stopwordList = [];
+            foreach ($this->stopwordRepository->getCollection()->addFieldToFilter('store_id', [0, $scopeId]) as $stopword) {
+                $stopwordList[] = $stopword->getTerm();
             }
-
-            unset($synonymsCollection);
-            $stopwordsCollection = $this->stopwordRepository->getCollection()->addFieldToFilter('store_id', $scopeId);
-
-            foreach ($stopwordsCollection as $stopword) {
-                $stopwords[] = $stopword->getTerm();
-            }
-
-            foreach ($defaultStopwordsCollection as $stopword) {
-                $stopwords[] = $stopword->getTerm();
-            }
-
-            unset($stopwordsCollection);
 
             $this
                 ->setValue($scopeId, 'isEnabled', $this->configProvider->isFastModeEnabled())
@@ -236,12 +220,12 @@ class ConfigMaker
                 ->setValue($scopeId, 'configuration/replace_words', $this->searchConfigProvider->getReplaceWords())
                 ->setValue($scopeId, 'configuration/long_tail_expressions', $this->searchConfigProvider->getLongTailExpressions())
                 ->setValue($scopeId, 'configuration/match_mode', $this->searchConfigProvider->getMatchMode())
-                ->setValue($scopeId, 'synonyms', $synonyms)
-                ->setValue($scopeId, 'stopwords', $stopwords)
-                ->setValue($scopeId, 'сurrencySymbol', $store->getCurrentCurrency()->getCurrencySymbol());
+                ->setValue($scopeId, 'synonymList', $synonymList)
+                ->setValue($scopeId, 'stopwordList', $stopwordList)
+                ->setValue($scopeId, 'currencySymbol', $store->getCurrentCurrency()->getCurrencySymbol());
 
 
-            $indexes = [];
+            $indexes           = [];
             $isMisspellEnabled = $this->misspellConfigProvider->isMisspellEnabled();
             if ($isMisspellEnabled) {
                 $indexes[] = 'mst_misspell_index';
@@ -251,7 +235,13 @@ class ConfigMaker
                 if (!$index->isActive()) {
                     continue;
                 }
+
+                $searchIndex = $this->indexRepository->getInstanceByIdentifier($index->getIdentifier());
+
                 $identifier = $index->getIdentifier();
+                if ($identifier == 'catalogsearch_fulltext') {
+                    $identifier = 'magento_catalog_product';
+                }
 
                 $indexes[] = $identifier;
 
@@ -259,11 +249,8 @@ class ConfigMaker
                     ->setValue($scopeId, "index/$identifier/identifier", $identifier)
                     ->setValue($scopeId, "index/$identifier/title", $this->emulatorService->getStoreText($index->getTitle(), $scopeId))
                     ->setValue($scopeId, "index/$identifier/position", $index->getPosition())
-                    ->setValue($scopeId, "index/$identifier/limit", $index->getLimit());
-
-                $searchIndex = $this->indexRepository->getInstanceByIdentifier($identifier);
-
-                $this->setValue($scopeId, "index/$identifier/attributes", $searchIndex->getAttributeWeights());
+                    ->setValue($scopeId, "index/$identifier/limit", $index->getLimit())
+                    ->setValue($scopeId, "index/$identifier/attributes", $searchIndex->getAttributeWeights());
 
                 $fields = [];
                 foreach ($searchIndex->getAttributeWeights() as $attribute => $weight) {
@@ -288,8 +275,8 @@ class ConfigMaker
     private function generateTypeaheadConfig(): void
     {
         foreach ($this->storeManager->getStores() as $store) {
-            $results = [];
-            $storeId = (int)$store->getId();
+            $results    = [];
+            $storeId    = (int)$store->getId();
             $collection = $this->queryCollectionFactory->create();
 
             $collection->getSelect()->reset(\Magento\Framework\DB\Select::COLUMNS)

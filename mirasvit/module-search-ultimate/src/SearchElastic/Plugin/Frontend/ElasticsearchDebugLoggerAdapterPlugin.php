@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -23,6 +23,7 @@ use Magento\Elasticsearch7\SearchAdapter\Mapper;
 use Magento\Framework\Search\AdapterInterface;
 use Magento\Framework\Search\RequestInterface;
 use Magento\Framework\Search\Response\QueryResponse;
+use Magento\Framework\Serialize\Serializer\Json;
 use Mirasvit\Search\Service\DebugService;
 
 /**
@@ -30,20 +31,26 @@ use Mirasvit\Search\Service\DebugService;
  */
 class ElasticsearchDebugLoggerAdapterPlugin
 {
-    private $mapper;
+    private        $mapper;
 
-    private $connectionManager;
+    private        $connectionManager;
 
-    private $debugService;
+    private        $debugService;
+
+    private        $serializer;
+
+    private static $counter = 1;
 
     public function __construct(
         Mapper            $mapper,
         ConnectionManager $connectionManager,
-        DebugService      $debugService
+        DebugService      $debugService,
+        Json              $serializer
     ) {
         $this->mapper            = $mapper;
         $this->connectionManager = $connectionManager;
         $this->debugService      = $debugService;
+        $this->serializer        = $serializer;
     }
 
     public function aroundQuery(AdapterInterface $subject, callable $proceed, RequestInterface $request): QueryResponse
@@ -55,17 +62,19 @@ class ElasticsearchDebugLoggerAdapterPlugin
 
             $indexName = $request->getName();
 
-            DebugService::log(\Zend_Json::encode($query), 'query: ' . $indexName);
+            DebugService::log($this->serializer->serialize($query), 'query' . self::$counter . ': ' . $indexName);
 
             try {
                 $rawResponse = $client->query($query);
             } catch (\Exception $e) {
-                DebugService::log($e->getMessage(), 'exception: ' . $indexName);
+                DebugService::log($e->getMessage(), 'exception' . self::$counter . ': ' . $indexName);
                 $rawResponse = [];
             }
 
-            DebugService::log(\Zend_Json::encode($rawResponse), 'response: ' . $indexName);
+            DebugService::log($this->serializer->serialize($rawResponse), 'response' . self::$counter . ': ' . $indexName);
         }
+
+        self::$counter++;
 
         return $proceed($request);
     }

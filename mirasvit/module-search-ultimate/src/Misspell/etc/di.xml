@@ -15,6 +15,7 @@
             <argument name="adapters" xsi:type="array">
                 <item name="mysql2" xsi:type="string">Mirasvit\Misspell\Adapter\Mysql\MysqlAdapter</item>
                 <item name="elasticsearch7" xsi:type="string">Mirasvit\Misspell\Adapter\Elasticsearch\ElasticsearchAdapter</item>
+                <item name="elasticsearch8" xsi:type="string">Mirasvit\Misspell\Adapter\Elasticsearch\ElasticsearchAdapter</item>
             </argument>
         </arguments>
     </type>

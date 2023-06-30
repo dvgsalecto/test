@@ -13,7 +13,12 @@
 
 <script id="searchAutocompleteWrapper" type="text/x-custom-template">
     <div class="mst-searchautocomplete__wrapper">
-        <div data-bind="visible: result().noResults == false">
+        <div class="mst-searchautocomplete__results" data-bind="{
+            visible: result().noResults == false,
+            css: {
+                __all: result().urlAll && result().totalItems > 0
+            }
+        }">
             <div data-bind="foreach: { data: result().indexes, as: 'index' }">
                 <div data-bind="visible: index.totalItems, attr: {class: 'mst-searchautocomplete__index ' + index.identifier}">
                     <div class="mst-searchautocomplete__index-title">
@@ -25,7 +30,7 @@
 
                     <ul data-bind="foreach: { data: index.items, as: 'item' }">
                         <li data-bind="
-                            template: { name:index.identifier, data: item },
+                            template: { name: index.identifier, data: item },
                             attr: {class: 'mst-searchautocomplete__item ' + index.identifier},
                             event: { mouseover: $parents[1].onMouseOver, mouseout: $parents[1].onMouseOut, mousedown: $parents[1].onClick },
                             css: {_active: $data.isActive}">
@@ -56,9 +61,9 @@
 </script>
 
 <script id="magento_catalog_product" type="text/x-custom-template">
-    <!-- ko if: image -->
+    <!-- ko if: (imageUrl && $parents[2].config.isShowImage) -->
     <a rel="noreferrer" data-bind="attr: {href: url}">
-        <div class="mst-product-image-wrapper"><img data-bind="attr: {src: image}"/></div>
+        <div class="mst-product-image-wrapper"><img data-bind="attr: {src: imageUrl}"/></div>
     </a>
     <!-- /ko -->
 
@@ -66,33 +71,43 @@
         <div class="title">
             <a rel="noreferrer" data-bind="html: name, attr: {href: url}, highlight"></a>
 
-            <!-- ko if: sku -->
+            <!-- ko if: (sku && $parents[2].config.isShowSku) -->
             <span class="sku" data-bind="text: sku, highlight"></span>
             <!-- /ko -->
         </div>
 
-        <!-- ko if: description -->
+        <!-- ko if: (description && $parents[2].config.isShowDescription) -->
         <div class="description" data-bind="text: description, highlight"></div>
         <!-- /ko -->
 
-        <!-- ko if: rating -->
-        <div data-bind="html: rating"></div>
+        <!-- ko if: (rating && $parents[2].config.isShowRating) -->
+        <div>
+            <div class="rating-summary">
+                <div class="rating-result">
+                    <span data-bind="style: { width: rating + '%' }"></span>
+                </div>
+            </div>
+        </div>
         <!-- /ko -->
 
-        <!-- ko if: stock_status -->
-        <span class="stock_status" data-bind="text: stock_status, processStockStatus"></span>
+        <!-- ko if: (stockStatus && $parents[2].config.isShowStockStatus) -->
+        <span class="stock_status" data-bind="text: stockStatus, processStockStatus"></span>
         <!-- /ko -->
 
-        <div class="to-cart" data-bind="visible: cart.visible">
-            <a class="action primary mst__add_to_cart" data-bind="attr: { _href: cart.url }">
-                <span data-bind="html: cart.label"></span>
+        <!-- ko if: (addToCartUrl && $parents[2].config.isShowCartButton) -->
+        <div class="to-cart">
+            <a class="action primary mst__add_to_cart" data-bind="attr: { _href: addToCartUrl }">
+                <span><?= __('Add To Cart') ?></span>
             </a>
         </div>
+        <!-- /ko -->
     </div>
 
+    <!-- ko if: (price && $parents[2].config.isShowPrice) -->
     <div class="store">
         <div data-bind="html: price" class="price"></div>
     </div>
+    <!-- /ko -->
 </script>
 
 <script id="magento_catalog_categoryproduct" type="text/x-custom-template">

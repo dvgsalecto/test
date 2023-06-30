@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -89,7 +89,7 @@ class ReindexCommand extends Command
                 $output->write($idx . '/' . count($productIds) . PHP_EOL);
             }
 
-            return;
+            return 0;
         }
 
         $collection = $this->indexRepository->getCollection()
@@ -117,6 +117,8 @@ class ReindexCommand extends Command
         }
 
         $output->writeln(round(microtime(true) - $ts, 0) . ' sec');
+
+        return 0;
     }
 
     private function handleError(\Exception $e, OutputInterface $output, bool $verboseOutput): void

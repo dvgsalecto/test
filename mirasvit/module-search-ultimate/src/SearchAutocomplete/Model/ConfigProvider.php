@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -248,10 +248,5 @@ class ConfigProvider
         }
 
         return (int)$limit;
-    }
-
-    public function isMulticurrencyPriceEnabled(): bool
-    {
-        return (bool)$this->isFastModeEnabled() && (bool)$this->scopeConfig->getValue('searchautocomplete/general/product/multicurrency_price');
     }
 }

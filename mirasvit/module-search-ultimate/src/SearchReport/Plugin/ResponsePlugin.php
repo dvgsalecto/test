@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -42,12 +42,12 @@ class ResponsePlugin
     private $botDetectorService;
 
     public function __construct(
-        RequestInterface $request,
-        LogService $logService,
+        RequestInterface       $request,
+        LogService             $logService,
         CookieManagerInterface $cookieManager,
-        CookieMetadataFactory $cookieMetadataFactory,
-        Registry $registry,
-        BotDetectorService $botDetectorService
+        CookieMetadataFactory  $cookieMetadataFactory,
+        Registry               $registry,
+        BotDetectorService     $botDetectorService
     ) {
         $this->request               = $request;
         $this->logService            = $logService;
@@ -61,36 +61,38 @@ class ResponsePlugin
     {
         $query = $this->request->getParam('q');
 
-            if ($query) {
-                if (!$this->botDetectorService->isBotQuery($query)) {
-                    $misspell = $this->request->getParam('o');
-                    $misspell = is_array($misspell)? implode(' ', $misspell): (string) $misspell;
-                    $fallback = $this->request->getParam('f');
-                    $fallback = is_array($fallback)? implode(' ', $fallback): (string) $fallback;
+        if ($query) {
+            if (!$this->botDetectorService->isBotQuery($query)) {
+                $misspell = $this->request->getParam('o');
+                $misspell = is_array($misspell) ? implode(' ', $misspell) : (string)$misspell;
+                $fallback = $this->request->getParam('f');
+                $fallback = is_array($fallback) ? implode(' ', $fallback) : (string)$fallback;
 
-                    $results  = $this->registry->registry(SearchPlugin::REGISTRY_KEY);
-                    $source   = $this->request->getFullActionName();
+                $results = $this->registry->registry(SearchPlugin::REGISTRY_KEY);
+                $source  = $this->request->getFullActionName();
 
-                    if ($results === null) {
-                        return;
-                    }
+                if ($results === null) {
+                    return;
+                }
 
-                    $log = $this->logService->logQuery($query, $results, $source, $misspell, $fallback);
+                $log = $this->logService->logQuery($query, $results, $source, $misspell, $fallback);
 
-                    if ($log) {
-                        try {
-                            $this->setLogCookie($log->getId());
-                        } catch (\Exception $e) {}
+                if ($log) {
+                    try {
+                        $this->setLogCookie($log->getId());
+                    } catch (\Exception $e) {
                     }
                 }
-            } elseif (in_array($this->request->getModuleName(), ['catalog', 'catalogsearch'])
-                || in_array($this->request->getFullActionName(), ['cms_index_index', 'cms_page_view'])) {
-                $logId = (int)$this->cookieManager->getCookie(self::COOKIE_NAME);
-                $this->logService->logClick($logId);
+            }
+        } elseif (in_array($this->request->getModuleName(), ['catalog', 'catalogsearch'])
+            || in_array($this->request->getFullActionName(), ['cms_index_index', 'cms_page_view'])) {
+            $logId = (int)$this->cookieManager->getCookie(self::COOKIE_NAME);
+            $this->logService->logClick($logId);
 
-                try {
-                    $this->setLogCookie(0);
-                } catch (\Exception $e) {}
+            try {
+                $this->setLogCookie(0);
+            } catch (\Exception $e) {
+            }
         }
     }
 

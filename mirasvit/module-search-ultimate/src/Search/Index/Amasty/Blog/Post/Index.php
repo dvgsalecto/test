@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -18,6 +18,7 @@
 namespace Mirasvit\Search\Index\Amasty\Blog\Post;
 
 use Magento\Framework\Data\Collection;
+use Magento\Framework\DB\Select;
 use Mirasvit\Search\Model\Index\AbstractIndex;
 
 class Index extends AbstractIndex
@@ -76,7 +77,7 @@ class Index extends AbstractIndex
 
         $collection->addFieldToFilter('main_table.post_id', ['gt' => $lastEntityId])
             ->setPageSize($limit)
-            ->setOrder('post_id', \Magento\Framework\DB\Select::SQL_ASC);
+            ->setOrder('post_id', Select::SQL_ASC);
 
         return $collection->toArray()['items'];
     }

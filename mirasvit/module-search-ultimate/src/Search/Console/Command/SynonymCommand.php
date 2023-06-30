@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -37,14 +37,16 @@ class SynonymCommand extends Command
 
     private $service;
 
+    private $directoryList;
+
     public function __construct(
         SynonymRepository $repository,
-        SynonymService $service,
-        DirectoryList $directoryList
+        SynonymService    $service,
+        DirectoryList     $directoryList
     ) {
-        $this->repository       = $repository;
-        $this->service          = $service;
-        $this->directoryList    = $directoryList;
+        $this->repository    = $repository;
+        $this->service       = $service;
+        $this->directoryList = $directoryList;
 
         parent::__construct();
     }
@@ -76,7 +78,6 @@ class SynonymCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption(self::INPUT_REMOVE)) {
-
             $collection = $this->repository->getCollection();
 
             $storeId = (int)$input->getOption(self::INPUT_STORE);
@@ -100,25 +101,27 @@ class SynonymCommand extends Command
             return 0;
         }
 
-        if ($input->getOption(self::INPUT_FILE) && $input->getOption(self::INPUT_STORE)) {
+        if ($input->getOption(self::INPUT_FILE)) {
             $file    = $input->getOption(self::INPUT_FILE);
-            $storeId = $input->getOption(self::INPUT_STORE);
-            if (file_exists($this->directoryList->getPath('var') .'/synonyms/'. $file)) {
-                $file = $this->directoryList->getPath('var') .'/synonyms/'. $file;
+            $storeId = (int)$input->getOption(self::INPUT_STORE);
+            if (file_exists($this->directoryList->getPath('var') . '/synonyms/' . $file)) {
+                $file = $this->directoryList->getPath('var') . '/synonyms/' . $file;
             }
 
-            $generator = $this->service->import($file, $storeId);
+            $generator = $this->service->import($file, [$storeId]);
 
             $pb = new ProgressBar($output);
 
             $pb->start();
+            $finalResult = [];
             foreach ($generator as $result) {
                 $pb->advance(1);
+                $finalResult = $result;
             }
             $pb->finish();
             $pb->clear();
 
-            $output->writeln("<info>{$pb->getMaxSteps()} synonyms were imported.</info>");
+            $output->writeln("<info>{$finalResult['synonyms']} synonyms were imported (total: {$finalResult['total']}, errors: {$finalResult['errors']}).</info>");
 
             return 0;
         }

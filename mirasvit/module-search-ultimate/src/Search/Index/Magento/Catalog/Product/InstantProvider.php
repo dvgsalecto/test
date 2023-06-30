@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.0.97
+ * @version   2.2.7
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -18,36 +18,19 @@ declare(strict_types=1);
 
 namespace Mirasvit\Search\Index\Magento\Catalog\Product;
 
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
-use Magento\Review\Model\ResourceModel\Review\Summary\CollectionFactory as SummaryCollectionFactory;
+use Magento\Framework\App\ObjectManager;
 use Mirasvit\Search\Index\AbstractInstantProvider;
 use Mirasvit\Search\Service\IndexService;
-use Mirasvit\SearchAutocomplete\Model\ConfigProvider;
 
 class InstantProvider extends AbstractInstantProvider
 {
     private $mapper;
 
-    private $summaryFactory;
-
-    private $productCollectionFactory;
-
-    private $configProvider;
-
-    private $reviews = [];
-
     public function __construct(
-        InstantProvider\Mapper   $mapper,
-        SummaryCollectionFactory $summaryFactory,
-        ProductCollectionFactory $productCollectionFactory,
-        IndexService             $indexService,
-        ConfigProvider           $configProvider
+        InstantProvider\Mapper $mapper,
+        IndexService           $indexService
     ) {
-        $this->mapper                   = $mapper;
-        $this->summaryFactory           = $summaryFactory;
-        $this->productCollectionFactory = $productCollectionFactory;
-        $this->configProvider           = $configProvider;
+        $this->mapper = $mapper;
 
         parent::__construct($indexService);
     }
@@ -61,15 +44,32 @@ class InstantProvider extends AbstractInstantProvider
             ->addAttributeToSelect('description')
             ->setOrder('relevance');
 
-        $this->prepareRatingData($collection->getAllIds(), $storeId);
-
-        $items = [];
-
+        $entityIds = [];
         foreach ($collection as $product) {
-            $items[] = $this->mapProduct($product, $storeId);
+            $entityIds[] = $product->getId();
         }
 
-        return $items;
+        $maps = [
+            'sku'          => $this->mapper->mapProductSku($storeId, $entityIds),
+            'name'         => $this->mapper->mapProductName($storeId, $entityIds),
+            'description'  => $this->mapper->mapProductDescription($storeId, $entityIds),
+            'url'          => $this->mapper->mapProductUrl($storeId, $entityIds),
+            'imageUrl'     => $this->mapper->mapProductImage($storeId, $entityIds),
+            'price'        => $this->mapper->mapProductPrice($storeId, $entityIds),
+            'stockStatus'  => $this->mapper->mapProductStockStatus($storeId, $entityIds),
+            'addToCartUrl' => $this->mapper->mapProductCart($storeId, $entityIds),
+            'rating'       => $this->mapper->mapProductRating($storeId, $entityIds),
+            'reviews'      => $this->mapper->mapProductReviews($storeId, $entityIds),
+        ];
+
+        $result = [];
+        foreach ($maps as $key => $items) {
+            foreach ($items as $productId => $value) {
+                $result[$productId][$key] = $value;
+            }
+        }
+
+        return array_values($result);
     }
 
     public function getSize(int $storeId): int
@@ -79,60 +79,46 @@ class InstantProvider extends AbstractInstantProvider
 
     public function map(array $documentData, int $storeId): array
     {
-        $productIds = array_keys($documentData);
-
-        $productCollection = $this->productCollectionFactory->create()
-            ->setStoreId($storeId)
-            ->addAttributeToSelect('*')
-            ->addFieldToFilter('entity_id', ['in' => $productIds])
-            ->addStoreFilter($storeId);
-
-        $this->prepareRatingData($productIds, $storeId);
-
-        $applyMultipleCurrencies = $this->configProvider->isMulticurrencyPriceEnabled();
-        foreach ($productCollection as $product) {
-            $documentData[$product->getId()]['_instant'] = $this->mapProduct($product, $storeId, $applyMultipleCurrencies);
+        $entityIds = [];
+        foreach (array_keys($documentData) as $productId) {
+            $entityIds[] = (int)$productId;
         }
 
-        unset($productCollection);
+        foreach ($documentData as $productId => $value) {
+            $documentData[$productId]['_instant'] = [
+                'name'         => '',
+                'url'          => '',
+                'sku'          => '',
+                'description'  => '',
+                'imageUrl'     => '',
+                'price'        => '',
+                'rating'       => '',
+                'reviews'      => '',
+                'addToCartUrl' => '',
+                'stockStatus'  => '',
+            ];
+        }
+
+        $maps = [
+            'sku'          => $this->mapper->mapProductSku($storeId, $entityIds),
+            'name'         => $this->mapper->mapProductName($storeId, $entityIds),
+            'description'  => $this->mapper->mapProductDescription($storeId, $entityIds),
+            'url'          => $this->mapper->mapProductUrl($storeId, $entityIds),
+            'imageUrl'     => $this->mapper->mapProductImage($storeId, $entityIds),
+            'price'        => $this->mapper->mapProductPrice($storeId, $entityIds),
+            'stockStatus'  => $this->mapper->mapProductStockStatus($storeId, $entityIds),
+            'addToCartUrl' => $this->mapper->mapProductCart($storeId, $entityIds),
+            'rating'       => $this->mapper->mapProductRating($storeId, $entityIds),
+            'reviews'      => $this->mapper->mapProductReviews($storeId, $entityIds),
+        ];
+
+        foreach ($maps as $key => $items) {
+            foreach ($items as $productId => $value) {
+                $documentData[$productId]['_instant'][$key] = $value;
+            }
+        }
 
         return $documentData;
     }
 
-    private function prepareRatingData(array $productIds, int $storeId): void
-    {
-        $reviewsCollection = $this->summaryFactory->create()
-            ->addEntityFilter($productIds)
-            ->addStoreFilter($storeId)
-            ->load();
-
-        /** @var \Magento\Review\Model\Review\Summary $reviewSummary */
-        foreach ($reviewsCollection as $reviewSummary) {
-            $this->reviews[$reviewSummary->getData('entity_pk_value')] = $reviewSummary;
-        }
-    }
-
-    private function mapProduct(ProductInterface $product, int $storeId, ?bool $applyMultipleCurrencies = false): array
-    {
-        $price = $this->mapper->getPrice($product, $storeId, $applyMultipleCurrencies);
-        if (empty($price)) {
-            $price = '';
-        }
-
-        if (!$applyMultipleCurrencies && is_array($price)) {
-            $price = array_values($price)[0];
-        }
-
-        return [
-            'name'         => $this->mapper->getProductName($product),
-            'url'          => $this->mapper->getProductUrl($product, $storeId),
-            'sku'          => $this->mapper->getProductSku($product),
-            'description'  => $this->mapper->getDescription($product),
-            'image'        => $this->mapper->getProductImage($product, $storeId),
-            'price'        => $price,
-            'rating'       => $this->mapper->getRating($product, $storeId, $this->reviews),
-            'cart'         => $this->mapper->getCart($product, $storeId),
-            'stock_status' => $this->mapper->getStockStatus($product, $storeId),
-        ];
-    }
 }
