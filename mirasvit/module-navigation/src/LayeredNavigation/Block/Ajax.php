@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -90,17 +90,6 @@ class Ajax extends Template
     {
         return $this->configProvider->isAjaxEnabled()
             && $this->configProvider->getApplyingMode() == FilterApplyingModeSource::OPTION_BY_BUTTON_CLICK;
-    }
-
-    public function isConfirmOnMobile(): bool
-    {
-        return $this->isInstantMode()
-            && $this->configProvider->getIsConfirmOnMobile();
-    }
-
-    public function getModeSwitchBreakpoint(): int
-    {
-        return $this->configProvider->getBreakpointForModeSwitch();
     }
 
     public function getFriendlyClearUrl(): string

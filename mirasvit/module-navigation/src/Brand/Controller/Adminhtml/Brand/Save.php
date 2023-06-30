@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -41,9 +41,6 @@ class Save extends Brand
 
                 return $resultRedirect->setPath('*/*/');
             }
-
-            $data = $this->prepareRelatedProductsData($data);
-
             $model->setData($data);
 
             try {
@@ -62,26 +59,5 @@ class Save extends Brand
                 return $resultRedirect->setPath('*/*/edit', ['id' => $id]);
             }
         }
-    }
-
-    private function prepareRelatedProductsData(array $data): array
-    {
-        if (!isset($data['links']['products'])) {
-            return $data;
-        }
-
-        $productIds = [];
-
-        foreach ($data['links']['products'] as $item) {
-            $productIds[] = $item['id'];
-        }
-
-        if (count($productIds)) {
-            sort($productIds);
-
-            $data['products'] = $productIds;
-        }
-
-        return $data;
     }
 }

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -101,10 +101,6 @@ class AlternateConfig implements \Mirasvit\Seo\Api\Config\AlternateConfigInterfa
             if (!$config) {
                 $config = [0 => $srcConfig];
             }
-        }
-
-        if ($config == '[]' || !$config) {
-            $config = [];
         }
 
         return $config;

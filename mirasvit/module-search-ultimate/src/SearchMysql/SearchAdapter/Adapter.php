@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -23,7 +23,6 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Search\AdapterInterface;
 use Magento\Framework\Search\RequestInterface;
 use Magento\Framework\Search\Response\QueryResponse;
-use Magento\Framework\Serialize\Serializer\Json;
 use Mirasvit\Search\Service\DebugService;
 
 class Adapter implements AdapterInterface
@@ -36,20 +35,16 @@ class Adapter implements AdapterInterface
 
     private $aggregationBuilder;
 
-    private $serializer;
-
     public function __construct(
-        ResponseFactory     $responseFactory,
+        ResponseFactory $responseFactory,
         Aggregation\Builder $aggregationBuilder,
-        Mapper              $mapper,
-        ResourceConnection  $resource,
-        Json                $serializer
+        Mapper $mapper,
+        ResourceConnection $resource
     ) {
         $this->aggregationBuilder = $aggregationBuilder;
         $this->responseFactory    = $responseFactory;
         $this->mapper             = $mapper;
         $this->resource           = $resource;
-        $this->serializer         = $serializer;
     }
 
     /**
@@ -81,7 +76,7 @@ class Adapter implements AdapterInterface
         }
 
         DebugService::log($query->__toString(), 'search_query');
-        DebugService::log($this->serializer->serialize($documents), 'search_results');
+        DebugService::log(\Zend_Json::encode($documents), 'search_results');
 
         $aggregations = $this->aggregationBuilder->build($request, $documents);
 

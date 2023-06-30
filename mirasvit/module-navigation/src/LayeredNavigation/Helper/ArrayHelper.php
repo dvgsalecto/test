@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -28,7 +28,22 @@ class ArrayHelper
             $position = count($parent);
         }
 
-        $position--;
+        $i = 0;
+
+        foreach ($parent as $pos => $opt) {
+
+            if ($position == $pos) {
+                $position = $i + 1;
+
+                break;
+            } elseif ($position < $pos) {
+                $position = $i;
+
+                break;
+            }
+
+            $i++;
+        }
 
         if ($position < 0) {
             $position = 0;

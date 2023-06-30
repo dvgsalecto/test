@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -31,9 +31,9 @@ class ConfigProvider
     private $indexRepository;
 
     public function __construct(
-        Manager                 $manager,
+        Manager $manager,
         SearchIndexNameResolver $indexNameResolver,
-        IndexRepository         $indexRepository
+        IndexRepository $indexRepository
     ) {
         $this->manager           = $manager;
         $this->indexNameResolver = $indexNameResolver;
@@ -47,12 +47,7 @@ class ConfigProvider
         ];
 
         foreach ($this->indexRepository->getList() as $index) {
-            $identifier = $index->getIdentifier();
-            if ($identifier == 'catalogsearch_fulltext') {
-                $identifier = 'magento_catalog_product';
-            }
-
-            $config[$identifier] = $this->indexNameResolver->getIndexName($storeId, $index->getIdentifier());
+            $config[$index->getIdentifier()] = $this->indexNameResolver->getIndexName($storeId, $index->getIdentifier());
         }
 
         if ($isMisspellEnabled) {

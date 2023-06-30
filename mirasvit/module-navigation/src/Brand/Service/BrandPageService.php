@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Mirasvit\Brand\Service;
 
-use Magento\Catalog\Model\Category;
 use Mirasvit\Brand\Api\Data\BrandPageInterface;
 use Mirasvit\Brand\Registry;
 
@@ -35,31 +34,5 @@ class BrandPageService
     public function getBrandPage(): ?BrandPageInterface
     {
         return $this->registry->getBrandPage();
-    }
-
-    public function shouldDisplayProducts(): bool
-    {
-        $brandPage = $this->getBrandPage();
-
-        if (!$brandPage) {
-            return true; //fallback
-        }
-
-        $displayMode = $brandPage->getBrandDisplayMode();
-
-        return $displayMode == Category::DM_PRODUCT || $displayMode == Category::DM_MIXED;
-    }
-
-    public function shouldDisplayCmsBlock(): bool
-    {
-        $brandPage = $this->getBrandPage();
-
-        if (!$brandPage) {
-            return false;
-        }
-
-        $displayMode = $brandPage->getBrandDisplayMode();
-
-        return $displayMode == Category::DM_PAGE || $displayMode == Category::DM_MIXED;
     }
 }

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -42,7 +42,7 @@ class StockDataMapper
         }
 
         foreach ($documents as $id => $doc) {
-            $stockStatus = $this->stockState->getStockStatus($id, $storeId)->getStockStatus() ? 2 : 1;
+            $stockStatus = $this->stockState->getStockStatus($id)->getStockStatus() ? 2 : 1;
 
             $doc[ExtraFilterConfigProvider::STOCK_FILTER]          = $stockStatus;
             $doc[ExtraFilterConfigProvider::STOCK_FILTER . '_raw'] = $stockStatus;

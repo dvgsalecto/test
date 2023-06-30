@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -52,11 +52,7 @@ class AjaxCategoryPlugin
      */
     public function afterExecute($subject, $page)
     {
-        if (
-            $this->configProvider->isCategorySearch()
-            && $this->request->isAjax()
-            && !$this->request->getParam('is_scroll')
-        ) {
+        if ($this->configProvider->isCategorySearch() && $this->request->isAjax()) {
             return $this->ajaxResponseService->getAjaxResponse($page);
         }
 

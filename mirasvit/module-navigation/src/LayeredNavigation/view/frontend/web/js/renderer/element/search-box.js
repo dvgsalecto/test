@@ -30,12 +30,11 @@ define([
 
                         const text = $label.text().toLowerCase();
 
-                        $item.attr('data-search-hidden', text.indexOf(q) === -1 || $item.hasClass('_disabled'));
+                        $item.attr('data-search-hidden', text.indexOf(q) === -1);
                     });
                 }
 
                 $element.trigger('alphabetical'); // communicate with alphabetical index
-                $element.trigger('nested-toggle', [q]);
             }.bind(this))
         }
     });

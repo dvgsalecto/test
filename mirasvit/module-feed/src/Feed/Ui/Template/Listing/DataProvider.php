@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -43,16 +43,5 @@ class DataProvider extends \Magento\Framework\View\Element\UiComponent\DataProvi
         $arrItems['totalRecords'] = $searchResult->getTotalCount();
 
         return $arrItems;
-    }
-
-    public function addFilter(\Magento\Framework\Api\Filter $filter)
-    {
-        if ($filter->getField() == 'fulltext') {
-            $filter->setConditionType('like')
-                ->setField('name')
-                ->setValue('%' . $filter->getValue() . '%');
-        }
-
-        parent::addFilter($filter);
     }
 }

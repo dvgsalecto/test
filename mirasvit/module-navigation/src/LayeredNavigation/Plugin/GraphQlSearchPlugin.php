@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -129,18 +129,16 @@ class GraphQlSearchPlugin
             $buckets[$bucketName] = $bucket;
         }
 
-        if (isset($args['filter'])) {
-            foreach ($args['filter'] as $code => $filter) {
-                $newArgs = $args;
-                unset($newArgs['filter'][$code]);
-                $newSearchCriteria = $this->buildSearchCriteria($newArgs, $info);
-                $newItemsResults = $this->search->search($newSearchCriteria);
+        foreach ($args['filter'] as $code => $filter) {
+            $newArgs = $args;
+            unset($newArgs['filter'][$code]);
+            $newSearchCriteria = $this->buildSearchCriteria($newArgs, $info);
+            $newItemsResults   = $this->search->search($newSearchCriteria);
 
-                /** @var \Magento\Framework\Search\Response\Bucket $bucket */
-                foreach ($newItemsResults->getAggregations() as $bucketName => $bucket) {
-                    if ($bucketName === $code . '_bucket') {
-                        $buckets[$bucketName] = $bucket;
-                    }
+            /** @var \Magento\Framework\Search\Response\Bucket $bucket */
+            foreach ($newItemsResults->getAggregations() as $bucketName => $bucket) {
+                if ($bucketName === $code . '_bucket') {
+                    $buckets[$bucketName] = $bucket;
                 }
             }
         }

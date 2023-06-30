@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 

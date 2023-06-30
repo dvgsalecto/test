@@ -14,11 +14,8 @@
     <type name="Magento\CatalogUrlRewrite\Model\ProductScopeRewriteGenerator">
         <plugin name="Mirasvit_Seo::productUrlKey" type="Mirasvit\Seo\Plugin\Adminhtml\ProductUrlKeyPlugin" sortOrder="1000"/>
     </type>
-    <type name="Magento\CatalogUrlRewrite\Service\V1\StoreViewService">
-        <plugin name="Mirasvit_Seo::productUrlKeyRegeneratePlugin" type="Mirasvit\Seo\Plugin\Adminhtml\ProductUrlKeyAfterVisibilityChangePlugin" sortOrder="1000"/>
-    </type>
     <type name="Magento\Config\Model\Config">
-        <plugin name="Mirasvit_Seo::configPlugin" type="Mirasvit\Seo\Plugin\Adminhtml\ConfigPlugin"/>
+        <plugin name="cache-warmer-plugin" type="Mirasvit\Seo\Plugin\Adminhtml\ConfigPlugin"/>
     </type>
 
     <type name="Magento\Framework\View\Element\Message\MessageConfigurationsPool">

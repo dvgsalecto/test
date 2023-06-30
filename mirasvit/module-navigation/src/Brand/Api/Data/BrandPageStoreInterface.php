@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -20,17 +20,12 @@ namespace Mirasvit\Brand\Api\Data;
 
 interface BrandPageStoreInterface
 {
-    const TABLE_NAME  = 'mst_brand_page_store';
+    const TABLE_NAME = 'mst_brand_page_store';
     const TABLE_STORE = 'store';
 
-    const ID                      = 'id';
-    const BRAND_PAGE_ID           = 'brand_page_id';
-    const STORE_ID                = 'store_id';
-    const BRAND_TITLE             = 'brand_title';
-    const BRAND_DESCRIPTION       = 'brand_description';
-    const BRAND_SHORT_DESCRIPTION = 'brand_short_description';
-    const BRAND_DISPLAY_MODE      = 'brand_display_mode';
-    const BRAND_CMS_BLOCK         = 'brand_cms_block';
+    const ID = 'id';
+    const BRAND_PAGE_ID = 'brand_page_id';
+    const STORE_ID = 'store_id';
 
     /**
      * @return int

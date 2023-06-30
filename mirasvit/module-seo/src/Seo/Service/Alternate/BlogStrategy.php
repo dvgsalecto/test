@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,9 +18,7 @@ declare(strict_types=1);
 
 namespace Mirasvit\Seo\Service\Alternate;
 
-use Magento\Framework\App\ObjectManager;
-
-class BlogStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterface
+class BlogStrategy
 {
     private $manager;
 
@@ -38,13 +36,9 @@ class BlogStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterf
         $this->url      = $url;
     }
 
-    /**
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     */
     public function getStoreUrls(): array
     {
-        if (!$this->manager->isEnabled('Mirasvit_BlogMx')) {
+        if (!$this->manager->isEnabled('Mirasvit_Blog')) {
             return [];
         }
 
@@ -54,27 +48,13 @@ class BlogStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterf
             return [];
         }
 
-        $blogRegistry = null;
+        $post = $this->registry->registry('current_blog_post');
 
-        if (class_exists('\Mirasvit\BlogMx\Registry')) {
-            $blogRegistry = ObjectManager::getInstance()->get('\Mirasvit\BlogMx\Registry');
-        }
-
-        if (!$blogRegistry) {
+        if (!$post) {
             return [];
         }
 
-        $entity = null;
-
-        if ($post = $blogRegistry->getPost()) {
-            $entity = $post;
-        } elseif ($category = $blogRegistry->getCategory()) {
-            $entity = $category;
-        } else {
-            return [];
-        }
-
-        $allowedStores = $entity->getStoreIds();
+        $allowedStores = $post->getStoreIds();
 
         if (empty($allowedStores)) {
             return $storeUrls;
@@ -87,10 +67,5 @@ class BlogStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterf
         }
 
         return $storeUrls;
-    }
-
-    public function getAlternateUrl(array $storeUrls): array
-    {
-        return [];
     }
 }

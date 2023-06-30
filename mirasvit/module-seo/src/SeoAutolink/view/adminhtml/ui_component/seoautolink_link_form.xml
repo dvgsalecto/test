@@ -130,7 +130,7 @@
                 <item name="options" xsi:type="object">Mirasvit\SeoAutolink\Model\Config\Source\Occurence</item>
                 <item name="config" xsi:type="array">
                     <item name="dataType" xsi:type="string">text</item>
-                    <item name="label" translate="true" xsi:type="string">Occurrence</item>
+                    <item name="label" translate="true" xsi:type="string">Occurence</item>
                     <item name="formElement" xsi:type="string">select</item>
                     <item name="source" xsi:type="string">popup</item>
                     <item name="dataScope" xsi:type="string">occurence</item>

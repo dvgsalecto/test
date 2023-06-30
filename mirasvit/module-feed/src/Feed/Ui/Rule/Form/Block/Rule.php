@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -96,7 +96,6 @@ class Rule extends Form implements TabInterface
 
         $renderer = $this->fieldsetRenderer
             ->setTemplate('Magento_CatalogRule::promo/fieldset.phtml')
-            ->setNameInLayout($fieldsetName)
             ->setData('new_child_url', $this->getUrl('mst_feed/rule/newConditionHtml', [
                 'form'      => 'rule_' . $fieldsetName,
                 'form_name' => $formName,

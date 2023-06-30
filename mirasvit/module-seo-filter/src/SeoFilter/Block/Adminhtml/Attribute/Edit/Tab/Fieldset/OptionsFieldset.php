@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo-filter
- * @version   1.3.3
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -74,7 +74,7 @@ class OptionsFieldset extends Widget
 
         foreach ($attribute->getSource()->getAllOptions() as $option) {
             if (isset($option['value']) && $option['value']) {
-                $optionId = $option['value'];
+                $optionId = (int)$option['value'];
                 $name     = (string)$option['label'];
 
                 $option = [

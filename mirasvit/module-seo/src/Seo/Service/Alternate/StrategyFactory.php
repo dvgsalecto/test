@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -24,28 +24,59 @@ use Mirasvit\Seo\Api\Service\Alternate\StrategyFactoryInterface;
  */
 class StrategyFactory implements StrategyFactoryInterface
 {
+    /**
+     * @var \Mirasvit\Seo\Service\Alternate\ProductStrategy
+     */
     protected $productStrategy;
 
+    /**
+     * @var \Mirasvit\Seo\Service\Alternate\CategoryStrategy
+     */
     protected $categoryStrategy;
 
+    /**
+     * @var \Mirasvit\Seo\Service\Alternate\CmsStrategy
+     */
     protected $cmsStrategy;
 
+    /**
+     * @var \Mirasvit\Seo\Service\Alternate\DefaultStrategy
+     */
     protected $defaultStrategy;
 
+    /**
+     * @var \Magento\Framework\App\Request\Http
+     */
     protected $request;
 
+    /**
+     * @var \Magento\Framework\Registry
+     */
     protected $registry;
 
+    /**
+     * @var \Magento\Cms\Model\Page
+     */
     protected $page;
 
+    /**
+     * @var DefaultPagesStrategy
+     */
     private $defaultPagesStrategy;
 
+    /**
+     * @var KbStrategy
+     */
     private $kbStrategy;
 
+    /**
+     * @var MageplazaBlogStrategy
+     */
     private $mageplazaBlogStrategy;
 
-    private $aheadworksBlogStrategy;
-
+    /**
+     * @var BlogStrategy
+     */
     private $blogStrategy;
 
     public function __construct(
@@ -57,23 +88,21 @@ class StrategyFactory implements StrategyFactoryInterface
         \Mirasvit\Seo\Service\Alternate\KbStrategy $kbStrategy,
         \Mirasvit\Seo\Service\Alternate\BlogStrategy $blogStrategy,
         \Mirasvit\Seo\Service\Alternate\MageplazaBlogStrategy $mageplazaBlogStrategy,
-        \Mirasvit\Seo\Service\Alternate\AheadworksBlogStrategy $aheadworksBlogStrategy,
         \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\Registry $registry,
         \Magento\Cms\Model\Page $page
     ) {
-        $this->productStrategy        = $productStrategy;
-        $this->categoryStrategy       = $categoryStrategy;
-        $this->cmsStrategy            = $cmsStrategy;
-        $this->defaultPagesStrategy   = $defaultPagesStrategy;
-        $this->defaultStrategy        = $defaultStrategy;
-        $this->kbStrategy             = $kbStrategy;
-        $this->blogStrategy           = $blogStrategy;
-        $this->mageplazaBlogStrategy  = $mageplazaBlogStrategy;
-        $this->aheadworksBlogStrategy = $aheadworksBlogStrategy;
-        $this->request                = $request;
-        $this->registry               = $registry;
-        $this->page                   = $page;
+        $this->productStrategy       = $productStrategy;
+        $this->categoryStrategy      = $categoryStrategy;
+        $this->cmsStrategy           = $cmsStrategy;
+        $this->defaultPagesStrategy  = $defaultPagesStrategy;
+        $this->defaultStrategy       = $defaultStrategy;
+        $this->kbStrategy            = $kbStrategy;
+        $this->blogStrategy          = $blogStrategy;
+        $this->mageplazaBlogStrategy = $mageplazaBlogStrategy;
+        $this->request               = $request;
+        $this->registry              = $registry;
+        $this->page                  = $page;
     }
 
     /**
@@ -95,7 +124,7 @@ class StrategyFactory implements StrategyFactoryInterface
             && $this->request->getActionName() != 'noRoute') {
             return $this->cmsStrategy;
         } elseif ($this->request->getModuleName() == 'blog'
-            && ($this->request->getControllerName() == 'post' || $this->request->getControllerName() == 'category')
+            && $this->request->getControllerName() == 'post'
             && $this->request->getActionName() != 'noRoute') {
             return $this->blogStrategy;
         } elseif (in_array($this->request->getModuleName(), StrategyFactoryInterface::MODULE_NAME)) {
@@ -103,9 +132,6 @@ class StrategyFactory implements StrategyFactoryInterface
         } elseif ($this->request->getModuleName() == 'mpblog'
             && $this->request->getControllerName() == 'post') {
             return $this->mageplazaBlogStrategy;
-        } elseif ($this->request->getModuleName() == 'aw_blog'
-            && ($this->request->getControllerName() == 'post' || $this->request->getControllerName() == 'category')) {
-            return $this->aheadworksBlogStrategy;
         }
 
         return $this->defaultStrategy;

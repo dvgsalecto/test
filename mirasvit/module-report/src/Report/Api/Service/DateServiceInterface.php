@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-report
- * @version   1.4.15
+ * @version   1.4.11
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -37,14 +37,6 @@ interface DateServiceInterface
     const PREVIOUS_MONTH   = 'prev_month';
     const PREVIOUS_QUARTER = 'prev_quarter';
     const PREVIOUS_YEAR    = 'prev_year';
-
-    const FISCAL_THIS_MONTH   = 'month_fiscal';
-    const FISCAL_THIS_QUARTER = 'quarter_fiscal';
-    const FISCAL_THIS_YEAR    = 'year_fiscal';
-
-    const FISCAL_PREV_MONTH   = 'prev_month_fiscal';
-    const FISCAL_PREV_QUARTER = 'prev_quarter_fiscal';
-    const FISCAL_PREV_YEAR    = 'prev_year_fiscal';
 
     const LIFETIME = 'lifetime';
     const CUSTOM   = 'custom';

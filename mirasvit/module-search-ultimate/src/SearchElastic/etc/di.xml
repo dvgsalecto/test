@@ -20,7 +20,6 @@
     <type name="Mirasvit\SearchAutocomplete\InstantProvider\ConfigMaker">
         <arguments>
             <argument name="makers" xsi:type="array">
-                <item name="elasticsearch8" xsi:type="object">Mirasvit\SearchElastic\InstantProvider\ConfigProvider</item>
                 <item name="elasticsearch7" xsi:type="object">Mirasvit\SearchElastic\InstantProvider\ConfigProvider</item>
                 <item name="elasticsearch6" xsi:type="object">Mirasvit\SearchElastic\InstantProvider\ConfigProvider</item>
             </argument>

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -22,8 +22,6 @@ use Magento\Directory\Helper\Data as Data;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\View\Element\Template\Context;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
 use Mirasvit\Seo\Api\Config\AlternateConfigInterface as AlternateConfig;
 use Mirasvit\Seo\Api\Service\StateServiceInterface;
 use Mirasvit\Seo\Model\Config as Config;
@@ -48,16 +46,13 @@ class Alternate implements ObserverInterface
 
     private $stateInterface;
 
-    private $scopeConfig;
-
     public function __construct(
         Config $config,
         Context $context,
         AlternateConfig $alternateConfig,
         StateServiceInterface $stateService,
         StrategyFactory $strategyFactory,
-        UrlInterface $url,
-        ScopeConfigInterface $scopeConfig
+        UrlInterface $url
     ) {
         $this->config          = $config;
         $this->context         = $context;
@@ -66,7 +61,6 @@ class Alternate implements ObserverInterface
         $this->stateInterface  = $stateService;
         $this->strategyFactory = $strategyFactory;
         $this->url             = $url;
-        $this->scopeConfig     = $scopeConfig;
     }
 
     /**
@@ -74,18 +68,6 @@ class Alternate implements ObserverInterface
      */
     public function execute(Observer $observer): void
     {
-        if ($this->request->getModuleName() == 'search_landing') {
-            return;
-        }
-
-        if (
-            strpos($this->request->getFullActionName(), 'result_index') !== false
-            && $this->scopeConfig->getValue('amasty_xsearch/general/enable_seo_url', ScopeInterface::SCOPE_STORE)
-            && ($key = $this->scopeConfig->getValue('amasty_xsearch/general/seo_key', ScopeInterface::SCOPE_STORE))
-            && strpos($this->request->getUriString(), $key) !== false
-        ) {
-            return;
-        }
 
         /** @var \Magento\Framework\App\Request\Http $request */
         $request = $observer->getData('request');
@@ -114,7 +96,7 @@ class Alternate implements ObserverInterface
         $storeUrls = $this->strategy->getStoreUrls();
 
         $this->addLinkAlternate($storeUrls);
-
+        
         return true;
     }
 

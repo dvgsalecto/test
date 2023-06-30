@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -176,13 +176,13 @@ class SliderService
             $priceSeparator = '/';
         }
 
-//        $price = $filter->getRequestVar() . $priceSeparator . $template;
+        $price = $filter->getRequestVar() . $priceSeparator . $template;
 
         $currentUrl = $this->urlBuilder->getCurrentUrl();
 
         if ($currentUrl === $this->urlBuilder->getBaseUrl()) {
             $friendlyUrlService = ObjectManager::getInstance()->create('Mirasvit\SeoFilter\Service\FriendlyUrlService');
-            $currentUrl         = $friendlyUrlService->getClearUrl();
+            $currentUrl = $friendlyUrlService->getClearUrl();
         }
 
         $suffix = $this->urlHelper->getCategoryUrlSuffix($this->storeId);
@@ -193,9 +193,7 @@ class SliderService
         $rewrite        = $this->rewriteService->getAttributeRewrite($filter->getRequestVar());
         $attributeAlias = $rewrite ? $rewrite->getRewrite() : $filter->getRequestVar();
 
-        $price = $attributeAlias . $priceSeparator . $template;
-
-        if (isset($activeFilters[$attributeAlias]) || isset($activeFilters[$filter->getRequestVar()])) {
+        if (isset($activeFilters[$attributeAlias])) {
             $path = parse_url($currentUrl)['path'];
             $path = explode('/', $path);
 
@@ -206,23 +204,21 @@ class SliderService
                     unset($path[$entry]);
                 }
             } else {
-                $key     = array_key_last($path);
+                $key = array_key_last($path);
                 $filters = explode('-', $path[$key]);
-                $needle  = str_replace('-', ':', array_key_last($activeFilters[$attributeAlias]));
-                $needle  = str_replace($template, $needle, $price);
-                $entry   = array_search($needle, $filters);
-
+                $needle = str_replace('-', ':', array_key_last($activeFilters[$attributeAlias]));
+                $needle = str_replace($template, $needle, $price);
+                $entry = array_search($needle, $filters);
                 if ($entry !== false) {
                     unset($filters[$entry]);
                 }
-
                 $filters = array_filter($filters, function ($filter) {
                     return !!trim($filter);
                 });
 
                 $path[$key] = implode('-', $filters);
             }
-            $path       = implode('/', $path);
+            $path = implode('/', $path);
             $currentUrl = str_replace(parse_url($currentUrl)['path'], $path, $currentUrl);
         }
 
@@ -234,18 +230,18 @@ class SliderService
             if (empty($activeFilters)) {
                 $path[] = $price;
             } else {
-                $key     = array_key_last($path);
+                $key = array_key_last($path);
                 $filters = explode('-', $path[$key]);
                 $filters = array_filter($filters, function ($filter) {
                     return !!trim($filter);
                 });
-                $filters[]  = $price;
-                $filters    = implode('-', $filters);
+                $filters[] = $price;
+                $filters = implode('-', $filters);
                 $path[$key] = $filters;
             }
         }
 
-        $path       = implode('/', $path);
+        $path = implode('/', $path);
         $currentUrl = str_replace(parse_url($currentUrl)['path'], $path, $currentUrl);
 
         return $currentUrl . $suffix;

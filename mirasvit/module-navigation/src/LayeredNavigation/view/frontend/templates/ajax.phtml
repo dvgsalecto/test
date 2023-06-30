@@ -14,8 +14,6 @@
     window.mstSeoFilterEnabled = <?=$block->isSeoFilterEnabled() ? 'true' : 'false'?>;
     window.mstHighlightEnabled = <?=$block->isHighlightEnabled() ? 'true' : 'false'?>;
     window.mstFriendlyClearUrl = '<?=$block->getFriendlyClearUrl()?>';
-    window.mstNavConfirmOnMobile = <?=$block->isConfirmOnMobile() ? 'true' : 'false'?>;
-    window.mstNavModeSwitchBreakpoint = <?=$block->getModeSwitchBreakpoint()?>
 </script>
 
 <script>
@@ -26,16 +24,7 @@
             var attributeCode = filterOptions.getAttribute('data-mst-nav-filter').replace(/A\d{6}A/, '');
 
             if (filtersConfig.hasOwnProperty(attributeCode)) {
-                if (!filterOptions.closest('.filter-options-item')) {
-                    var optionsContent = filterOptions.closest('.filter-options-content');
-
-                    optionsContent.setAttribute('data-nav-position', filtersConfig[attributeCode]);
-                    optionsContent.previousElementSibling
-                        .setAttribute('data-nav-position', filtersConfig[attributeCode]);
-                } else {
-                    filterOptions.closest('.filter-options-item')
-                        .setAttribute('data-nav-position', filtersConfig[attributeCode]);
-                }
+                filterOptions.closest('.filter-options-item').setAttribute('data-nav-position', filtersConfig[attributeCode]);
             }
         }.bind(this))
     }

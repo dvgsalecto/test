@@ -223,11 +223,6 @@
                     <tooltip><![CDATA[If enabled, the extension will overwrite the Magento native URL key <br/>]]></tooltip>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="regenerate_url_key_after_visibility_changed" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Regenerate URL Key after product visibility changed</label>
-                    <tooltip><![CDATA[If enabled, the extension will regenerate product URL key according to template. Otherwise the default product URL key will be generated<br/>]]></tooltip>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
 
                 <!--<field id="layered_navigation_friendly_urls" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">-->
                 <!--<label>Enable Layered Navigation SEO-friendly URLs</label>-->

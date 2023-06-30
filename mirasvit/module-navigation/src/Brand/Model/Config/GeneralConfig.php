@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -162,11 +162,6 @@ class GeneralConfig extends BaseConfig
             ScopeInterface::SCOPE_STORE,
             $this->storeId
         );
-    }
-
-    public function isShowProductsInForm()
-    {
-        return $this->scopeConfig->getValue('brand/general/show_products_in_page_form');
     }
 
     /**

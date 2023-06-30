@@ -10,7 +10,7 @@
                 <queryReference clause="must" ref="mst_new_products_query"/>
                 <queryReference clause="must" ref="mst_on_sale_query"/>
                 <queryReference clause="must" ref="mst_stock_status_query"/>
-                <queryReference clause="must" ref="mst_rating_summary_query"/>
+                <queryReference clause="must" ref="rating_summary_query"/>
                 <queryReference clause="should" ref="mst_search_query"/>
             </query>
 
@@ -26,8 +26,8 @@
                 <filterReference clause="must" ref="mst_stock_status_filter"/>
             </query>
 
-            <query xsi:type="filteredQuery" name="mst_rating_summary_query">
-                <filterReference clause="must" ref="mst_rating_summary_filter"/>
+            <query xsi:type="filteredQuery" name="rating_summary_query">
+                <filterReference clause="must" ref="rating_summary_filter"/>
             </query>
 
             <query xsi:type="matchQuery" value="$search$" name="mst_search_query">
@@ -41,7 +41,7 @@
             <filter xsi:type="termFilter" name="mst_new_products_filter" field="mst_new_products" value="$mst_new_products$"/>
             <filter xsi:type="termFilter" name="mst_on_sale_filter" field="mst_on_sale" value="$mst_on_sale$"/>
             <filter xsi:type="termFilter" name="mst_stock_status_filter" field="mst_stock_status" value="$mst_stock_status$"/>
-            <filter xsi:type="rangeFilter" name="mst_rating_summary_filter" field="mst_rating_summary" from="$mst_rating_summary$"/>
+            <filter xsi:type="rangeFilter" name="rating_summary_filter" field="rating_summary" from="$rating_summary$"/>
         </filters>
 
         <aggregations>
@@ -60,7 +60,7 @@
                     <metric type="count"/>
                 </metrics>
             </bucket>
-            <bucket name="mst_rating_summary_bucket" field="mst_rating_summary" xsi:type="termBucket">
+            <bucket name="rating_summary_bucket" field="rating_summary" xsi:type="termBucket">
                 <metrics>
                     <metric type="count"/>
                 </metrics>
@@ -79,7 +79,7 @@
                 <queryReference clause="must" ref="mst_new_products_query"/>
                 <queryReference clause="must" ref="mst_on_sale_query"/>
                 <queryReference clause="must" ref="mst_stock_status_query"/>
-                <queryReference clause="must" ref="mst_rating_summary_query"/>
+                <queryReference clause="must" ref="rating_summary_query"/>
                 <queryReference clause="should" ref="mst_search_query"/>
             </query>
             <query xsi:type="filteredQuery" name="mst_new_products_query">
@@ -91,8 +91,8 @@
             <query xsi:type="filteredQuery" name="mst_stock_status_query">
                 <filterReference clause="must" ref="mst_stock_status_filter"/>
             </query>
-            <query xsi:type="filteredQuery" name="mst_rating_summary_query">
-                <filterReference clause="must" ref="mst_rating_summary_filter"/>
+            <query xsi:type="filteredQuery" name="rating_summary_query">
+                <filterReference clause="must" ref="rating_summary_filter"/>
             </query>
             <query xsi:type="matchQuery" value="$search$" name="mst_search_query">
                 <match field="*"/>
@@ -104,7 +104,7 @@
             <filter xsi:type="termFilter" name="mst_new_products_filter" field="mst_new_products" value="$mst_new_products$"/>
             <filter xsi:type="termFilter" name="mst_on_sale_filter" field="mst_on_sale" value="$mst_on_sale$"/>
             <filter xsi:type="termFilter" name="mst_stock_status_filter" field="mst_stock_status" value="$mst_stock_status$"/>
-            <filter xsi:type="rangeFilter" name="mst_rating_summary_filter" field="mst_rating_summary" from="$mst_rating_summary$"/>
+            <filter xsi:type="rangeFilter" name="rating_summary_filter" field="rating_summary" from="$rating_summary$"/>
         </filters>
         <aggregations>
             <bucket name="mst_new_products_bucket" field="mst_new_products" xsi:type="termBucket">
@@ -122,7 +122,7 @@
                     <metric type="count"/>
                 </metrics>
             </bucket>
-            <bucket name="mst_rating_summary_bucket" field="mst_rating_summary" xsi:type="termBucket">
+            <bucket name="rating_summary_bucket" field="rating_summary" xsi:type="termBucket">
                 <metrics>
                     <metric type="count"/>
                 </metrics>

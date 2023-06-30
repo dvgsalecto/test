@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -158,7 +158,6 @@ class AjaxResponseService
     {
         $response = $this->resultRawFactory->create()
             ->setHeader('Content-type', 'text/plain')
-            ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0') // do not allow browser to cache ajax responses
             ->setContents(SerializeService::encode($data));
 
         return $response;
@@ -168,8 +167,8 @@ class AjaxResponseService
     {
         $layout              = $page->getLayout();
         $productsHtml        = $this->getProductsHtml($page);
-        $leftNavHtml         = $this->getBlockHtml($page, 'catalog.leftnav', 'catalogsearch.leftnav');
         $productsCount       = $this->getProductsCount();
+        $leftNavHtml         = $this->getBlockHtml($page, 'catalog.leftnav', 'catalogsearch.leftnav');
         $filterExpanderHtml  = $this->getBlockHtml($page, 'mst-nav.filterExpander');
         $breadcrumbHtml      = $this->getBlockHtml($page, 'breadcrumbs');
         $pageTitleHtml       = $this->getBlockHtml($page, 'page.main.title');
@@ -332,6 +331,7 @@ class AjaxResponseService
         if (!$block && $fallbackBlockName) {
             $block = $layout->getBlock($fallbackBlockName);
         }
+
         return $block ? $block : null;
     }
 }

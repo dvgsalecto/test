@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -187,10 +187,6 @@ class UrlService
             $url = $host . $url;
         }
 
-        if (strpos($url, '//') === 0) {
-            $url = substr($url, 2);
-        }
-
         // replace part of the URL like aHR0cDovL3NlbzI0Mi5scmcubWlyYXN2aXQuY29tLw%2C%2C (min 48 chars)
         // with #hashkey so we still can request the URL
         $url = preg_replace('@[a-z0-9\%]{48,}@is', '#hashkey', $url);
@@ -257,7 +253,7 @@ class UrlService
                         WHERE status = 'pending'";
 
         $updateQuery = "UPDATE {$resource->getTable(UrlInterface::TABLE_NAME)}
-                        SET status = 'pending'
+                        SET status = 'pending', job_id = {$job->getId()}
                         WHERE status = 'finished'";
 
         $connection->query($deleteQuery);

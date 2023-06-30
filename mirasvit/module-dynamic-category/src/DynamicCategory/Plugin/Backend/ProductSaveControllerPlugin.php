@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-dynamic-category
- * @version   1.2.24
+ * @version   1.2.22
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -47,10 +47,7 @@ class ProductSaveControllerPlugin
             return null;
         }
 
-        $storeId = $subject->getRequest()->getParam('store', 0);
-
         $this->registry->setIsSavingProduct(true);
-        $this->registry->setCategoryStoreIds([$storeId]);
 
         return null;
     }

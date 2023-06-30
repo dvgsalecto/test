@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -40,15 +40,5 @@ class ProductUrlTemplateConfig
         );
 
         return trim($productUrlKey);
-    }
-
-    public function getRegenerateUrlKeyOnVisibilityChange(int $store = null): bool
-    {
-        return $this->getProductUrlKey($store)
-            && (bool)$productUrlKey = (string)$this->scopeConfig->getValue(
-                'seo/url/regenerate_url_key_after_visibility_changed',
-                ScopeInterface::SCOPE_STORE,
-                $store
-            );
     }
 }

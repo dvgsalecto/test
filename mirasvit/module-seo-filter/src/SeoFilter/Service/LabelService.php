@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo-filter
- * @version   1.3.3
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Mirasvit\SeoFilter\Service;
 
-use Magento\Catalog\Model\CategoryRepository;
 use Magento\Framework\Filter\FilterManager;
 use Magento\UrlRewrite\Model\ResourceModel\UrlRewriteCollectionFactory;
 use Mirasvit\SeoFilter\Api\Data\RewriteInterface;
@@ -41,7 +40,6 @@ class LabelService
 
     private $urlService;
 
-    private $categoryRepository;
 
     public function __construct(
         FilterManager $filter,
@@ -49,7 +47,6 @@ class LabelService
         UrlRewriteCollectionFactory $urlRewriteCollectionFactory,
         UrlService $urlService,
         ConfigProvider $configProvider,
-        CategoryRepository $categoryRepository,
         Context $context
     ) {
         $this->filterManager               = $filter;
@@ -58,7 +55,6 @@ class LabelService
         $this->urlService                  = $urlService;
         $this->configProvider              = $configProvider;
         $this->context                     = $context;
-        $this->categoryRepository          = $categoryRepository;
     }
 
     public function createLabel(string $attributeCode, string $itemValue, ?Option $attributeOption): string
@@ -71,18 +67,6 @@ class LabelService
                 $label = $attributeCode . ConfigProvider::SEPARATOR_DECIMAL . $label;
             }
         } else {
-            if ($attributeCode == 'category_ids') {
-                try {
-                    $category = $this->categoryRepository->get($itemValue, $this->context->getStoreId());
-
-                    $itemValue = $this->configProvider->getUrlFormat() == ConfigProvider::URL_FORMAT_ATTR_OPTIONS
-                        ? $category->getUrlKey()
-                        : 'category ' . $category->getUrlKey();
-                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-                    $itemValue = $attributeCode . ' ' . $itemValue;
-                }
-            }
-
             $itemValue = preg_replace('/[™℠®©]/', '', $itemValue);
             $label = strtolower($this->filterManager->translitUrl($itemValue));
 
@@ -112,7 +96,7 @@ class LabelService
             ->addFieldToFilter('entity_type', 'category')
             ->addFieldToFilter('redirect_type', 0)
             ->addFieldToFilter('store_id', $storeId)
-            ->addFieldToFilter('request_path', ['regexp' => '(^|/)' . $newLabel . '(/|%)'])
+            ->addFieldToFilter('request_path', ['like' => '%' . $newLabel . '%'])
             ->getSize();
 
         if ($isExists) {

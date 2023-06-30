@@ -23,13 +23,4 @@
             </argument>
         </arguments>
     </type>
-
-    <!-- CLI -->
-    <type name="Magento\Framework\Console\CommandListInterface">
-        <arguments>
-            <argument name="commands" xsi:type="array">
-                <item name="mstSeoFilterRewrite" xsi:type="object">Mirasvit\SeoFilter\Console\Command\GenerateRewritesCommand</item>
-            </argument>
-        </arguments>
-    </type>
 </config>

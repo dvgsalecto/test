@@ -18,12 +18,12 @@ $letter  = '';
     <?= $block->getSearchBoxElement($attributeCode) ?>
     <div data-holder="alphabetical"></div>
 
-    <ol class="items <?= $block->isCategoriesCollapsible() ? 'collapsible' : '' ?>">
+    <ol class="items">
         <?php foreach ($filterItems as $key => $filterItem):
             $label = $filterItem->getData('label');
             $numberOfResults = $filterItem->getData('count');
             $level = $filterItem->getData('level');
-            $isParent = $filterItem->getData('is_parent');
+	        $isParent = $filterItem->getData('is_parent');
 
             $isItemChecked = $block->isFilterItemChecked($filterItem, true);
 
@@ -38,7 +38,6 @@ $letter  = '';
                 $isItemChecked ? '_checked' : '',
                 $isItemChecked && $block->isHighlightEnabled() ? '_highlight' : '',
                 $isParent ? '_parent' : '',
-                !$numberOfResults ? '_disabled' : ''
             ];
             ?>
 
@@ -90,9 +89,7 @@ $letter  = '';
             <?php $lastLevel = $level ?>
         <?php endforeach ?>
 
-        <?php if (!$block->isCategoriesCollapsible()): ?>
         <?= $block->getSizeLimiterElement($attributeCode) ?>
-        <?php endif; ?>
     </ol>
 </div>
 <script type="text/x-magento-init"><?= \Mirasvit\Core\Service\SerializeService::encode([
@@ -106,9 +103,7 @@ $letter  = '';
                 'shouldDisplay' => $useAlphabeticalIndex && $filter->isAlphabeticalIndexAllowedByLimit(),
                 'limit'         => $filter->getAlphabeticalLimit()
             ],
-            'Mirasvit_LayeredNavigation/js/renderer/element/nested-toggler' => [
-                'shouldDisplay' => $block->isCategoriesCollapsible(),
-            ],
         ],
     ]) ?></script>
+
 

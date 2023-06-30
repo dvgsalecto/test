@@ -107,7 +107,7 @@ define([
                     }
                     onPause = true; // suspend ajax scrolling
 
-                    loader.show(this._getLoadedPageSelector('last'));
+                    loader.show(this._getProductListSelector() + ':last');
 
                     this._request({p: this.options.nextPageNum})
                         .done(loader.hide.bind(loader))
@@ -122,23 +122,14 @@ define([
             }.bind(this));
         },
 
-        _getLoadedPageSelector: function (type) {
-            return this._getProductListSelector()
-                .split(',')
-                .map(function (item) {
-                    return item + ':' + type;
-                })
-                .join(',');
-        },
-
         /**
          * Calculate difference between the whole document height and its visible part + height of excluded blocks.
          *
          * @return {Number}
          */
         _calculateHeightDiff: function () {
-            var diff = $(this._getLoadedPageSelector('last')).height()
-                + $(this._getLoadedPageSelector('last')).offset().top
+            var diff = $(this._getProductListSelector() + ':last').height()
+                + $(this._getProductListSelector() + ':last').offset().top
                 - $(window).height();
 
             diff -= this._getExcludeHeight();
@@ -188,7 +179,7 @@ define([
          * @return {jQuery}
          */
         _createButton: function (label, pageNum, method) {
-            var element = method === 'insertAfter' ? $(this._getLoadedPageSelector('last')) : $(this._getLoadedPageSelector('first'));
+            var element = method === 'insertAfter' ? $(this._getProductListSelector() + ':last') : $(this._getProductListSelector() + ':first');
             var btnClass = method === 'insertAfter' ? "_next" : "_prev";
 
             if ($('.mst-scroll__button.' + btnClass).length) {
@@ -228,13 +219,13 @@ define([
             if (this.nextBtn) {
                 selector = 'button.' + this.options.moreBtnClass + '._next';
             } else {
-                selector = this._getLoadedPageSelector('last') + ' ~ *:first';
+                selector = this._getProductListSelector() + ':last ~ *:first';
             }
 
             if (this.prevBtn) {
                 selector += ', ' + 'button.' + this.options.moreBtnClass + '._prev';
             } else {
-                selector += ', ' + this._getLoadedPageSelector('first');
+                selector += ', ' + this._getProductListSelector() + ':first';
             }
 
             progressBar.insertBefore($(selector));
@@ -453,20 +444,6 @@ define([
 
                 $(document).trigger('contentUpdated');
 
-                // update form_key
-                let formKey = $.mage.cookies.get('form_key');
-
-                $('input[name="form_key"]', $(this._getProductListSelector())).each(function (idx, elem) {
-                    const $elem = $(elem);
-                    if (!formKey) {
-                        formKey = $elem.val();
-                    }
-
-                    if ($elem.val() !== formKey) {
-                        $elem.val(formKey);
-                    }
-                });
-
                 // switch infinite mode to button mode
                 if (this.options.mode === 'infinite_button' && this.currLimit <= 0 && !this.modeSwitched) {
                     if (this.options.nextPageNum) {
@@ -506,13 +483,7 @@ define([
          * @return {String}
          */
         _getProductListSelector: function () {
-            var selector = this.options.productListSelector;
-
-            if ($(selector).length) {
-                return selector;
-            }
-
-            selector = '.' + this.element.attr('class').split(' ').filter(Boolean).join('.');
+            var selector = '.' + this.element.attr('class').split(' ').filter(Boolean).join('.');
 
             if (!$(selector).length) {
                 if (selector.indexOf('grid') >= 0) {

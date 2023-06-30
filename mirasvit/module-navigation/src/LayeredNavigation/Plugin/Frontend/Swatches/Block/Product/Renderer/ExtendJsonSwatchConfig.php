@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -33,7 +33,6 @@ class ExtendJsonSwatchConfig
     private $jsonEncoder;
     private $jsonDecoder;
     private $attributeConfigRepository;
-    private $swatchHelper;
 
     public function __construct(
         EncoderInterface $jsonEncoder,

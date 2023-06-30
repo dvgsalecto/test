@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -94,14 +94,14 @@ class Collection extends AbstractCollection implements ArrayInterface
      */
     public function addStoreFilter($store)
     {
+        $this->joinStoreTable();
+
         if ($store instanceof \Magento\Store\Model\Store) {
             $store = [$store->getId()];
         }
 
-        $this->addFieldToFilter(
-            ['store_ids', 'store_ids'],
-            [['finset' => $store],['finset' => 0]]
-        );
+        $this->getSelect()
+            ->where('store_table.' . BrandPageStoreInterface::STORE_ID . ' in (?)', [0, $store]);
 
         return $this;
     }
@@ -136,6 +136,24 @@ class Collection extends AbstractCollection implements ArrayInterface
                     . "." . BrandPageStoreInterface::BRAND_PAGE_ID . ")"
                 )]
             );
+
+        return $this;
+    }
+
+    private function joinStoreTable()
+    {
+        if ($this->getFlag(BrandPageStoreInterface::TABLE_NAME)) {
+            return $this;
+        }
+
+        $this->getSelect()
+            ->join(
+                ['store_table' => $this->getTable(BrandPageStoreInterface::TABLE_NAME)],
+                'main_table.' . BrandPageInterface::ID . ' = store_table.' . BrandPageStoreInterface::BRAND_PAGE_ID,
+                []
+            );
+
+        $this->setFlag(BrandPageStoreInterface::TABLE_NAME, true);
 
         return $this;
     }

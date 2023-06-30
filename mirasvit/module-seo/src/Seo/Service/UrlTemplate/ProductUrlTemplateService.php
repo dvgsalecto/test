@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -98,10 +98,10 @@ class ProductUrlTemplateService
     }
 
     public function processUrlRewriteCollection(
-        UrlRewriteCollection $urlRewriteCollection,
-        array $urlKeyTemplate,
-        bool $dryRun,
-        int $inputStoreId = null,
+        UrlRewriteCollection $urlRewriteCollection, 
+        array $urlKeyTemplate, 
+        bool $dryRun, 
+        int $inputStoreId = null, 
         int $inputProductId = null
     ): \Generator {
         /** @var \Magento\UrlRewrite\Model\UrlRewrite $rewrite */
@@ -267,7 +267,7 @@ class ProductUrlTemplateService
     private function getUrlKey(ProductInterface $product, StoreInterface $store, string $template): string
     {
         /** @var Product $product */
-
+        
         $urlKey = $this->templateEngineService->render(
             $template,
             [
@@ -275,7 +275,7 @@ class ProductUrlTemplateService
                 'store'   => $store,
             ]
         );
-
+        
         $urlKey = $product->formatUrlKey($urlKey);
 
         return $urlKey;

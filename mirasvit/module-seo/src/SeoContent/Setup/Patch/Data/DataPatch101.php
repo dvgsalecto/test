@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -76,11 +76,19 @@ class DataPatch101 implements DataPatchInterface, PatchVersionInterface
         foreach ($this->templateRepository->getCollection() as $template) {
             $conditions = $template->getData(TemplateInterface::CONDITIONS_SERIALIZED);
 
-            $decodedConditions = SerializeService::decode($conditions);
-            if (!$decodedConditions) {
-                $decodedConditions = [0 => $conditions];
+            /** mp comment start **/
+            try {
+                \Zend_Json::decode($conditions);
+            } catch (\Exception $e) {
+            /** mp comment end **/
+                $decodedConditions = SerializeService::decode($conditions);
+                if (!$decodedConditions) {
+                    $decodedConditions = [0 => $conditions];
+                }
+                $conditions = SerializeService::encode($decodedConditions);
+            /** mp comment start **/
             }
-            $conditions = SerializeService::encode($decodedConditions);
+            /** mp comment end **/
 
             $replaces = [
                 "Mirasvit\\\\SeoContent\\\\Model\\\\Template\\\\Rule\\\\Condition\\\\Validate" =>

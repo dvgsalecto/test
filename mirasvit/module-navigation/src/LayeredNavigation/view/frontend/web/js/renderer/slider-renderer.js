@@ -44,8 +44,8 @@ define([
             if (this.options.min !== this.options.max) {
                 this.$slider.slider({
                     range:  true,
-                    min:    this.getMin(),
-                    max:    this.getMax(),
+                    min:    Math.floor(this.options.min * this.options.rate),
+                    max:    Math.ceil(this.options.max * this.options.rate),
                     values: [this.from, this.to],
                     slide:  this.onSlide.bind(this),
                     change: this.onSliderChange.bind(this),
@@ -102,14 +102,6 @@ define([
             applyFilter.apply(url, $(this.element));
         },
 
-        getMax: function() {
-            return Math.ceil(this.options.max * this.options.rate);
-        },
-
-        getMin: function() {
-            return Math.floor(this.options.min * this.options.rate);
-        },
-
         updateFromTo: function () {
             this.$text.html(this.getTextValue(this.from) + ' - ' + this.getTextValue(this.to));
 
@@ -117,8 +109,8 @@ define([
             this.$to.val(this.toFixed(this.to, 2));
 
             if (this.$slider) {
-                const to = this.to > this.getMax() ? this.getMax() : this.to;
-                const from = this.from > to ? this.getMin() : this.from;
+                const to = this.to > this.options.max ? this.options.max : this.to;
+                const from = this.from > to ? this.options.min : this.from;
 
                 this.$slider.slider('values', [this.toFixed(from, 2), this.toFixed(to, 2)]);
             }

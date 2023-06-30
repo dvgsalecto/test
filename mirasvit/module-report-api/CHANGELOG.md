@@ -1,19 +1,3 @@
-## 1.0.60
-*(2023-06-14)*
-
-#### Fixed
-* Fixed the issue with Product Performance report
-
----
-
-## 1.0.59
-*(2023-06-02)*
-
-#### Fixed
-* Fixed the issue with filtering reports using 0 in filters (for example, from 0 to 0)
-
----
-
 ## 1.0.58
 *(2023-02-06)*
 

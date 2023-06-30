@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Mirasvit\Brand\Model;
 
-use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\ImageUploader;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Data\Collection\AbstractDb;
@@ -27,9 +26,7 @@ use Magento\Framework\Model\AbstractModel;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Registry;
-use Magento\Store\Model\StoreManagerInterface;
 use Mirasvit\Brand\Api\Data\BrandPageInterface;
-use Mirasvit\Brand\Api\Data\BrandPageStoreInterface;
 
 class BrandPage extends AbstractModel implements BrandPageInterface
 {
@@ -37,10 +34,7 @@ class BrandPage extends AbstractModel implements BrandPageInterface
 
     private $filesystem;
 
-    private $storeManager;
-
     public function __construct(
-        StoreManagerInterface $storeManager,
         Filesystem $filesystem,
         Context $context,
         Registry $registry,
@@ -57,7 +51,6 @@ class BrandPage extends AbstractModel implements BrandPageInterface
             $data
         );
 
-        $this->storeManager  = $storeManager;
         $this->imageUploader = $imageUploader;
         $this->filesystem    = $filesystem;
     }
@@ -109,7 +102,7 @@ class BrandPage extends AbstractModel implements BrandPageInterface
 
     public function getBrandTitle(): string
     {
-        return (string)$this->getDataFromContent(self::BRAND_TITLE);
+        return (string)$this->getData(self::BRAND_TITLE);
     }
 
     public function setBrandTitle(string $value): BrandPageInterface
@@ -129,8 +122,9 @@ class BrandPage extends AbstractModel implements BrandPageInterface
 
     public function getBrandDescription(): string
     {
-        return (string)$this->getDataFromContent(self::BRAND_DESCRIPTION);
+        return (string)$this->getData(self::BRAND_DESCRIPTION);
     }
+
 
     public function setBrandDescription(string $value): BrandPageInterface
     {
@@ -202,6 +196,7 @@ class BrandPage extends AbstractModel implements BrandPageInterface
         return $this->setData(self::BRAND_NAME, $value);
     }
 
+
     public function getBannerAlt(): string
     {
         return (string)$this->getData(self::BANNER_ALT);
@@ -244,7 +239,7 @@ class BrandPage extends AbstractModel implements BrandPageInterface
 
     public function getBrandShortDescription(): string
     {
-        return (string)$this->getDataFromContent(self::BRAND_SHORT_DESCRIPTION);
+        return (string)$this->getData(self::BRAND_SHORT_DESCRIPTION);
     }
 
     public function setBrandShortDescription(string $value): BrandPageInterface
@@ -262,24 +257,6 @@ class BrandPage extends AbstractModel implements BrandPageInterface
         return parent::afterSave();
     }
 
-    public function getBrandDisplayMode(): string
-    {
-        $displayMode = $this->getDataFromContent(BrandPageStoreInterface::BRAND_DISPLAY_MODE);
-
-        return $displayMode ? (string)$displayMode : Category::DM_PRODUCT;
-    }
-
-    public function getBrandCmsBlock(): ?string
-    {
-        if ($this->getBrandDisplayMode() == Category::DM_PRODUCT) {
-            return null;
-        }
-
-        return $this->getDataFromContent(BrandPageStoreInterface::BRAND_CMS_BLOCK)
-            ? (string)$this->getDataFromContent(BrandPageStoreInterface::BRAND_CMS_BLOCK)
-            : null;
-    }
-
     protected function _construct(): void
     {
         $this->_init(ResourceModel\BrandPage::class);
@@ -293,38 +270,4 @@ class BrandPage extends AbstractModel implements BrandPageInterface
             $this->imageUploader->moveFileFromTmp($image, true);
         }
     }
-
-    /**
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     */
-    private function getDataFromContent(string $key = null): string
-    {
-        $contentData = '';
-        $store       = $this->storeManager->getStore()->getId();
-
-        if (!$this->getData('content') && $this->getId()) {
-            $this->load($this->getId());
-        }
-
-        $contentDataArray = $this->getData('content');
-
-        if (!$contentDataArray || !$key) {
-            return $contentData;
-        }
-
-        if (
-            $store
-            && isset($contentDataArray[$store])
-            && isset($contentDataArray[$store][$key])
-            && trim($contentDataArray[$store][$key])
-        ) {
-            $contentData = trim($contentDataArray[$store][$key]);
-        } elseif(isset($contentDataArray[0]) && isset($contentDataArray[0][$key])) {
-            $contentData = trim($contentDataArray[0][$key]);
-        }
-
-        return $contentData;
-    }
-
-
 }

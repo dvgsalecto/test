@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -23,7 +23,6 @@ namespace Mirasvit\Feed\Service\Feed;
 use Magento\Framework\DataObject;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Store\Model\StoreManager;
-use Mirasvit\Core\Model\Date;
 use Mirasvit\Feed\Model\Feed;
 
 class StatisticsService
@@ -54,7 +53,7 @@ class StatisticsService
         $statistics = $this->retrieveStatsFromDB($feed, $days);
 
         $currentDate = date('Y-m-d');
-        $startDate   = new Date();
+        $startDate   = new \Zend_Date();
 
         $startDate->subDay($days);
 
@@ -104,10 +103,10 @@ class StatisticsService
         $resource   = $feed->getResource();
         $connection = $resource->getConnection();
 
-        $startDate = new Date();
+        $startDate = new \Zend_Date();
         $startDate->subDay($days);
 
-        $endDate = new Date();
+        $endDate = new \Zend_Date();
 
         $query = 'SELECT SUM(IFNULL(is_click, 0)) AS clicks, COUNT(DISTINCT order_id) AS orders,'
             . ' SUM(IFNULL(subtotal, 0)) AS revenue, DATE_FORMAT(created_at, "%Y-%m-%d") AS date'

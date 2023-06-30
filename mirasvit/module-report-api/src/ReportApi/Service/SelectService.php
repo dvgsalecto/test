@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-report-api
- * @version   1.0.60
+ * @version   1.0.58
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -236,15 +236,6 @@ class SelectService implements SelectServiceInterface
         $select->where($baseTable->getPkField()->toDbExpr() . '>0');
 
         foreach ($request->getFilters() as $filter) {
-            if (
-                strpos($filter->getColumn(), 'created_at') === false
-                && strpos($filter->getColumn(), 'updated_at') === false
-            ) {
-                // some filters in queries for TMP tables can result in not all needed products present in TMP tables
-                // we apply only date filters to TMP tables
-                continue;
-            }
-
             $col = $this->schema->getColumn($filter->getColumn());
 
             $select->addColumnToFilter($col, [

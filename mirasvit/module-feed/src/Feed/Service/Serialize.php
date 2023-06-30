@@ -9,29 +9,29 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
 
 namespace Mirasvit\Feed\Service;
 
-use Magento\Framework\Serialize\Serializer\Json;
 use \Mirasvit\Core\Service\CompatibilityService;
 
 class Serialize
 {
     /**
-     * @var Json
+     * @var null | \Magento\Framework\Serialize\Serializer\Json
      */
-    private $serializer;
+    private $serializer = null;
 
-    public function __construct(
-        Json $serializer
-    )
+    public function __construct()
     {
-        $this->serializer = $serializer;
+        if (!CompatibilityService::is21() && !CompatibilityService::is20()) {
+            $this->serializer = CompatibilityService::getObjectManager()
+                ->get(\Magento\Framework\Serialize\Serializer\Json::class);
+        }
     }
 
     /**
@@ -43,7 +43,7 @@ class Serialize
         if (is_resource($data)) {
             throw new \InvalidArgumentException('Unable to serialize value.');
         }
-        return $this->serializer->serialize($data);
+        return $this->serializer ? $this->serializer->serialize($data) : \Zend_Json::encode($data);
     }
 
     /**
@@ -57,7 +57,7 @@ class Serialize
             return [];
         }
         try {
-            $result = $this->serializer->unserialize($string);
+            $result = $this->serializer ? $this->serializer->unserialize($string) : \Zend_Json::decode($string);
         } catch (\Exception $e) {
             /** mp comment start **/
             $result = unserialize($string);

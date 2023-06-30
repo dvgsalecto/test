@@ -1,1 +1,1 @@
-/mirasvit-module-core-1.4.17-b7edd8-salecto-c2FsZWN0bw==
+/mirasvit-module-core-1.4.16-4e6a66-salecto-c2FsZWN0bw==

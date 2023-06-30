@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -151,46 +151,24 @@ class AttributeFilter extends AbstractFilter
 
         $groups = $this->groupRepository->getGroupsListByAttributeCode($attribute->getAttributeCode());
 
-        if (count($groups)) {
-            $presentGroups = [];
-
-            // remove options without results
-            foreach ($options as $key => $option) {
-                $value = (string)$this->getOptionValue($option);
-
-                if (empty($value) && $value !== '0') {
-                    unset($options[$key]);
-                    continue;
-                }
-
-                if ($isAttributeFilterable && !$this->getOptionCount($value, $optionsFacetedData)) {
-                    unset($options[$key]);
-                    continue;
-                }
-            }
-
-            // remove options that match groups and remember groups
+        foreach ($options as $key => $option) {
             foreach ($groups as $group) {
-                foreach ($options as $key => $option) {
-                    if (in_array((int)$option['value'], $group->getAttributeValueIds())) {
-                        unset($options[$key]);
-                        $presentGroups[$group->getCode()] = $group;
+                if (in_array((int)$option['value'], $group->getAttributeValueIds())) {
+
+                    unset($options[$key]);
+
+                    if (!isset($options[$group->getCode()])) {
+                        $groupedOption = [
+                            $group->getCode() => [
+                                'label' => $group->getLabelByStoreId((int)$this->getStoreId()),
+                                'value' => $group->getCode(),
+                                'group' => $group->getId()
+                            ]
+                        ];
+
+                        $options = ArrayHelper::insertIntoPosition($options, $groupedOption, $group->getPosition());
                     }
                 }
-            }
-
-            // insert groups according their positions
-            foreach ($presentGroups as $group) {
-                $groupedOption = [
-                    $group->getCode() => [
-                        'label' => $group->getLabelByStoreId((int)$this->getStoreId()),
-                        'value' => $group->getCode(),
-                        'group' => $group->getId()
-                    ]
-                ];
-
-                $options = ArrayHelper::insertIntoPosition($options, $groupedOption, $group->getPosition());
-
             }
         }
 

@@ -1,31 +1,4 @@
 # Change Log
-## 1.2.11
-*(2023-04-25)*
-
-#### Fixed
-* fixed an issue with not capturing modifier input values in XML feed templates
-* fixed an issue with missing liquid modifiers in php 8.1
-* fixed error on the Filter edit page - "The 'componentType' configuration parameter is required for the 'product_columns' component"
-* fixed an issue with missing block names in layouts
-* fixed an issue in the filter 'Preview products' button - "Column 'entity_id' in group statement is ambiguous"
-* fixed some styles for the buttons and progress bar
-
----
-
-
-## 1.2.10
-*(2023-03-15)*
-
-#### Improvements
-* Added support of Magento 2.4.6
-* Search filter in templates and feeds grid improved
-
-#### Fixed
-* PHP 8.2
-
----
-
-
 ## 1.2.9
 *(2022-12-15)*
 

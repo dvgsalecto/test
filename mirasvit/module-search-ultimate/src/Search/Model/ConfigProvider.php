@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -21,14 +21,14 @@ namespace Mirasvit\Search\Model;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\ScopeInterface;
+use Mirasvit\Search\Api\Data\QueryConfigProviderInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Mirasvit\Search\Service\StemmingService;
-use Mirasvit\Search\Service\StopwordService;
 use Mirasvit\Search\Service\SynonymService;
+use Mirasvit\Search\Service\StopwordService;
+use Mirasvit\Search\Service\StemmingService;
 
-class ConfigProvider extends AbstractConfigProvider
+class ConfigProvider implements QueryConfigProviderInterface
 {
     private $scopeConfig;
 
@@ -42,29 +42,25 @@ class ConfigProvider extends AbstractConfigProvider
 
     private $stemmingService;
 
-    private $serializer;
-
     public function __construct(
-        ScopeConfigInterface  $scopeConfig,
-        Filesystem            $filesystem,
+        ScopeConfigInterface $scopeConfig,
+        Filesystem $filesystem,
         StoreManagerInterface $storeManager,
-        SynonymService        $synonymService,
-        StopwordService       $stopwordService,
-        StemmingService       $stemmingService,
-        Json                  $serializer
+        SynonymService $synonymService,
+        StopwordService $stopwordService,
+        StemmingService $stemmingService
     ) {
-        $this->scopeConfig     = $scopeConfig;
-        $this->filesystem      = $filesystem;
-        $this->storeManager    = $storeManager;
-        $this->synonymService  = $synonymService;
-        $this->stopwordService = $stopwordService;
-        $this->stemmingService = $stemmingService;
-        $this->serializer      = $serializer;
+        $this->scopeConfig      = $scopeConfig;
+        $this->filesystem       = $filesystem;
+        $this->storeManager     = $storeManager;
+        $this->synonymService   = $synonymService;
+        $this->stopwordService  = $stopwordService;
+        $this->stemmingService  = $stemmingService;
     }
 
     public function getStoreId(): int
     {
-        return (int)$this->storeManager->getStore()->getId();
+        return (int) $this->storeManager->getStore()->getId();
     }
 
     public function getEngine(): string
@@ -75,7 +71,7 @@ class ConfigProvider extends AbstractConfigProvider
     public function getLongTailExpressions(): array
     {
         if ($this->scopeConfig->getValue('search/advanced/long_tail_expressions', ScopeInterface::SCOPE_STORE) !== null) {
-            $data = $this->serializer->unserialize(
+            $data = \Zend_Json::decode(
                 $this->scopeConfig->getValue('search/advanced/long_tail_expressions', ScopeInterface::SCOPE_STORE)
             );
         } else {
@@ -92,7 +88,7 @@ class ConfigProvider extends AbstractConfigProvider
     public function getReplaceWords(): array
     {
         if ($this->scopeConfig->getValue('search/advanced/replace_words', ScopeInterface::SCOPE_STORE) !== null) {
-            $data = $this->serializer->unserialize(
+            $data = \Zend_Json::decode(
                 $this->scopeConfig->getValue('search/advanced/replace_words', ScopeInterface::SCOPE_STORE)
             );
         } else {
@@ -132,7 +128,7 @@ class ConfigProvider extends AbstractConfigProvider
     {
         $result = [];
         if ($this->scopeConfig->getValue('search/advanced/wildcard_exceptions', ScopeInterface::SCOPE_STORE) !== null) {
-            $data = $this->serializer->unserialize(
+            $data = \Zend_Json::decode(
                 $this->scopeConfig->getValue('search/advanced/wildcard_exceptions', ScopeInterface::SCOPE_STORE)
             );
         } else {
@@ -173,7 +169,10 @@ class ConfigProvider extends AbstractConfigProvider
         return (bool)$this->scopeConfig->getValue('search/multi_store_mode/enabled', ScopeInterface::SCOPE_STORE);
     }
 
-    public function getEnabledMultiStores(): array
+    /**
+     * @return array
+     */
+    public function getEnabledMultiStores()
     {
         return explode(
             ',',
@@ -181,21 +180,32 @@ class ConfigProvider extends AbstractConfigProvider
         );
     }
 
-    public function getStopwordDirectoryPath(): string
+    /**
+     * Stopwords paths
+     * @return string Full path to directory with stopwords
+     */
+    public function getStopwordDirectoryPath()
     {
         return $this->filesystem->getDirectoryRead(DirectoryList::VAR_DIR)
-            ->getAbsolutePath('stopwords');
+            ->getAbsolutePath('sphinx/stopwords');
     }
 
-    public function getSynonymDirectoryPath(): string
+    /**
+     * Synonyms path
+     * @return string Full path to directory with synonyms
+     */
+    public function getSynonymDirectoryPath()
     {
         return $this->filesystem->getDirectoryRead(DirectoryList::VAR_DIR)
-            ->getAbsolutePath('synonyms');
+            ->getAbsolutePath('sphinx/synonyms');
     }
 
-    public function isFastMode(): bool
+    /**
+     * @return bool
+     */
+    public function isFastMode()
     {
-        return (bool)$this->scopeConfig->isSetFlag('searchautocomplete/general/fast_mode');
+        return $this->scopeConfig->isSetFlag('searchautocomplete/general/fast_mode');
     }
 
     public function getTabsThreshold(): int
@@ -218,6 +228,25 @@ class ConfigProvider extends AbstractConfigProvider
         return $this->stemmingService->singularize($term);
     }
 
+    public function applyLongTail(string $term): string
+    {
+        $expressions = $this->getLongTailExpressions();
+
+        foreach ($expressions as $expr) {
+            $matches = null;
+            preg_match_all($expr['match_expr'], $term, $matches);
+
+            foreach ($matches[0] as $math) {
+                $math = preg_replace($expr['replace_expr'], $expr['replace_char'], $math);
+                if ($math) {
+                    $term = $math;
+                }
+            }
+        }
+
+        return $term;
+    }
+
     public function getIgnoredIps(): array
     {
         $ignoredIps = [];
@@ -236,14 +265,9 @@ class ConfigProvider extends AbstractConfigProvider
         return (bool)$this->scopeConfig->getValue('search/feature/allow_ascii_folding', ScopeInterface::SCOPE_STORE);
     }
 
-    public function isContentWidgetIndexationEnabled(): bool
+    public function getProductsPerPage() : int
     {
-        return (bool)$this->scopeConfig->getValue('search/feature/content_widget_indexation', ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getProductsPerPage(): int
-    {
-        return (int)$this->scopeConfig->getValue('catalog/frontend/grid_per_page', ScopeInterface::SCOPE_STORE);
+        return (int) $this->scopeConfig->getValue('catalog/frontend/grid_per_page', ScopeInterface::SCOPE_STORE);
     }
 
     public function isSearchIn(): bool

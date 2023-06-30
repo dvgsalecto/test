@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -75,11 +75,11 @@ class ProductAttributeLinkingPlugin
     public function afterProductAttribute(
         AbstractHelper $subject,
         ?string $result,
-        ?Product $product,
+        Product $product,
         ?string $attributeHtml,
-        ?string $attributeName
+        string $attributeName
     ): ?string {
-        if (!$product || !$attributeName || !$this->isApplicable($result)) {
+        if (!$this->isApplicable($result)) {
             return $result;
         }
 
@@ -90,7 +90,7 @@ class ProductAttributeLinkingPlugin
             $attribute = null;
         }
 
-        if (!$attribute || !$this->isApplicableAttribute($attribute)) {
+        if (!$this->isApplicableAttribute($attribute)) {
             return $result;
         }
 
@@ -189,9 +189,6 @@ class ProductAttributeLinkingPlugin
             );
         }
 
-        $url = $this->urlBuilder->getUrl($categoryPath, ['_query' => [$attributeCode => $optionId]]);
-        $url = str_replace('/?', '?', $url);
-
-        return $url;
+        return $this->urlBuilder->getUrl($categoryPath, ['_query' => [$attributeCode => $optionId]]);
     }
 }

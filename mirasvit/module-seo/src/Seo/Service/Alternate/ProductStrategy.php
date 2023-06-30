@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Mirasvit\Seo\Service\Alternate;
 
-use Magento\Catalog\Model\Product;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite as UrlRewrite;
 use Magento\Catalog\Model\Product\Visibility;
 use Mirasvit\Seo\Api\Service\Alternate\UrlInterface;
@@ -69,10 +68,9 @@ class ProductStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInt
         $productId = $product->getId();
 
         foreach ($this->url->getStores() as $storeId => $store) {
-            /** @var Product $product */
-            $product = $this->productRepository->getById($product->getId(),false, $storeId);
+            $product = $this->productRepository->getById($product->getId(),false,$storeId);
 
-            if ($product->getData('visibility') == Visibility::VISIBILITY_NOT_VISIBLE || !in_array($storeId, $product->getStoreIds())) {
+            if ($product->getData('visibility') == Visibility::VISIBILITY_NOT_VISIBLE) {
                 unset($storeUrls[$storeId]);
                 continue;
             }
@@ -87,8 +85,6 @@ class ProductStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInt
 
                 if ($rewriteObject && ($requestPath = $rewriteObject->getRequestPath())) {
                     $storeUrls[$storeId] = $store->getBaseUrl().$requestPath.$this->url->getUrlAddition($store);
-                } elseif (!$rewriteObject) {
-                    $storeUrls[$storeId] = $product->getUrlInStore();
                 }
             }
         }

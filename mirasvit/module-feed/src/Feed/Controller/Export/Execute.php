@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -75,7 +75,7 @@ class Execute extends Export
         /** @var \Magento\Framework\App\Response\Http\Interceptor $response */
         $response = $this->getResponse();
         $response->setHeader('Content-Type', 'application/javascript', true);
-        $response->setBody($callback . '(' . $this->serializer->serialize($result) . ')');
+        $response->setBody($callback . '(' . \Zend_Json::encode($result) . ')');
     }
 
     /**

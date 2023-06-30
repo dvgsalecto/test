@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -40,12 +40,6 @@ class ApplyButton extends Template
     public function isApplyingMode(): bool
     {
         return $this->configProvider->isAjaxEnabled()
-            && (
-                $this->configProvider->getApplyingMode() == FilterApplyingModeSource::OPTION_BY_BUTTON_CLICK
-                || (
-                    $this->configProvider->getApplyingMode() == FilterApplyingModeSource::OPTION_INSTANTLY
-                    && $this->configProvider->getIsConfirmOnMobile()
-                )
-            );
+            && $this->configProvider->getApplyingMode() == FilterApplyingModeSource::OPTION_BY_BUTTON_CLICK;
     }
 }

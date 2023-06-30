@@ -1,24 +1,3 @@
-## 1.2.24
-*(2023-06-13)*
-
-#### Fixed
-* Error "array_diff(): Argument #2 must be of type array, null given in Plugin/Backend/AddDynamicCategoryOnProductSaveM243Plugin"
-
-
----
-
-## 1.2.23
-*(2023-06-07)*
-
-#### Improvements
-* Added warning on manual assign dynamic category
-
-#### Fixed
-* Compatibility with Enterprise version
-
-
----
-
 ## 1.2.22
 *(2023-05-16)*
 

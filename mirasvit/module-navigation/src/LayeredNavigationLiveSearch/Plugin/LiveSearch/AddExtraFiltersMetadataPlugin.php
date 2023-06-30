@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -132,17 +132,17 @@ class AddExtraFiltersMetadataPlugin
                     continue;
                 }
 
-                if ($filterParam = $this->getFilterParamName($code)) {
-                    $this->addPseudoAttributeMetadata(
-                        $metadata->getFeedTableName(),
-                        (string)$newId,
-                        $filterParam,
-                        $this->getFilterLabel($code),
-                        $this->storeManager->getGroup($store->getStoreGroupId())->getCode(),
-                        $this->storeManager->getWebsite($store->getWebsiteId())->getCode(),
-                        $store->getCode()
-                    );
-                }
+               if ($filterParam = $this->getFilterParamName($code)) {
+                   $this->addPseudoAttributeMetadata(
+                       $metadata->getFeedTableName(),
+                       (string)$newId,
+                       $filterParam,
+                       $this->getFilterLabel($code),
+                       $this->storeManager->getGroup($store->getStoreGroupId())->getCode(),
+                       $this->storeManager->getWebsite($store->getWebsiteId())->getCode(),
+                       $store->getCode()
+                   );
+               }
             }
 
             $newId++;
@@ -179,7 +179,7 @@ class AddExtraFiltersMetadataPlugin
     ): void {
         $keys = ['id', 'store_view_code', 'feed_data', 'is_deleted'];
 
-        $isRatingFilter = $this->isRatingFilter($code);
+        $isRatingFilter = $code == ExtraFilterConfigProvider::RATING_FILTER;
 
         $feedData = [
             "id"                   => $id,
@@ -223,11 +223,6 @@ class AddExtraFiltersMetadataPlugin
         );
     }
 
-    private function isRatingFilter(string $code): bool
-    {
-        return $code == ExtraFilterConfigProvider::RATING_FILTER_FRONT_PARAM;
-    }
-
     /**
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
@@ -235,6 +230,7 @@ class AddExtraFiltersMetadataPlugin
     private function addFilterValuesToProductMetadata(FeedIndexMetadata $metadata, StoreInterface $store): void
     {
         $keys        = null;
+        $rows        = [];
         $ids         = [];
         $selectQuery = "SELECT * FROM " . $this->resource->getTableName($metadata->getFeedTableName())
             . " WHERE store_view_code = '" . $store->getCode() . "'";
@@ -242,13 +238,19 @@ class AddExtraFiltersMetadataPlugin
         $productsMetadata = $this->resource->getConnection()->query($selectQuery);
 
         while ($row = $productsMetadata->fetch()) {
-            $ids[] = $row['id'];
+            if (!$keys) {
+                $keys = array_keys($row);
+            }
+
+            $row['feed_data']  = SerializeService::decode($row['feed_data']);
+            $rows[$row['sku']] = $row;
+            $ids[]             = $row['id'];
         }
 
         $filterValuesPerProduct = [];
 
         foreach ($this->additionalFilters as $code => $filter) { // all but search and stock filters
-            if (!isset($this->dataMappers[$code]) || $code == ExtraFilterConfigProvider::STOCK_FILTER_FRONT_PARAM) {
+            if (!isset($this->dataMappers[$code]) || $code == 'stock') {
                 continue;
             }
 
@@ -258,36 +260,30 @@ class AddExtraFiltersMetadataPlugin
             );
 
             foreach ($values as $id => $value) {
-                $filterValuesPerProduct[$id][$code] = $this->isRatingFilter($code)
+                $filterValuesPerProduct[$id][$code] = $code == ExtraFilterConfigProvider::RATING_FILTER
                     ? (float)$value
                     : (int)$value;
             }
         }
 
         foreach ($ids as $id) { // stock filter
-            $stockStatus = $this->stockState->getStockStatus($id, $store->getWebsiteId())->getStockStatus() ? 2 : 1;
-            $filterValuesPerProduct[$id][ExtraFilterConfigProvider::STOCK_FILTER_FRONT_PARAM] = $stockStatus;
+            $stockStatus = $this->stockState->getStockStatus($id, $store->getId())->getStockStatus() ? 2 : 1;
+            $filterValuesPerProduct[$id]['stock'] = $stockStatus;
         }
 
         $rootCategory   = $this->categoryRepository->get($store->getRootCategoryId(), $store->getId());
         $indexTableName = $this->getIndexTableName($store->getCode());
 
-        $productsMetadata = $this->resource->getConnection()->query($selectQuery);
-
         // update products metadata
-        while ($row = $productsMetadata->fetch()) {
-            if (!$keys) {
-                $keys = array_keys($row);
-            }
-
+        foreach ($rows as $sku => $row) {
             if (!isset($filterValuesPerProduct[$row['id']])) {
                 continue;
             }
 
-            $feedData = SerializeService::decode($row['feed_data']);;
+            $feedData = $row['feed_data'];
 
             foreach ($filterValuesPerProduct[$row['id']] as $code => $value) {
-                $isRatingFilter = $this->isRatingFilter($code);
+                $isRatingFilter = $code == 'rating';
 
                 $feedData['attributes'][] = [
                     "attributeCode" => $this->getFilterParamName($code),

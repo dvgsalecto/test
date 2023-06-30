@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -71,6 +71,7 @@ class Rule extends AbstractModel
 
     /**
      * @return \Magento\Rule\Model\Condition\Combine
+     * @throws \Zend_Json_Exception
      */
     public function getConditions()
     {
@@ -81,9 +82,15 @@ class Rule extends AbstractModel
         if ($this->hasConditionsSerialized()) {
             $conditions = $this->getConditionsSerialized();
             if (!empty($conditions)) {
-
-                $conditions = SerializeService::decode($conditions);
-
+                /** mp comment start **/
+                if (CompatibilityService::is21()) {
+                /** mp comment end **/
+                    $conditions = SerializeService::decode($conditions);
+                /** mp comment start **/
+                } else {
+                    $conditions = \Zend_Json::decode($conditions);
+                }
+                /** mp comment end **/
                 if (is_array($conditions) && !empty($conditions)) {
                     $this->_conditions->loadArray($conditions);
                 }

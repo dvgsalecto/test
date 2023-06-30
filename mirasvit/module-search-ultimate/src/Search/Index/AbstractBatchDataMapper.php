@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -66,8 +66,8 @@ abstract class AbstractBatchDataMapper implements BatchDataMapperInterface
             foreach ($data as $key => $value) {
                 if (is_string($value)) {
                     if (preg_match($attrPattern, (string)$key)) {
-                        if (isset($data['_misc'])) {
-                            $data['_misc'] .= ' '.strtolower($this->recursiveMap($value, $attrPattern));
+                        if(isset($data['_misc'])) {
+                            $data['_misc'] .= $this->recursiveMap($value, $attrPattern);
                         } else {
                             $data['_misc'] = $this->recursiveMap($value, $attrPattern);
                         }
@@ -91,7 +91,9 @@ abstract class AbstractBatchDataMapper implements BatchDataMapperInterface
                 }
             }
 
-            return preg_replace('/\s\s+/', ' ', $string);
+            $string = preg_replace('/\s\s+/', ' ', $string);
+
+            return $string;
         }
 
         return $data;

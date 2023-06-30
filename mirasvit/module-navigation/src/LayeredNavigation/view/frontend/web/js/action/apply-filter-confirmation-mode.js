@@ -48,32 +48,33 @@ define([
         let cacheKey = '';
 
         _.each($('[data-mst-nav-filter]'), function (filter) {
-            const $filter  = $(filter);
-            let isSlider   = $filter.hasClass('mst-nav__slider');
+            const $filter = $(filter);
             let filterName = $filter.attr('data-mst-nav-filter');
-            filterName     = filterName.replace(/A\d{6,7}A/, '');
+            filterName = filterName.replace(/A\d{6,7}A/, '');
 
             cacheKey += $filter.attr('data-mst-nav-cache-key');
 
             let filterValues = [];
 
-            if (isSlider) {
-                let filterValue = getSliderPriceFilterValue($filter);
-                if (filterValue) {
-                    filterValues.push(filterValue);
-                    filters[filterName] = filterValues.join(',');
-                }
-            } else {
-                _.each($('[data-element = filter]._checked', $filter), function (item) {
-                    let $item       = $(item);
-                    let filterValue = $item.attr('data-value');
+            switch (filterName) {
+                case 'price': //@todo
+                    let filterValue = getSliderPriceFilterValue($filter);
+                    if (filterValue) {
+                        filterValues.push(filterValue);
+                        filters[filterName] = filterValues.join(',');
+                        break;
+                    }
+                default:
+                    _.each($('[data-element = filter]._checked', $filter), function (item) {
+                        let $item = $(item);
 
-                    filterValues.push(filterValue);
-                }.bind(this));
+                        let filterValue = $item.attr('data-value');
+                        filterValues.push(filterValue);
+                    }.bind(this));
 
-                if (filterValues.length > 0) {
-                    filters[filterName] = filterValues.join(',');
-                }
+                    if (filterValues.length > 0) {
+                        filters[filterName] = filterValues.join(',');
+                    }
             }
         }.bind(this));
 
@@ -89,10 +90,10 @@ define([
             return false;
         }
 
-        let minVal  = parseFloat(priceWidget.getMin()).toFixed(2);
-        let maxVal  = parseFloat(priceWidget.getMax()).toFixed(2);
+        let minVal = parseFloat(priceWidget.options.min).toFixed(2);
+        let maxVal = parseFloat(priceWidget.options.max).toFixed(2);
         let fromVal = parseFloat(priceWidget.from).toFixed(2);
-        let toVal   = parseFloat(priceWidget.to).toFixed(2);
+        let toVal = parseFloat(priceWidget.to).toFixed(2);
 
         if (fromVal === minVal && toVal === maxVal) {
             return false;

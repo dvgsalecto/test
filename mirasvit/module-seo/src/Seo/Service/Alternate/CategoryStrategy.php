@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -74,9 +74,8 @@ class CategoryStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyIn
                 ->addFieldToFilter('entity_id', ['eq' => $this->registry->registry('current_category')->getId()])
                 ->getFirstItem();
 
-            if (!$category->getIsActive() || !in_array($storeId, $category->getStoreIds())) {
+            if (!$category->getIsActive()) {
                 unset($storeUrls[$storeId]);
-                continue;
             }
 
             if ($category->hasData() && ($currentCategory = $this->categoryFactory

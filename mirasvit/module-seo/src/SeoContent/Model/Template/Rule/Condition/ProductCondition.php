@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -575,12 +575,12 @@ class ProductCondition extends AbstractCondition
         $op = $this->getOperatorForValidate();
         if ((($op == '==') || ($op == '!=')) && is_array($categoryIds)) {
             $value           = $this->getValueParsed();
-            $value           = preg_split('#\s*[,;]\s*#', $value, 0, PREG_SPLIT_NO_EMPTY);
+            $value           = preg_split('#\s*[,;]\s*#', $value, null, PREG_SPLIT_NO_EMPTY);
 
             if ($this->registry->registry('apply_for_child_categories')) {
                 foreach ($value as $categoryId) {
                     $category = $this->category->load($categoryId);
-                    $value = array_merge($value, preg_split('#\s*[,;]\s*#', $category->getAllChildren(), 0, PREG_SPLIT_NO_EMPTY));
+                    $value = array_merge($value, preg_split('#\s*[,;]\s*#', $category->getAllChildren(), null, PREG_SPLIT_NO_EMPTY));
                 }
             }
 

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -92,12 +92,10 @@ class Redirect extends AbstractCheck
             $ids[] = $u->getId();
         }
 
-        $ids = array_unique($ids);
-
-        $result = self::MAX_SCORE - count($ids);
+        $u = array_unique($ids);
 
         return [
-            CheckResultInterface::RESULT  => $result < self::MIN_SCORE ? self::MIN_SCORE : $result,
+            CheckResultInterface::RESULT  => count($ids) ? self::MIN_SCORE : self::MAX_SCORE,
             CheckResultInterface::VALUE   => $this->encodeValue($ids),
             CheckResultInterface::MESSAGE => ''
         ];

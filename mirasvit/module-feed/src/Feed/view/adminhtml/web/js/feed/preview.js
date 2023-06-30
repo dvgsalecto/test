@@ -34,7 +34,7 @@ define([
 
                     self.getForm().submit();
 
-                    $('iframe').on('load', function() {
+                    $('iframe', this).load(function () {
                         $('body').trigger('processStop');
                     });
                 },

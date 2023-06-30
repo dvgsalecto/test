@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -19,7 +19,6 @@ declare(strict_types=1);
 namespace Mirasvit\SeoMarkup\Block\Rs;
 
 use Magento\Directory\Model\RegionFactory;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Locale\ListsInterface as LocaleListsInterface;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
@@ -215,12 +214,6 @@ class Organization extends Template
 
     public function getLogoUrl()
     {
-        // fix since Magento_Theme v101.1.4
-        if (class_exists('Magento\Theme\ViewModel\Block\Html\Header\LogoPathResolver') && !$this->logo->getData('logoPathResolver')) {
-            $logoPathResolver = ObjectManager::getInstance()->get('Magento\Theme\ViewModel\Block\Html\Header\LogoPathResolver');
-            $this->logo->setData('logoPathResolver', $logoPathResolver);
-        }
-        
         return (string)$this->logo->getLogoSrc();
     }
 

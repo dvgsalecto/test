@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo-filter
- * @version   1.3.3
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -19,7 +19,6 @@ declare(strict_types=1);
 namespace Mirasvit\SeoFilter\Service;
 
 use Magento\Catalog\Model\Layer\Resolver as LayerResolver;
-use Magento\Catalog\Model\Product\Attribute\Source\Countryofmanufacture;
 use Magento\Eav\Model\Entity\Attribute\Option as AttributeOption;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Mirasvit\Core\Service\CompatibilityService;
@@ -29,9 +28,6 @@ use Mirasvit\SeoFilter\Model\Context;
 use Mirasvit\SeoFilter\Repository\RewriteRepository;
 use Mirasvit\SeoFilter\Model\RewriteFactory;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
 class RewriteService
 {
     /** @var array */
@@ -53,8 +49,6 @@ class RewriteService
 
     private        $rewriteFactory;
 
-    private        $countryOfManufactureSource;
-
     public function __construct(
         RewriteRepository $rewriteRepository,
         LayerResolver $layerResolver,
@@ -63,8 +57,7 @@ class RewriteService
         ConfigProvider $configProvider,
         ModuleManager $moduleManager,
         RewriteFactory $rewriteFactory,
-        CacheService $cacheService,
-        Countryofmanufacture $countryOfManufactureSource
+        CacheService $cacheService
     ) {
         $this->rewriteRepository = $rewriteRepository;
         $this->layerResolver     = $layerResolver;
@@ -74,8 +67,6 @@ class RewriteService
         $this->moduleManager     = $moduleManager;
         $this->rewriteFactory    = $rewriteFactory;
         $this->cacheService      = $cacheService;
-
-        $this->countryOfManufactureSource = $countryOfManufactureSource;
     }
 
     public function getAttributeRewrite(string $attributeCode, ?int $storeId = null, bool $useCache = true): ?RewriteInterface
@@ -314,25 +305,6 @@ class RewriteService
             $label = $this->labelService->createLabel($attributeCode, $groupedLabel, $attributeOption);
         } elseif ($this->context->isDecimalAttribute($attributeCode)) {
             $label = $this->labelService->createLabel($attributeCode, $filterValue, $attributeOption);
-        } elseif ($attributeCode == 'country_of_manufacture') {
-            $allCountries = $this->countryOfManufactureSource->getAllOptions();
-
-            $label = '';
-
-            foreach ($allCountries as $country) {
-                if ($country['value'] == $filterValue) {
-                    $label = $this->labelService->createLabel($attributeCode, $country['label'], $attributeOption);
-                    break;
-                }
-            }
-
-            if (!$label) {
-                $label = $this->labelService->createLabel(
-                    $attributeCode,
-                    $attributeCode . ' ' . $filterValue,
-                    $attributeOption)
-                ;
-            }
         } elseif (
             $attributeOption
             && ($optionValue = $this->resolveAttributeOptionValue($attributeOption))
@@ -342,8 +314,6 @@ class RewriteService
             $label = $attributeCode;
         } elseif ((int)$filterValue === 0 || $filterValue === '0') {
             $label = $attributeCode . '_no';
-        } elseif ($attributeCode == 'category_ids') {
-            $label = $this->labelService->createLabel($attributeCode, $filterValue, $attributeOption);
         } else {
             $label = $this->labelService->createLabel($attributeCode, $attributeCode . ' ' . $filterValue, $attributeOption);
         }
@@ -399,7 +369,7 @@ class RewriteService
             $storeId = $this->context->getStoreId();
         }
 
-        $urlRewrite = $this->labelService->uniqueLabel($attributeCode == 'category_ids' ? 'category' : $attributeCode, $storeId);
+        $urlRewrite = $this->labelService->uniqueLabel($attributeCode, $storeId);
 
         $rewrite = $this->rewriteRepository->create();
         $rewrite->setAttributeCode($attributeCode)

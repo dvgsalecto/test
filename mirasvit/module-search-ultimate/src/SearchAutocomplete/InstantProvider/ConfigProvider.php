@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -18,9 +18,9 @@ declare(strict_types=1);
 
 namespace Mirasvit\SearchAutocomplete\InstantProvider;
 
-use Mirasvit\Search\Model\AbstractConfigProvider;
+use Mirasvit\Search\Api\Data\QueryConfigProviderInterface;
 
-class ConfigProvider extends AbstractConfigProvider
+class ConfigProvider implements QueryConfigProviderInterface
 {
     private $configData;
 
@@ -33,11 +33,7 @@ class ConfigProvider extends AbstractConfigProvider
 
     public function getEngine(): string
     {
-        $engine = (string)$this->configData["$this->storeId/engine"];
-        if ($engine == 'opensearch') {
-            $engine = 'elasticsearch7';
-        }
-        return $engine;
+        return (string)$this->configData["$this->storeId/engine"];
     }
 
     public function getIndexes(): array
@@ -133,7 +129,8 @@ class ConfigProvider extends AbstractConfigProvider
         $terms        = explode(' ', $terms);
         $terms[]      = $initialQuery;
 
-        foreach ($this->configData["$this->storeId/synonymList"] as $synonymsGroup) {
+
+        foreach ($this->configData["$this->storeId/synonyms"] as $synonymsGroup) {
             foreach (explode(',', $synonymsGroup) as $synonym) {
                 foreach ($terms as $term) {
                     $synonym = trim($synonym);
@@ -154,14 +151,14 @@ class ConfigProvider extends AbstractConfigProvider
 
     public function isStopword(string $term, int $storeId): bool
     {
-        return in_array($term, $this->configData["$this->storeId/stopwordList"]);
+        return in_array($term, $this->configData["$this->storeId/stopwords"]);
     }
 
     public function applyStemming(string $term): string
     {
-        if (substr($term, -2) === 'es') {
+        if (substr($term, -2) == 'es') {
             $term = mb_substr($term, 0, -2);
-        } elseif (substr($term, -1) === 's') {
+        } elseif (substr($term, -1) == 's') {
             $term = mb_substr($term, 0, -1);
         }
 
@@ -256,6 +253,25 @@ class ConfigProvider extends AbstractConfigProvider
         return $filters;
     }
 
+    public function applyLongTail(string $term): string
+    {
+        $expressions = $this->getLongTailExpressions();
+
+        foreach ($expressions as $expr) {
+            $matches = null;
+            preg_match_all($expr['match_expr'], $term, $matches);
+
+            foreach ($matches[0] as $math) {
+                $math = preg_replace($expr['replace_expr'], $expr['replace_char'], $math);
+                if ($math) {
+                    $term = $math;
+                }
+            }
+        }
+
+        return $term;
+    }
+
     public function getProductsPerPage(): int
     {
         return (int)$this->configData["$this->storeId/productsPerPage"];
@@ -286,8 +302,7 @@ class ConfigProvider extends AbstractConfigProvider
         $rangeLimits = range($minPrice, $maxPrice, 10);
         $ranges      = [];
 
-
-        $currencySymbol = $this->configData["$this->storeId/currencySymbol"];
+        $сurrencySymbol = $this->configData["$this->storeId/сurrencySymbol"];
 
         foreach ($rangeLimits as $key => $rangeLimit) {
             if (!isset($rangeLimits[$key + 1])) {
@@ -297,10 +312,10 @@ class ConfigProvider extends AbstractConfigProvider
             $minLimit   = $rangeLimit;
             $maxLimit   = $rangeLimits[$key + 1];
             $rangeKey   = $minLimit . '_' . $maxLimit;
-            $rangeLabel = $currencySymbol . $minLimit . ' - ' . $currencySymbol . $maxLimit;
+            $rangeLabel = $сurrencySymbol . $minLimit . ' - ' . $сurrencySymbol . $maxLimit;
             $count      = 0;
 
-            foreach ($options as $option) {
+            foreach ($options as $key => $option) {
                 if (round($option['key']) >= $minLimit && round($option['key']) <= $maxLimit) {
                     $count += $option['doc_count'];
                 }

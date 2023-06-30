@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -107,7 +107,7 @@ class DecimalFilter extends AbstractFilter
             $idx = 0;
             while ($idx < count($filterParamArray)) {
                 $from = isset($filterParamArray[$idx]) ? (float)$filterParamArray[$idx] : null;
-                $to   = isset($filterParamArray[$idx + 1]) && $filterParamArray[$idx + 1] != '' ? (float)$filterParamArray[$idx + 1] : null;
+                $to   = isset($filterParamArray[$idx + 1]) ? (float)$filterParamArray[$idx + 1] : null;
 
                 $fromArray[] = $from ? $from : 0;
                 $toArray[]   = $to ? $to : $maxPrice;
@@ -125,16 +125,6 @@ class DecimalFilter extends AbstractFilter
 
         $from = min($fromArray);
         $to   = max($toArray);
-
-        $attributeConfig = $this->getAttributeConfig($attributeCode);
-
-        $displayMode = $attributeConfig
-            ? $attributeConfig->getDisplayMode()
-            : AttributeConfigInterface::DISPLAY_MODE_RANGE;
-
-        if ($displayMode == AttributeConfigInterface::DISPLAY_MODE_RANGE) {
-            $to -= self::PRICE_DELTA;
-        }
 
         $this->setFromToData(['from' => $from, 'to' => $to]);
 
@@ -210,7 +200,7 @@ class DecimalFilter extends AbstractFilter
         [$from, $to] = explode('_', $key);
 
         $from = $from == '*' ? $this->getFrom((float)$to) : (float)$from;
-        $to   = $to == '*' || $to == '' ? null : (float)$to; 
+        $to   = $to == '*' ? null : (float)$to;
 
         $label = $this->renderRangeLabel(empty($from) ? 0 : $from, $to);
 
@@ -243,7 +233,8 @@ class DecimalFilter extends AbstractFilter
             $toPrice   = $toPrice === null ? '' : $toPrice;
         }
 
-        if ($displayMode == AttributeConfigInterface::DISPLAY_MODE_RANGE && $toPrice !== '') {
+        if (!in_array($displayMode, [AttributeConfigInterface::DISPLAY_MODE_SLIDER, AttributeConfigInterface::DISPLAY_MODE_SLIDER_FROM_TO])
+            && $toPrice !== '') {
             if ($fromPrice != $toPrice) {
                 $toPrice -= .01;
             }
@@ -280,7 +271,7 @@ class DecimalFilter extends AbstractFilter
         return $to;
     }
 
-    public function getAttributeConfig(string $attributeCode): AttributeConfigInterface
+    private function getAttributeConfig(string $attributeCode): AttributeConfigInterface
     {
         $attributeConfig = $this->attributeConfigRepository->getByAttributeCode($attributeCode);
 

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -54,12 +54,6 @@ class PageParser extends AbstractParser
 
         /** @var \DOMElement $link */
         foreach ($links as $link) {
-            $rel = $link->getAttribute('rel');
-
-            if ($rel && $rel == 'nofollow') {
-                continue; // ignore nofollow links
-            }
-
             $l = $link->getAttribute('href');
 
             $l = $this->resolveUrl($l, $baseUrl);
@@ -222,10 +216,6 @@ class PageParser extends AbstractParser
 
     private function resolveUrl(string $url, string $baseUrl): string
     {
-        if (strpos($url, '//') === 0) {
-            $url = substr($url, 2);
-        }
-
         if (strpos($url, "/") === 0) {
             $url = $baseUrl.$url;
         }

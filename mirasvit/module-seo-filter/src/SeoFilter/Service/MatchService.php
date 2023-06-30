@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo-filter
- * @version   1.3.3
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -251,39 +251,27 @@ class MatchService
         }
 
         $filterOptions = [];
-        $staticFilters = [];
-
-        if ($this->configProvider->getUrlFormat() == ConfigProvider::URL_FORMAT_ATTR_OPTIONS) {
-            $fData = $filtersData;
-
-            $staticFilters = $this->handleStockFilters($fData, $staticFilters);
-            $staticFilters = $this->handleRatingFilters($fData, $staticFilters);
-            $staticFilters = $this->handleSaleFilters($fData, $staticFilters);
-            $staticFilters = $this->handleNewFilters($fData, $staticFilters);
-        }
 
         foreach ($filtersData as $attribute => $filter) {
             if ($this->configProvider->getUrlFormat() == ConfigProvider::URL_FORMAT_ATTR_OPTIONS) {
                 $requestData = explode('/', $requestPath);
+//                $attributeKey = array_search($attribute, $requestData);
 
-                $rewrites = $this->rewriteRepository->getCollection()
-                    ->addFieldToFilter(\Mirasvit\SeoFilter\Api\Data\RewriteInterface::STORE_ID, $this->context->getStoreId())
-                    ->addFieldToFilter(\Mirasvit\SeoFilter\Api\Data\RewriteInterface::ATTRIBUTE_CODE, $attribute)
-                    ->addFieldToFilter(\Mirasvit\SeoFilter\Api\Data\RewriteInterface::OPTION, ['null' => true]);
+//                if (!$attributeKey) {
+                    $rewrites = $this->rewriteRepository->getCollection()
+                        ->addFieldToFilter(\Mirasvit\SeoFilter\Api\Data\RewriteInterface::STORE_ID, $this->context->getStoreId())
+                        ->addFieldToFilter(\Mirasvit\SeoFilter\Api\Data\RewriteInterface::ATTRIBUTE_CODE, $attribute)
+                        ->addFieldToFilter(\Mirasvit\SeoFilter\Api\Data\RewriteInterface::OPTION, ['null' => true]);
 
-                foreach ($rewrites as $rewrite) {
-                    $attributeKey = array_search($rewrite->getRewrite(), $requestData);
-                    unset($requestData[$attributeKey + 1]);
-                    unset($requestData[$attributeKey]);
-                }
+                    foreach ($rewrites as $rewrite) {
+                        $attributeKey = array_search($rewrite->getRewrite(), $requestData);
+                        unset($requestData[$attributeKey + 1]);
+                        unset($requestData[$attributeKey]);
+                    }
+//                }
 
-
-                if (isset($staticFilters[$attribute])) {
-                    $attributeKey = array_search($attribute, $requestData);
-                    unset($requestData[$attributeKey + 1]);
-                    unset($requestData[$attributeKey]);
-                }
-
+//                unset($requestData[$attributeKey + 1]);
+//                unset($requestData[$attributeKey]);
                 $requestPath  = implode('/', $requestData);
             } else {
                 $filterOptions[] = $filter;
@@ -514,8 +502,7 @@ class MatchService
             } else {
                 $rewriteCollection = $this->rewriteRepository->getCollection()
                     ->addFieldToFilter(RewriteInterface::ATTRIBUTE_CODE, $attrCode)
-                    ->addFieldToFilter(RewriteInterface::STORE_ID, $this->context->getStoreId())
-                    ->addFieldToFilter(RewriteInterface::OPTION, ['notnull' => true]);
+                    ->addFieldToFilter(RewriteInterface::STORE_ID, $this->context->getStoreId());
 
                 $rewrites = [];
                 foreach ($rewriteCollection as $rewrite) {

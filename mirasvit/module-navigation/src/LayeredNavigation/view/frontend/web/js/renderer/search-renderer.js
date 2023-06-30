@@ -153,11 +153,9 @@ define([
                         }
                     });
                 } else if (filterContent.children('.mst-nav__label').length) { // filter options
-                    var linkOptions = $('.item', filterContent);
-
-                    linkOptions.attr('data-hidden', false);
-                    linkOptions.attr('data-search-hidden', false);
-                    linkOptions.attr('data-letter-hidden', false);
+                    var linkOptions  = filterContent.children('.mst-nav__label')
+                        .children('.items')
+                        .children('.item');
 
                     optionsCount = linkOptions.length;
 
@@ -169,7 +167,7 @@ define([
                         linkLabel = linkLabel.replace(/\d*item(s)?/, '');
                         linkLabel = linkLabel.trim();
 
-                        if (!linkLabel || linkLabel.toLowerCase().indexOf(value) === -1 || $('input:disabled', $(link)).length) {
+                        if (!linkLabel || linkLabel.toLowerCase().indexOf(value) === -1) {
                             $(link).remove();
                             removed++;
                         } else { // highlight option match

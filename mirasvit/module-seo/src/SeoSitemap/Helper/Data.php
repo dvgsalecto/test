@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -116,11 +116,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $url   = $parts['path'];
         $url   = str_replace('index.php/', '', $url);
         $url   = str_replace('index.php', '', $url);
-
-        if (strpos($url, '/') !== 0) {
-            $url = '/' . $url; //need this so exclude patterns will work the same way for Frontend and XML sitemaps
-        }
-
         if (isset($parts['query'])) {
             $url .= '?' . $parts['query'];
         }

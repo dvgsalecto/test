@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -17,7 +17,6 @@
 
 namespace Mirasvit\Search\Service;
 
-use Magento\Framework\Serialize\Serializer\Json;
 use Mirasvit\Search\Api\Data\QueryConfigProviderInterface;
 
 class QueryService
@@ -30,13 +29,9 @@ class QueryService
 
     private        $configProvider;
 
-    private        $serializer;
-
     public function __construct(
-        Json $serializer,
         QueryConfigProviderInterface $configProvider
     ) {
-        $this->serializer = $serializer;
         $this->configProvider = $configProvider;
     }
 
@@ -59,9 +54,8 @@ class QueryService
             }
 
             $query = ' ' . $query . ' ';
-            $query = str_replace('!', ' ', $query);
 
-            $queryTree = [];
+            $result = [];
 
             $replaceWords = $this->configProvider->getReplaceWords();
 
@@ -70,23 +64,14 @@ class QueryService
             }
 
             $arSynonyms = $this->configProvider->getSynonyms([$query], $storeId);
-
             foreach ($arSynonyms as $term => $synonyms) {
                 $this->synonyms    = array_merge($this->synonyms, $synonyms);
                 $arSynonyms[$term] = array_splice($arSynonyms[$term], 0, 20);
             }
 
-            $terms = preg_split('#\s#siu', $query, -1, PREG_SPLIT_NO_EMPTY);
-            $terms = array_unique($terms);
-
+            $terms     = preg_split('#\s#siu', $query, -1, PREG_SPLIT_NO_EMPTY);
             $condition = '$like';
             $longTail  = [];
-
-            if ($this->configProvider->getMatchMode() == QueryConfigProviderInterface::MATCH_MODE_OR) {
-                $mode = '$or';
-            } else {
-                $mode = '$and';
-            }
 
             foreach ($terms as $term) {
                 if ($this->configProvider->isStopword($term, $storeId) && count($terms) > 1) {
@@ -97,49 +82,30 @@ class QueryService
                 $wordArr = [];
 
                 $this->addTerms($wordArr, [$term]);
-                $this->addTerms($wordArr, [$this->configProvider->applyLongTail($term)]);
+                $this->addTerms($wordArr, [$this->applyLongTail($term)]);
                 $this->addTerms($wordArr, [$this->configProvider->applyStemming($term)]);
 
                 if (isset($arSynonyms[$term])) {
                     $this->addTerms($wordArr, $arSynonyms[$term], QueryConfigProviderInterface::WILDCARD_DISABLED);
                 }
 
-                $queryTree[$condition][$mode][] = ['$or' => array_values($wordArr)];
-
-                $longTail[$term] = trim($this->configProvider->applyLongTail($term));
-            }
-
-            $longTail[$query] = trim($this->configProvider->applyLongTail($this->configProvider->applyStemming($query)));
-
-            foreach ($arSynonyms as $synonyms) {
-                foreach ($synonyms as $synonym) {
-                    if (count(explode(' ', $synonym)) >= 2) {
-                        $ar = [];
-
-                        $this->addTerms($ar, [$synonym], QueryConfigProviderInterface::WILDCARD_INFIX);
-                        $queryTree = [
-                            '$like' => [
-                                '$or' => [
-                                    $queryTree['$like'],
-                                    array_values($ar)[0],
-                                ],
-                            ],
-                        ];
-                    }
+                if ($this->configProvider->getMatchMode() == QueryConfigProviderInterface::MATCH_MODE_OR) {
+                    $mode = '$or';
+                } else {
+                    $mode = '$and';
                 }
+
+                $result[$condition][$mode][] = ['$or' => $wordArr];
+
+                $longTail[$term] = trim($this->applyLongTail($term));
             }
 
-            $result = [
-                'queryTree'          => $queryTree,
-                'query'              => trim($query),
-                'wildcardMode'       => $this->configProvider->getWildcardMode(),
-                'wildcardExceptions' => array_unique($this->wildcardExceptions),
-                'matchMode'          => str_replace('$', '', $mode),
-                'synonyms'           => $this->synonyms,
-                'long_tail'          => [],
-            ];
+            $longTail [$query] = trim($this->applyLongTail($this->configProvider->applyStemming($query)));
 
-            $longTail = array_unique(array_filter($longTail));
+            $result['built']     = $result;
+            $result['query']     = trim($query);
+            $result['long_tail'] = [];
+            $longTail            = array_unique(array_filter($longTail));
 
             foreach ($longTail as $term => $replacement) {
                 $term        = (string)$term;
@@ -153,10 +119,15 @@ class QueryService
                 $result['long_tail'][] = $appliedTerm;
             }
 
+            $result['synonyms']           = $this->synonyms;
+            $result['wildcardMode']       = $this->configProvider->getWildcardMode();
+            $result['wildcardExceptions'] = array_unique($this->wildcardExceptions);
+            $result['matchMode']          = str_replace('$', '', $mode);
+
             self::$cache[$identifier] = $result;
         }
 
-        DebugService::log($this->serializer->serialize(self::$cache[$identifier]), 'query_service_build');
+        DebugService::log(\Zend_Json::encode(self::$cache[$identifier]), 'query_service_build');
 
         return self::$cache[$identifier];
     }
@@ -203,5 +174,10 @@ class QueryService
 
             $to[implode(array_values($item))]['$term'] = $item;
         }
+    }
+
+    private function applyLongTail(string $term): string
+    {
+        return $this->configProvider->applyLongTail($term);
     }
 }

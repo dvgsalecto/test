@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -81,11 +81,10 @@ class SetMainImagePlugin
      */
     public function aroundIsMainImage($subject, \Closure $closure, $image)
     {
-        if ($this->imageConfig->isFriendlyUrlEnabled() && $subject->getProduct()->getImage()) {
+        if ($this->imageConfig->isFriendlyUrlEnabled()) {
             \Magento\Framework\Profiler::start(__METHOD__);
-            $productImage = $this->getFriendlyImageName($subject->getProduct(), (string)$subject->getProduct()->getImage());
+            $productImage = $this->getFriendlyImageName($subject->getProduct(), $subject->getProduct()->getImage());
             \Magento\Framework\Profiler::stop(__METHOD__);
-
             return $image->getFile() == $productImage;
         } else {
             return $closure($image);
@@ -100,10 +99,6 @@ class SetMainImagePlugin
      */
     private function getFriendlyImageName($product, $fileName)
     {
-        if (preg_match('@/image/\d[^/]*/@', $fileName)) {
-            return $fileName; // the image is already user-friendly
-        }
-
         $newFile = DIRECTORY_SEPARATOR . 'image' . DIRECTORY_SEPARATOR . $this->generateName($product, $fileName);
 
         $absPath = $this->directoryList->getPath('media')

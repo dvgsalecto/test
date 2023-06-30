@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -144,16 +144,6 @@ class CmsStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterfa
                     }
                 }
             }
-        } elseif (!$alternateGroup && $cmsStoresIds[0] != 0) {
-            foreach ($storeUrls as $storeId => $url) {
-                if (!in_array($storeId, $cmsStoresIds)) {
-                    unset($storeUrls[$storeId]); // remove links to non-exist pages
-                }
-            }
-
-            if (count($storeUrls) == 1) {
-                $storeUrls = []; // page doesn't have variations
-            }
         }
 
         return $storeUrls;
@@ -171,7 +161,7 @@ class CmsStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterfa
             ->join(
                 [
                     'storeTable' => $table],
-                'main_table.'  . $storeTablePageId . ' = storeTable.' . $storeTablePageId,
+                'main_table.page_id = storeTable.' . $storeTablePageId,
                 ['store_id' => 'storeTable.store_id']
             );
         $cmsPages = $cmsCollection->getData();

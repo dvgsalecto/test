@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-optimize
- * @version   1.5.1
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.3.20
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -44,10 +44,6 @@ class ToInlineProcessor implements OutputProcessorInterface
 
     public function process($content)
     {
-        if (strpos($content, '</head>') === false) {
-            return $content;
-        }
-
         // fonts may contain + symbol in the link
         preg_match_all('#(<link([^+^>]*|[^>]*font[^>]*)?>)#is', $content, $matches);
 

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -23,8 +23,6 @@ use Mirasvit\QuickNavigation\Api\Data\SequenceInterface;
 use Mirasvit\QuickNavigation\Context;
 use Mirasvit\QuickNavigation\Model\ConfigProvider;
 use Mirasvit\QuickNavigation\Repository\SequenceRepository;
-use Mirasvit\LayeredNavigation\Model\Layer\Filter\DecimalFilter;
-use Mirasvit\LayeredNavigation\Api\Data\AttributeConfigInterface;
 
 class PredictService
 {
@@ -131,14 +129,6 @@ class PredictService
         foreach ($itemsList as $attr => $data) {
             foreach ($data['values'] as $value) {
                 foreach ($layerFilters as $filter) {
-                    if ($filter instanceof DecimalFilter) {
-                        $attributeConfig = $filter->getAttributeConfig($filter->getRequestVar());
-
-                        if ($attributeConfig->getDisplayMode() !== AttributeConfigInterface::DISPLAY_MODE_RANGE) {
-                            continue;
-                        }
-                    }
-
                     /** @var Layer\Filter\Item $filterItem */
                     foreach ($filter->getItems() as $filterItem) {
                         if ($filterItem->getValueString() == $value && $filter->getRequestVar() == $attr) {

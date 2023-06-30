@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-optimize
- * @version   1.5.1
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.3.20
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -35,8 +35,6 @@ class Js extends Template
 
     private $bundleFileRepository;
 
-    private $context;
-
     public function __construct(
         BundleFileRepositoryInterface $bundleFileRepository,
         Context $context
@@ -44,7 +42,6 @@ class Js extends Template
         $this->urlBuilder           = $context->getUrlBuilder();
         $this->request              = $context->getRequest();
         $this->bundleFileRepository = $bundleFileRepository;
-        $this->context              = $context;
 
         parent::__construct($context);
     }
@@ -59,20 +56,13 @@ class Js extends Template
             return;
         }
 
-        $baseUrl  = $this->urlBuilder->getUrl('optimizeJs/bundle/track');
-        $checkUrl = $this->urlBuilder->getUrl('optimizeJs/bundle/check');
-        $pageType = $this->request->getFullActionName();
-        $locale   = $this->context->getDesignPackage()->getLocale();
-        $theme    = $this->context->getDesignPackage()->getDesignTheme()->getThemePath();
+        $baseUrl = $this->urlBuilder->getUrl('optimizeJs/bundle/track');
 
         $initObject = [
             'Mirasvit_OptimizeJs/js/bundle/track' => [
                 'callbackUrl' => $baseUrl,
-                'checkUrl'    => $checkUrl,
-                'layout'      => $pageType,
+                'layout'      => $this->request->getFullActionName(),
                 'mode'        => $this->request->getParam(self::MODE_PARAM, self::MODE_BACKGROUND),
-                'locale'      => $locale,
-                'theme'       => $theme
             ],
         ];
 
@@ -84,9 +74,37 @@ class Js extends Template
      */
     private function shouldAddBlock()
     {
+        $pageTypesForCheck = [
+            'cms_index_index',
+            'cms_page_view',
+            'catalog_category_view',
+            'catalog_product_view',
+            'customer_account_index',
+            'customer_account_login',
+        ];
+
         $pageType = $this->request->getFullActionName();
 
         if (strpos($pageType, 'checkout') !== false) {
+            return false;
+        }
+
+        $currentPageTypeFilesCount = $this->bundleFileRepository
+            ->getCollection()
+            ->addFieldToFilter('layout', $pageType)
+            ->addFieldToFilter('area', 'frontend')
+            ->getSize();
+
+        $pageTypesForCheck = array_diff($pageTypesForCheck, [$pageType]);
+
+        $otherPageTypesFilesCount = $this->bundleFileRepository
+            ->getCollection()
+            ->addFieldToFilter('layout', ['in' => $pageTypesForCheck])
+            ->addFieldToFilter('area', 'frontend')
+            ->getSize();
+
+
+        if ($currentPageTypeFilesCount && $currentPageTypeFilesCount <= $otherPageTypesFilesCount / 3) {
             return false;
         }
 

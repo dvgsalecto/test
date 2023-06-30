@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -237,7 +237,7 @@ class Product extends \Magento\Sitemap\Model\ResourceModel\Catalog\Product
                         'collection'    => $imagesCollection,
                         'title'         => $product->getName(),
                         'thumbnail'     => $thumbnail,
-                        'alt'           => $this->getCurrentProductImageAlt($product, $storeId),
+                        'alt'           => $this->friendlyImageUrlService->getFriendlyImageAlt($product),
                     ]
                 )
             );
@@ -291,19 +291,6 @@ class Product extends \Magento\Sitemap\Model\ResourceModel\Catalog\Product
             ->getUrl();
 
         return $imgUrl;
-    }
-
-    /**
-     * @param \Magento\Catalog\Model\Product $product
-     * @param int $storeId
-     *
-     * @return string
-     */
-    protected function getCurrentProductImageAlt($product, $storeId)
-    {
-        $product = $this->productRepository->getById($product->getId(), $editMode = false, $storeId);
-
-        return $this->friendlyImageUrlService->getFriendlyImageAlt($product, $storeId);
     }
 
     /**

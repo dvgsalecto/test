@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -89,8 +89,15 @@ class Save extends Template
 
             $conditions = $rule->getConditions()->asArray();
         }
-
-        $conditions = SerializeService::encode($conditions);
+        /** mp comment start **/
+        if (CompatibilityService::is21()) {
+        /** mp comment end **/
+            $conditions = SerializeService::encode($conditions);
+        /** mp comment start **/
+        } else {
+            $conditions = \Zend_Json::encode($conditions);
+        }
+        /** mp comment end **/
 
         $data[TemplateInterface::CONDITIONS_SERIALIZED] = $conditions;
 

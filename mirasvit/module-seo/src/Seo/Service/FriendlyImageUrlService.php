@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -138,29 +138,20 @@ class FriendlyImageUrlService implements FriendlyImageUrlServiceInterface
 
     /**
      * @param \Magento\Catalog\Model\Product $product
-     * @param int|null $storeId
      *
      * @return string
      */
-    public function getFriendlyImageAlt($product, $storeId = null)
+    public function getFriendlyImageAlt($product)
     {
-        $altKey = $product->getId();
-
-        $storeId = $storeId ?: $product->getStoreId();
-
-        if ($storeId) {
-            $altKey .= '_' . $storeId;
-        }
-
-        if (isset($this->cacheAlt[$altKey])) {
-            return $this->cacheAlt[$altKey];
+        if (isset($this->cacheAlt[$product->getId()])) {
+            return $this->cacheAlt[$product->getId()];
         }
 
         \Magento\Framework\Profiler::start(__METHOD__);
         $template = $this->imageConfig->getAltTemplate();
 
         $res = $this->templateEngineService->render($template, ['product' => $product]);
-        $this->cacheAlt[$altKey] = $res;
+        $this->cacheAlt[$product->getId()]  = $res;
         \Magento\Framework\Profiler::stop(__METHOD__);
         return $res;
     }

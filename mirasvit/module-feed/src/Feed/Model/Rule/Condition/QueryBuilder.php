@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -175,39 +175,39 @@ class QueryBuilder
     private function conditionEQ(string $field, string $value): string
     {
         if ($value == ''){
-            return $this->connection->quoteInto("{$field} = ? or {$field} IS NULL", $value);
+            return $this->connection->quoteInto("${field} = ? or ${field} IS NULL", $value);
         } else {
-            return $this->connection->quoteInto("{$field} = ?", $value);
+            return $this->connection->quoteInto("${field} = ?", $value);
         }
     }
 
     private function conditionNEQ(string $field, string $value): string
     {
         if ($value == '') {
-            return $this->connection->quoteInto("{$field} NOT IN (?) OR {$field} IS NULL", $value);
+            return $this->connection->quoteInto("${field} NOT IN (?) OR ${field} IS NULL", $value);
         } else {
-            return $this->connection->quoteInto("{$field} NOT IN (?)", $value);
+            return $this->connection->quoteInto("${field} NOT IN (?)", $value);
         }
     }
 
     private function conditionGt(string $field, string $value): string
     {
-        return $this->connection->quoteInto("{$field} > ?", $value);
+        return $this->connection->quoteInto("${field} > ?", $value);
     }
 
     private function conditionGtEq(string $field, string $value): string
     {
-        return $this->connection->quoteInto("{$field} >= ?", $value);
+        return $this->connection->quoteInto("${field} >= ?", $value);
     }
 
     private function conditionLt(string $field, string $value): string
     {
-        return $this->connection->quoteInto("{$field} < ?", $value);
+        return $this->connection->quoteInto("${field} < ?", $value);
     }
 
     private function conditionLtEq(string $field, string $value): string
     {
-        return $this->connection->quoteInto("{$field} <= ?", $value);
+        return $this->connection->quoteInto("${field} <= ?", $value);
     }
 
     private function conditionIsOneOf(string $field, array $value): string

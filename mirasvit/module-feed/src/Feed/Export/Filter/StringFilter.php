@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -57,7 +57,7 @@ class StringFilter
 
     /**
      * Replace
-     * | Replaces all occurrences of a string with a substring
+     * Replaces all occurrences of a string with a substring.
      *
      * @param string $input
      * @param string $search
@@ -72,7 +72,7 @@ class StringFilter
 
     /**
      * Lowercase
-     * | Converts a string into lowercase
+     * Converts a string into lowercase.
      *
      * @param string $input
      *
@@ -85,7 +85,7 @@ class StringFilter
 
     /**
      * Uppercase
-     * | Converts a string into uppercase
+     * Converts a string into uppercase.
      *
      * @param string $input
      *
@@ -98,7 +98,7 @@ class StringFilter
 
     /**
      * Append
-     * | Appends characters to a string
+     * Appends characters to a string.
      *
      * @param string $input
      * @param string $suffix
@@ -112,7 +112,7 @@ class StringFilter
 
     /**
      * Prepend
-     * | Prepends characters to a string
+     * Prepends characters to a string.
      *
      * @param string $input
      * @param string $prefix
@@ -126,7 +126,7 @@ class StringFilter
 
     /**
      * Capitalize
-     * | Capitalizes the first word in a string
+     * Capitalizes the first word in a string.
      *
      * @param string $input
      *
@@ -139,7 +139,7 @@ class StringFilter
 
     /**
      * Escape
-     * | Converts special characters to HTML entities
+     * Escapes a string.
      *
      * @param string $input
      *
@@ -152,7 +152,7 @@ class StringFilter
 
     /**
      * HTML Entity Decode
-     * | Convert HTML entities to their corresponding characters
+     * Convert HTML entities to their corresponding characters.
      *
      * @param string $input
      *
@@ -165,7 +165,7 @@ class StringFilter
 
     /**
      * Newline to <br>
-     * | Inserts a <br > linebreak HTML tag in front of each line break in a string
+     * Inserts a <br > linebreak HTML tag in front of each line break in a string.
      *
      * @param string $input
      *
@@ -178,7 +178,7 @@ class StringFilter
 
     /**
      * Remove
-     * | Removes all occurrences of a substring from a string
+     * Removes all occurrences of a substring from a string.
      *
      * @param string $input
      * @param string $text
@@ -192,7 +192,7 @@ class StringFilter
 
     /**
      * Strip HTML tags
-     * | Strips all HTML tags from a string
+     * Strips all HTML tags from a string.
      *
      * @param string $input
      *
@@ -204,8 +204,7 @@ class StringFilter
     }
 
     /**
-     * Strip new lines
-     * | Strip all newlines (\n, \r) from string
+     * Strip all newlines (\n, \r) from string
      *
      * @param string $input
      *
@@ -219,8 +218,7 @@ class StringFilter
     }
 
     /**
-     * Replace new lines
-     * | Replace each newline (\n) with html break
+     * Replace each newline (\n) with html break
      *
      * @param string $input
      *
@@ -235,7 +233,7 @@ class StringFilter
 
     /**
      * Truncate
-     * | Truncates a string down to 'x' characters
+     * Truncates a string down to 'x' characters.
      *
      * @param string $input
      * @param int    $len
@@ -248,8 +246,7 @@ class StringFilter
     }
 
     /**
-     * Truncate words
-     * | Truncate string down to x words
+     * Truncate string down to x words
      *
      * @param string $input
      * @param int    $words
@@ -270,8 +267,7 @@ class StringFilter
     }
 
     /**
-     * Split
-     * | Split input string into an array of substrings separated by given pattern
+     * Split input string into an array of substrings separated by given pattern.
      *
      * @param string $input
      * @param string $pattern
@@ -285,7 +281,7 @@ class StringFilter
 
     /**
      * Plain format
-     * | Converts any text to plain
+     * Converts any text to plain
      *
      * @param string $input
      *
@@ -325,7 +321,6 @@ class StringFilter
 
     /**
      * If Empty
-     * | Sets output if attribute has no value
      *
      * @param string $input
      * @param string $default
@@ -343,7 +338,7 @@ class StringFilter
 
     /**
      * Format date
-     * | Converts a string to specified date-time format
+     * Converts a string to specified date-time format.
      *
      * @param string $input
      * @param string $format
@@ -361,7 +356,7 @@ class StringFilter
 
     /**
      * Rtrim
-     * | Strip whitespace (or other characters) from the end of a string
+     * Strip whitespace (or other characters) from the end of a string.
      *
      * @param string $input
      * @param string $mask
@@ -387,7 +382,7 @@ class StringFilter
 
     /**
      * Clean
-     * | Remove all non-utf-8 characters from string
+     * Remove all non-utf-8 characters from string
      *
      * @param string $input
      *

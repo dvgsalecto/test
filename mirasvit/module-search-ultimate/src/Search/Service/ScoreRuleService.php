@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -21,7 +21,6 @@ namespace Mirasvit\Search\Service;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Search\Request;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\StoreManagerInterface;
 use Mirasvit\Search\Api\Data\ScoreRuleInterface;
 use Mirasvit\Search\Model\ScoreRule\Indexer\ScoreRuleIndexer;
@@ -37,19 +36,15 @@ class ScoreRuleService
 
     private $request;
 
-    private $serializer;
-
     public function __construct(
         ResourceConnection    $resource,
         StoreManagerInterface $storeManager,
         ScoreRuleRepository   $scoreRuleRepository,
-        Json $serializer,
         RequestInterface      $request
     ) {
         $this->resource            = $resource;
         $this->storeManager        = $storeManager;
         $this->scoreRuleRepository = $scoreRuleRepository;
-        $this->serializer = $serializer;
         $this->request             = $request;
     }
 
@@ -91,7 +86,7 @@ class ScoreRuleService
             }
         }
 
-        DebugService::log($this->serializer->serialize($results), 'applied scores: ' . $request->getName());
+        DebugService::log(\Zend_Json::encode($results), 'applied scores: ' . $request->getName());
 
         return $results;
     }

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -80,10 +80,6 @@ class BrandProvider implements ProviderInterface
 
         foreach ($collection as $key => $brandPage) {
             $brandModel = $repository->get($brandPage->getAttributeOptionId());
-
-            if (!$brandModel) {
-                continue; // in case attribute for brand was changed
-            }
 
             $items[] = new DataObject([
                 'id'         => $brandPage->getBrandPageId(),

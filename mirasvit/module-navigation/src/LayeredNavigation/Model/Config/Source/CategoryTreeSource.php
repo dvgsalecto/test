@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -59,10 +59,10 @@ class CategoryTreeSource implements OptionSourceInterface
         // in case not all categories present in the tree most likely some categories has level = 0
         //
         // to check categories with incorrect paths:
-        // >>> SELECT *, length(path) - length(replace(path, '/', '')) AS level_from_path FROM catalog_category_entity WHERE length(path) - length(replace(path, '/', '')) != level;
+        // >>> SELECT *, length(path) - length(replace(path, '/', '')) AS level_from_path FROM mage_catalog_category_entity WHERE length(path) - length(replace(path, '/', '')) != level;
         //
         // to update categories paths:
-        // >>> UPDATE catalog_category_entity SET level = length(path) - length(replace(path, '/', '')) WHERE ......;
+        // >>> UPDATE mage_catalog_category_entity SET level = length(path) - length(replace(path, '/', '')) WHERE ......;
         // can be executed without WHERE condition to update all paths
 
         if ($category->getLevel() > 0 && $category->getName()) {
@@ -73,11 +73,7 @@ class CategoryTreeSource implements OptionSourceInterface
         }
 
         if ($category->hasChildren()) {
-            $children = $category->getCollection()
-                ->addAttributeToSelect('name')
-                ->addAttributeToFilter('parent_id', $category->getId());
-
-            foreach ($children as $child) {
+            foreach ($category->getChildrenCategories() as $child) {
                 foreach ($this->buildRecursive($child) as $item) {
                     $tree[] = $item;
                 }

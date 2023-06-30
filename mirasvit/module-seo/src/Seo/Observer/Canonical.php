@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -20,8 +20,6 @@ namespace Mirasvit\Seo\Observer;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
 use Mirasvit\Seo\Api\Service\StateServiceInterface;
 use Mirasvit\Seo\Model\Config as Config;
 
@@ -81,8 +79,7 @@ class Canonical implements ObserverInterface
         \Mirasvit\Seo\Helper\UrlPrepare $urlPrepare,
         \Mirasvit\Seo\Api\Service\CanonicalRewrite\CanonicalRewriteServiceInterface $canonicalRewriteService,
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
-        StateServiceInterface $stateService,
-        ScopeConfigInterface $scopeConfig
+        StateServiceInterface $stateService
     ) {
         $this->config                    = $config;
         $this->productTypeFactory        = $productTypeFactory;
@@ -101,7 +98,6 @@ class Canonical implements ObserverInterface
         $this->canonicalRewriteService   = $canonicalRewriteService;
         $this->productRepository         = $productRepository;
         $this->stateService              = $stateService;
-        $this->scopeConfig               = $scopeConfig;
     }
 
     /**
@@ -109,19 +105,6 @@ class Canonical implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer): void
     {
-        if ($this->request->getModuleName() == 'search_landing') {
-            return;
-        }
-
-        if (
-            strpos($this->request->getFullActionName(), 'result_index') !== false
-            && $this->scopeConfig->getValue('amasty_xsearch/general/enable_seo_url', ScopeInterface::SCOPE_STORE)
-            && ($key = $this->scopeConfig->getValue('amasty_xsearch/general/seo_key', ScopeInterface::SCOPE_STORE))
-            && strpos($this->request->getUriString(), $key) !== false
-        ) {
-            return;
-        }
-
         $this->setupCanonicalUrl();
     }
 

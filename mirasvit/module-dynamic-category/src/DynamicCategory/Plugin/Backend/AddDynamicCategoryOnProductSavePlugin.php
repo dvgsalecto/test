@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-dynamic-category
- * @version   1.2.24
+ * @version   1.2.22
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -22,7 +22,6 @@ namespace Mirasvit\DynamicCategory\Plugin\Backend;
 use Magento\Catalog\Api\CategoryLinkManagementInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Mirasvit\DynamicCategory\Api\Data\DynamicCategoryInterface;
 use Mirasvit\DynamicCategory\Model\ConfigProvider;
 use Mirasvit\DynamicCategory\Registry;
@@ -41,21 +40,17 @@ class AddDynamicCategoryOnProductSavePlugin
 
     private $dynamicCategoryRepository;
 
-    private $messageManager;
-
     private $registry;
 
     public function __construct(
         CollectionFactory $collectionFactory,
         ConfigProvider $configProvider,
         DynamicCategoryRepository $dynamicCategoryRepository,
-        MessageManagerInterface $messageManager,
         Registry $registry
     ) {
         $this->collectionFactory         = $collectionFactory;
         $this->configProvider            = $configProvider;
         $this->dynamicCategoryRepository = $dynamicCategoryRepository;
-        $this->messageManager            = $messageManager;
         $this->registry                  = $registry;
     }
 
@@ -81,10 +76,6 @@ class AddDynamicCategoryOnProductSavePlugin
             }
         }
 
-        if ($this->registry->getNewCategoryIds() && array_intersect($this->registry->getNewCategoryIds(), $categoryIds)) {
-            $this->messageManager->addWarningMessage(__('Dynamic categories cannot be assigned manually.'));
-        }
-
         /** @var DynamicCategoryInterface $dynamicCategory */
         foreach ($collection as $dynamicCategory) {
             $this->registry->setCurrentDynamicCategory($dynamicCategory);
@@ -92,7 +83,6 @@ class AddDynamicCategoryOnProductSavePlugin
             $productCollection = $this->collectionFactory->create();
             $productCollection->addFieldToFilter(ProductInterface::SKU, $productSku);
 
-            $dynamicCategory->getRule()->setStoreIds($this->registry->getCategoryStoreIds());
             $dynamicCategory->getRule()->applyToCollection($productCollection);
 
             if ($productCollection->count() > 0) {

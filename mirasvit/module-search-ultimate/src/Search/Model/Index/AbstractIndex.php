@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -36,9 +36,8 @@ abstract class AbstractIndex extends DataObject implements InstanceInterface
      */
     private $index;
 
-    public function __construct(
-        Context $context
-    ) {
+    public function __construct(Context $context)
+    {
         $this->context = $context->getInstance();
         $this->context->getIndexer()->setInstance($this);
         $this->context->getSearcher()->setInstance($this);

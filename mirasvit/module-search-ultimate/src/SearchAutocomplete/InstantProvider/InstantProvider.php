@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -30,13 +30,12 @@ if (stripos(__DIR__, 'vendor') !== false) {
 if (!file_exists($configFile)) {
     return;
 }
-$config = json_decode(file_get_contents($configFile), true);
+$config = \Zend_Json::decode(file_get_contents($configFile));
 
-if (!isset($config['0/instant']) || $config['0/instant'] == false) {
+if (!isset($config['-1/instant']) || $config['-1/instant'] == false) {
     return;
 }
 
-use Magento\Framework\Serialize\Serializer\Json;
 use Mirasvit\Core\Service\CompatibilityService;
 use Mirasvit\Search\Api\Data\QueryConfigProviderInterface;
 use Mirasvit\Search\Service\QueryService;
@@ -47,21 +46,14 @@ class InstantProvider
 
     protected $configProvider;
 
-    protected $serializer;
-
-    private   $queryText;
-
-    private   $startTime;
+    protected $queryText;
 
     public function __construct(
         QueryService                 $queryService,
-        QueryConfigProviderInterface $configProvider,
-        Json                         $serializer
+        QueryConfigProviderInterface $configProvider
     ) {
-        $this->startTime      = microtime(true);
         $this->queryService   = $queryService;
         $this->configProvider = $configProvider;
-        $this->serializer     = $serializer;
     }
 
     public function process(): ?string
@@ -73,12 +65,10 @@ class InstantProvider
         $this->configProvider->setStoreId($this->getStoreId());
 
         $engineProviders = [
-            'elasticsearch5' => new \Mirasvit\SearchElastic\InstantProvider\EngineProvider($this->queryService, $this->configProvider, new Json()),
-            'elasticsearch6' => new \Mirasvit\SearchElastic\InstantProvider\EngineProvider($this->queryService, $this->configProvider, new Json()),
-            'elasticsearch7' => new \Mirasvit\SearchElastic\InstantProvider\EngineProvider($this->queryService, $this->configProvider, new Json()),
-            'opensearch'     => new \Mirasvit\SearchElastic\InstantProvider\EngineProvider($this->queryService, $this->configProvider, new Json()),
-            'elasticsearch8' => new \Mirasvit\SearchElastic\InstantProvider\EngineProvider($this->queryService, $this->configProvider, new Json()),
-            'sphinx'         => new \Mirasvit\SearchSphinx\InstantProvider\EngineProvider($this->queryService, $this->configProvider, new Json()),
+            'elasticsearch5' => new \Mirasvit\SearchElastic\InstantProvider\EngineProvider($this->queryService, $this->configProvider),
+            'elasticsearch6' => new \Mirasvit\SearchElastic\InstantProvider\EngineProvider($this->queryService, $this->configProvider),
+            'elasticsearch7' => new \Mirasvit\SearchElastic\InstantProvider\EngineProvider($this->queryService, $this->configProvider),
+            'sphinx'         => new \Mirasvit\SearchSphinx\InstantProvider\EngineProvider($this->queryService, $this->configProvider),
         ];
 
         $searchEngine = $this->configProvider->getEngine();
@@ -94,9 +84,6 @@ class InstantProvider
             if ($indexIdentifier == 'mst_misspell_index') {
                 continue;
             }
-            if ($indexIdentifier == 'catalogsearch_fulltext') {
-                $indexIdentifier = 'magento_catalog_product';
-            }
 
             $results = $engineProviders[$searchEngine]->getResults($indexIdentifier);
             $buckets = [];
@@ -108,7 +95,7 @@ class InstantProvider
                 $buckets = $results['buckets'];
             }
 
-            foreach ($results['items'] as $key => $item) {
+            foreach($results['items'] as $key => $item) {
                 if (isset($item['price']) && isset($item['price'][$this->getCurrency()])) {
                     $results['items'][$key]['price'] = $item['price'][$this->getCurrency()];
                 }
@@ -130,8 +117,6 @@ class InstantProvider
 
         $queryText = $this->getQueryText();
         $result    = [
-            'direct'     => true,
-            'time'       => microtime(true) - $this->startTime,
             'query'      => $this->getQueryText(),
             'totalItems' => $totalItems,
             'indexes'    => $indexesResult,
@@ -141,7 +126,7 @@ class InstantProvider
             'urlAll'     => $this->configProvider->getUrlAll() . $queryText,
         ];
 
-        return json_encode($result, JSON_PRETTY_PRINT);
+        return json_encode($result);
     }
 
     protected function getQueryText(): string
@@ -160,9 +145,7 @@ class InstantProvider
 
     protected function getPageNum(): int
     {
-        $p = (int)$this->getParam('p');
-
-        return $p <= 0 ? 1 : $p;
+        return (int)$this->getParam('p');
     }
 
     protected function getBuckets(): array
@@ -189,7 +172,7 @@ class InstantProvider
 
     protected function getCurrency(): string
     {
-        return (string)$this->getParam('currency');
+        return (string) $this->getParam('currency');
     }
 
     protected function escape(string $value): string
@@ -203,11 +186,6 @@ class InstantProvider
     protected function getStoreId(): int
     {
         return (int)$this->getParam('store_id');
-    }
-
-    protected function isDebug(): bool
-    {
-        return $this->getParam('debug') ? true : false;
     }
 
     private function getParam(string $param)
@@ -243,16 +221,13 @@ class InstantProvider
 }
 
 $configProvider = new ConfigProvider($config);
-$queryService   = new QueryService(new Json(), $configProvider);
-$provider       = new InstantProvider($queryService, $configProvider, new Json());
+$queryService   = new QueryService($configProvider);
+$provider       = new InstantProvider($queryService, $configProvider);
 $html           = $provider->process();
-
 /** mp comment start */
 if (!CompatibilityService::isMarketplace()) {
     if ($html) {
         // @codingStandardsIgnoreStart
-
-        header('Content-Type: application/json');
         echo $html;
         exit;
         // @codingStandardsIgnoreEnd

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -103,7 +103,7 @@ class BlogProvider implements ProviderInterface
                             ->getCollection($storeId)
                             ->addStoreFilter($storeId)
                             ->addActiveFilter();
-
+        
         $items = [];
 
         foreach ($postCollection as $key => $post) {
@@ -112,21 +112,6 @@ class BlogProvider implements ProviderInterface
                 'url'        => $urlHelper->getUrlPath($post->getIdentifier(), 'post'),
                 'title'      => $post->getTitle(),
                 'updated_at' => $post->getUpdatedAt(),
-            ]);
-        }
-
-        $catCollection = \Magento\Framework\App\ObjectManager::getInstance()
-            ->create(\Magefan\Blog\Model\Category::class)
-            ->getCollection($storeId)
-            ->addStoreFilter($storeId)
-            ->addActiveFilter();
-
-        foreach ($catCollection as $key => $cat) {
-            $items[] = new DataObject([
-                'id'         => $cat->getId(),
-                'url'        => $cat->getUrl(),
-                'title'      => $cat->getTitle(),
-                'updated_at' => $cat->getUpdatedAt(),
             ]);
         }
 

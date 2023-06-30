@@ -13,8 +13,7 @@ define([
         },
 
         isConfirmationMode: function () {
-            return window.mstNavConfirmationMode
-                || (window.mstNavConfirmOnMobile && window.innerWidth <= window.mstNavModeSwitchBreakpoint);
+            return window.mstNavConfirmationMode;
         },
 
         isSeoFilterEnabled: function () {

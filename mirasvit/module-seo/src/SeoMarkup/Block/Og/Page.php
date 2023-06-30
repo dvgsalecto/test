@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -20,7 +20,6 @@ namespace Mirasvit\SeoMarkup\Block\Og;
 
 use Magento\Cms\Helper\Page as CmsHelper;
 use Magento\Cms\Model\Page as CmsPage;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\View\Element\Template;
 use Magento\Theme\Block\Html\Header\Logo;
 use Mirasvit\Seo\Api\Service\StateServiceInterface;
@@ -67,12 +66,6 @@ class Page extends AbstractBlock
         if ($this->cmsPage->getOpenGraphImageUrl()) {
             $ogImage = $this->cmsPage->getOpenGraphImageUrl();
         } else {
-            // fix since Magento_Theme v101.1.4
-            if (class_exists('Magento\Theme\ViewModel\Block\Html\Header\LogoPathResolver') && !$this->logo->getData('logoPathResolver')) {
-                $logoPathResolver = ObjectManager::getInstance()->get('Magento\Theme\ViewModel\Block\Html\Header\LogoPathResolver');
-                $this->logo->setData('logoPathResolver', $logoPathResolver);
-            }
-
             $ogImage = $this->logo->getLogoSrc();
         }
 

@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -20,7 +20,6 @@ namespace Mirasvit\SearchAutocomplete\Controller\Ajax;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\LayoutInterface;
 use Mirasvit\Search\Block\Debug;
 use Mirasvit\SearchAutocomplete\Model\Result;
@@ -31,15 +30,11 @@ class Suggest extends Action
 
     private $layout;
 
-    private $serializer;
-
     public function __construct(
         Result          $result,
         LayoutInterface $layout,
-        Json            $serializer,
         Context         $context
     ) {
-        $this->serializer = $serializer;
         $this->result = $result;
         $this->layout = $layout;
 
@@ -58,7 +53,7 @@ class Suggest extends Action
         $response = $this->getResponse();
         $response->setHeader('cache-control', 'max-age=86400, public, s-maxage=86400', true);
 
-        $data = $this->serializer->serialize($this->result->toArray());
+        $data = \Zend_Json::encode($this->result->toArray());
         $data .= $this->layout->createBlock(Debug::class)->toHtml();
         $response->representJson($data);
     }

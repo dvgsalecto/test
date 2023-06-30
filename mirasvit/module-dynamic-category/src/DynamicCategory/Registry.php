@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-dynamic-category
- * @version   1.2.24
+ * @version   1.2.22
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -25,8 +25,6 @@ use Mirasvit\DynamicCategory\Api\Data\DynamicCategoryInterface;
 class Registry
 {
     private $categoryStoreIds = [];
-
-    private $newCategoryIds = [];
 
     private $coreRegistry;
 
@@ -138,15 +136,5 @@ class Registry
     public function setCategoryStoreIds(array $ids): void
     {
         $this->categoryStoreIds = $ids;
-    }
-
-    public function getNewCategoryIds(): array
-    {
-        return $this->newCategoryIds;
-    }
-
-    public function setNewCategoryIds(array $ids): void
-    {
-        $this->newCategoryIds = $ids;
     }
 }

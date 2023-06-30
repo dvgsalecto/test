@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -26,9 +26,6 @@ use Magento\Framework\ObjectManagerInterface;
 
 class ApplyCategorySearchPlugin extends GenericFilterList
 {
-    protected $layerCategoryConfig;
-    protected $objectManager;
-
     public function __construct(
         LayerCategoryConfig $layerCategoryConfig,
         ObjectManagerInterface $objectManager

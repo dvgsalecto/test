@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-optimize
- * @version   1.5.1
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.3.20
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -63,7 +63,7 @@ class Config
      */
     public function isException($img)
     {
-        $exceptions = (string)$this->scopeConfig->getValue(
+        $exceptions = $this->scopeConfig->getValue(
             'mst_optimize/optimize_image/image_lazy_load/exception',
             ScopeInterface::SCOPE_STORE
         );

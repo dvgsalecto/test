@@ -9,14 +9,13 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
 namespace Mirasvit\Feed\Cron;
 
-use Mirasvit\Core\Model\Date;
 use Mirasvit\Feed\Model\ResourceModel\Feed\History\CollectionFactory as HistoryCollectionFactory;
 
 class CleanHistory
@@ -41,7 +40,7 @@ class CleanHistory
      */
     public function execute()
     {
-        $date = new Date();
+        $date = new \Zend_Date();
         $date->subDay(3);
 
         $collection = $this->historyCollectionFactory->create()

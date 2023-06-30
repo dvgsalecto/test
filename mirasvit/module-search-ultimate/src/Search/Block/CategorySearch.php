@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -19,7 +19,6 @@ declare(strict_types=1);
 namespace Mirasvit\Search\Block;
 
 use Magento\Catalog\Model\Layer\Resolver as LayerResolver;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Search\Helper\Data as SearchHelper;
@@ -37,27 +36,18 @@ class CategorySearch extends Template
 
     protected $layerResolver;
 
-    protected $serializer;
-
     public function __construct(
         Context        $context,
         ConfigProvider $config,
         SearchHelper   $searchHelper,
-        LayerResolver  $layerResolver,
-        Json $serializer
+        LayerResolver  $layerResolver
     ) {
         $this->storeManager  = $context->getStoreManager();
         $this->config        = $config;
         $this->searchHelper  = $searchHelper;
         $this->layerResolver = $layerResolver;
-        $this->serializer = $serializer;
 
         parent::__construct($context);
-    }
-
-
-    public function jsonEncode($data) {
-        return $this->serializer->serialize($data);
     }
 
     public function getJsConfig(): array

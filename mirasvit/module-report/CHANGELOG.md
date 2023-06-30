@@ -1,35 +1,3 @@
-## 1.4.15
-*(2023-06-19)*
-
-#### Fixed
-* Fixed the issue with date ranges in Safari and Firefox
-
----
-
-## 1.4.14
-*(2023-05-03)*
-
-#### Fixed
-* Fixed the issue with date filter
-
----
-
-## 1.4.13
-*(2023-04-25)*
-
-#### Improvements
-* Fiscal Year
-
----
-
-## 1.4.12
-*(2023-03-15)*
-
-#### Fixed
-* PHP 8.2
-
----
-
 ## 1.4.11
 *(2023-01-24)*
 

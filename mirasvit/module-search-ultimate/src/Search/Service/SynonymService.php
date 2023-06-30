@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -20,6 +20,7 @@ namespace Mirasvit\Search\Service;
 use Magento\Search\Model\SynonymAnalyzer;
 use Magento\Search\Model\SynonymGroupFactory;
 use Magento\Search\Model\SynonymGroupRepository;
+use Mirasvit\Search\Repository\SynonymRepository as mstSynonymRepository;
 use Mirasvit\Core\Service\YamlService;
 
 class SynonymService
@@ -32,14 +33,12 @@ class SynonymService
 
     private $cloudService;
 
-    private $yamlService;
-
     public function __construct(
         SynonymGroupRepository $synonymRepository,
-        SynonymGroupFactory    $synonymFactory,
-        SynonymAnalyzer        $synonymAnalyzer,
-        CloudService           $cloudService,
-        YamlService            $yamlService
+        SynonymGroupFactory $synonymFactory,
+        SynonymAnalyzer $synonymAnalyzer,
+        CloudService $cloudService,
+        YamlService $yamlService
     ) {
         $this->synonymRepository = $synonymRepository;
         $this->synonymFactory    = $synonymFactory;
@@ -48,17 +47,20 @@ class SynonymService
         $this->yamlService       = $yamlService;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getSynonyms(array $terms, int $storeId): array
     {
         $result = [];
         foreach ($terms as $term) {
-            $term     = trim($term);
+            $term = trim($term);
             $synonyms = $this->synonymAnalyzer->getSynonymsForPhrase($term);
             if (empty($synonyms)) {
                 continue;
             }
 
-            foreach (explode(' ', $term) as $key => $word) {
+            foreach (explode(' ', $term) as $key => $word ) {
                 if (!isset($synonyms[$key])) {
                     continue;
                 }
@@ -93,11 +95,10 @@ class SynonymService
         if (file_exists($file)) {
             $content = file_get_contents($file);
         } else {
-            $file    = explode('/', $file);
-            $file    = end($file);
+            $file = explode('/', $file);
+            $file = end($file);
             $content = $this->cloudService->get('search', 'synonym', $file);
         }
-
 
         if (!$content) {
             yield $result;

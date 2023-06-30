@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -41,7 +41,7 @@ class Status extends Command
             $message = $e->getMessage();
         }
 
-        $jsonData = $this->serializer->serialize([
+        $jsonData = \Zend_Json::encode([
             'message' => $message,
             'note'    => $note,
             'success' => $success,

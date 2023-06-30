@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -25,9 +25,6 @@ use Mirasvit\Misspell\Service\QueryService;
 
 class Suggester
 {
-    protected $queryService;
-    protected $configProvider;
-    protected $suggestRepository;
     public function __construct(
         QueryService      $queryService,
         ConfigProvider    $configProvider,

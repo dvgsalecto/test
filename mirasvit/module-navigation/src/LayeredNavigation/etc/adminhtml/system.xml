@@ -23,32 +23,47 @@
                     </depends>
                 </field>
 
-                <field id="confirm_on_mobile" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="14">
-                    <label>Use 'By button click' mode on mobile</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="is_ajax_enabled">1</field>
-                        <field id="filter_applying_mode">instantly</field>
-                    </depends>
-                    <tooltip><![CDATA[If enabled the mobile pages will use confirmation mode while desktop pages will use instant mode]]></tooltip>
-                </field>
-
-                <field id="mode_switch_breakpoint" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="16">
-                    <label>Screen width breakpoint (px)</label>
-                    <depends>
-                        <field id="is_ajax_enabled">1</field>
-                        <field id="filter_applying_mode">instantly</field>
-                        <field id="confirm_on_mobile">1</field>
-                    </depends>
-                    <comment>
-                        If empty the extension will use 768px as a breakpoint
-                    </comment>
-                </field>
-
                 <field id="is_multiselect_enabled" translate="label" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
                     <label>Enabled Multiselect</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <tooltip><![CDATA[If Enabled extension will use multiselect for Layered Navigation]]></tooltip>
+                </field>
+
+                <field id="filter_item_display_mode" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Filter item Display Mode</label>
+                    <source_model>Mirasvit\LayeredNavigation\Model\Config\Source\FilterItemDisplayModeSource</source_model>
+                    <tooltip><![CDATA[Extension will use checkbox, circle or default options]]></tooltip>
+                    <comment><![CDATA[Note that option will not be applied if images added for multiselect attributes]]></comment>
+                </field>
+
+                <field id="display_options_background_color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
+                    <label>Checkbox or circle background color</label>
+                    <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
+                    <tooltip><![CDATA[Checkbox or circle background color. For example: #337ab7, #5cb85c, #5bc0de, #f0ad4e, #d9534f etc.]]></tooltip>
+                    <comment><![CDATA[If the field is empty, will be used default #fff]]></comment>
+                    <depends>
+                        <field id="multiselect_display_options" separator="|">checkbox|checkbox checkbox-circle</field>
+                    </depends>
+                </field>
+
+                <field id="display_options_border_color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="50">
+                    <label>Checkbox or circle border color</label>
+                    <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
+                    <tooltip><![CDATA[Checkbox or circle border color. For example: #337ab7, #5cb85c, #5bc0de, #f0ad4e, #d9534f etc.]]></tooltip>
+                    <comment><![CDATA[If the field is empty, will be used default #ccc]]></comment>
+                    <depends>
+                        <field id="multiselect_display_options" separator="|">checkbox|checkbox checkbox-circle</field>
+                    </depends>
+                </field>
+
+                <field id="display_options_checked_label_color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="60">
+                    <label>Checkbox or circle checked label color</label>
+                    <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
+                    <tooltip><![CDATA[Checkbox or circle checked label color. For example: #fff, #555555 etc.]]></tooltip>
+                    <comment><![CDATA[If the field is empty, will be used default #555555]]></comment>
+                    <depends>
+                        <field id="multiselect_display_options" separator="|">checkbox|checkbox checkbox-circle</field>
+                    </depends>
                 </field>
 
                 <field id="is_open_filter" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="70">
@@ -72,83 +87,20 @@
                 </field>
             </group>
 
-            <group id="styling" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="1000">
-                <label>Styling</label>
+            <group id="highlight" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="1000">
+                <label>Highlight</label>
 
-                <field id="filter_item_display_mode" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="5">
-                    <label>Filter item Display Mode</label>
-                    <config_path>mst_nav/general/filter_item_display_mode</config_path>
-                    <source_model>Mirasvit\LayeredNavigation\Model\Config\Source\FilterItemDisplayModeSource</source_model>
-                    <tooltip><![CDATA[Extension will use checkbox, circle or default options]]></tooltip>
-                    <comment><![CDATA[Note that option will not be applied if images added for multiselect attributes]]></comment>
-                </field>
-
-                <field id="display_options_background_color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="10">
-                    <label>Checkbox or circle background color</label>
-                    <config_path>mst_nav/general/display_options_background_color</config_path>
-                    <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
-                    <tooltip><![CDATA[Checkbox or circle background color. For example: #337ab7, #5cb85c, #5bc0de, #f0ad4e, #d9534f etc.]]></tooltip>
-                    <comment><![CDATA[If the field is empty, will be used default #fff]]></comment>
-                    <depends>
-                        <field id="filter_item_display_mode" separator="|">checkbox|circle</field>
-                    </depends>
-                </field>
-
-                <field id="display_options_border_color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="20">
-                    <label>Checkbox or circle border color</label>
-                    <config_path>mst_nav/general/display_options_border_color</config_path>
-                    <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
-                    <tooltip><![CDATA[Checkbox or circle border color. For example: #337ab7, #5cb85c, #5bc0de, #f0ad4e, #d9534f etc.]]></tooltip>
-                    <comment><![CDATA[If the field is empty, will be used default #ccc]]></comment>
-                    <depends>
-                        <field id="filter_item_display_mode" separator="|">checkbox|circle</field>
-                    </depends>
-                </field>
-
-                <field id="display_options_checked_label_color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
-                    <label>Checkbox or circle checked color</label>
-                    <config_path>mst_nav/general/display_options_checked_color</config_path>
-                    <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
-                    <tooltip><![CDATA[Checkbox or circle checked color. For example: #fff, #555555 etc.]]></tooltip>
-                    <comment><![CDATA[If the field is empty, will be used default #555555]]></comment>
-                    <depends>
-                        <field id="filter_item_display_mode" separator="|">checkbox|circle</field>
-                    </depends>
-                </field>
-
-                <field id="slider_main_color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
-                    <label>Slider main color</label>
-                    <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
-                    <tooltip><![CDATA[Color for part of the slider inside the range. For example: #fff, #555555 etc.]]></tooltip>
-                </field>
-
-                <field id="slider_secondary_color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="50">
-                    <label>Slider secondary color</label>
-                    <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
-                    <tooltip><![CDATA[Color for part of the slider outside the range. For example: #fff, #555555 etc.]]></tooltip>
-                </field>
-
-                <field id="is_enabled" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="80">
+                <field id="is_enabled" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="10">
                     <label>Enabled highlight for links</label>
-                    <config_path>mst_nav/highlight/is_enabled</config_path>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <tooltip><![CDATA[Highlight for links]]></tooltip>
                 </field>
 
-                <field id="color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="90">
+                <field id="color" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="20">
                     <label>Highlight color</label>
-                    <config_path>mst_nav/highlight/color</config_path>
                     <frontend_model>Mirasvit\LayeredNavigation\Block\Adminhtml\ColorOptions\Color</frontend_model>
                     <comment><![CDATA[If the field is empty, will be used default #ff5501]]></comment>
                     <tooltip><![CDATA[Set color for image and swatch borders and for selected links(if enabled)]]></tooltip>
-                    <depends>
-                        <field id="is_enabled">1</field>
-                    </depends>
-                </field>
-
-                <field id="additional_css" translate="label" type="textarea" sortOrder="100" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label>Additional CSS</label>
                 </field>
             </group>
 
@@ -219,16 +171,6 @@
                             <field id="is_enabled">1</field>
                         </depends>
                         <tooltip><![CDATA[If Enabled extension will show nested categories in Layered Navigation]]></tooltip>
-                    </field>
-
-                    <field id="is_nested_collapsible" translate="label" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="15">
-                        <label>Children categories collapsible</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <depends>
-                            <field id="is_enabled">1</field>
-                            <field id="is_show_nested_categories">1</field>
-                        </depends>
-                        <tooltip><![CDATA[If Enabled children categories will be collapsible and hidden by default]]></tooltip>
                     </field>
 
                     <field id="sort_by" translate="label" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="15">

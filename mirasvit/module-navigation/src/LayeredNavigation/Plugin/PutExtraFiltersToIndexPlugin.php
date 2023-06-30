@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Mirasvit\LayeredNavigation\Plugin;
 
-use Magento\Store\Model\StoreManagerInterface;
 use Mirasvit\LayeredNavigation\Model\DataMapper;
 
 class PutExtraFiltersToIndexPlugin
@@ -31,20 +30,16 @@ class PutExtraFiltersToIndexPlugin
 
     private $stockDataMapper;
 
-    private $storeManager;
-
     public function __construct(
         DataMapper\NewDataMapper $newDataMapper,
         DataMapper\OnSaleDataMapper $onSaleDataMapper,
         DataMapper\RatingDataMapper $ratingDataMapper,
-        DataMapper\StockDataMapper $stockDataMapper,
-        StoreManagerInterface $storeManager
+        DataMapper\StockDataMapper $stockDataMapper
     ) {
         $this->newDataMapper    = $newDataMapper;
         $this->onSaleDataMapper = $onSaleDataMapper;
         $this->ratingDataMapper = $ratingDataMapper;
         $this->stockDataMapper  = $stockDataMapper;
-        $this->storeManager     = $storeManager;
     }
 
     /**
@@ -62,13 +57,10 @@ class PutExtraFiltersToIndexPlugin
         }
 
         $storeId   = (int)$storeId;
-        $store     = $this->storeManager->getStore($storeId);
-        $websiteId = (int)$store->getWebsiteId();
-
         $documents = $this->newDataMapper->map($documents, $storeId);
         $documents = $this->onSaleDataMapper->map($documents, $storeId);
         $documents = $this->ratingDataMapper->map($documents, $storeId);
-        $documents = $this->stockDataMapper->map($documents, $websiteId);
+        $documents = $this->stockDataMapper->map($documents, $storeId);
 
         return [$documents, $storeId, $mappedIndexerId];
     }

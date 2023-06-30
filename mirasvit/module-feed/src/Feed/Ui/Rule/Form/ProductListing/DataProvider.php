@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -86,7 +86,7 @@ class DataProvider extends ProductDataProvider
         $sqlCondition = $ruleInstance->getConditions()->getSqlCondition($this->collection);
 
         if ($sqlCondition) {
-            $this->collection->getSelect()->where($sqlCondition)->group('e.entity_id');
+            $this->collection->getSelect()->where($sqlCondition)->group('entity_id');
         }
     }
 }

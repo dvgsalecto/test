@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -256,7 +256,7 @@ class CheckUrlObserver implements ObserverInterface
         if (stripos($urlFrom, 'http://') === false
             && stripos($urlFrom, 'https://') === false
         ) {
-            return $this->getSeoBaseUrl() . ltrim($urlFrom, '/');
+            return $this->urlManager->getBaseUrl() . ltrim($urlFrom, '/');
         }
 
         return $urlFrom;
@@ -361,13 +361,8 @@ class CheckUrlObserver implements ObserverInterface
         $urlToExploded = explode(self::REDIRECT_CHAIN, $urlTo);
         if (strpos($urlFrom, self::REDIRECT_CHAIN) !== false
             && isset($urlToExploded[1]) && !$urlToExploded[1]) {
-            preg_match('/([^\[]*)\[redirect_chain\](.*)/is', $urlFrom, $match);
-
-            $urlToPostfix = $currentUrl;
-
-            foreach ($match as $m) {
-                $urlToPostfix = str_replace($m, '', $urlToPostfix);
-            }
+            $urlFromPrepared = str_replace(self::REDIRECT_CHAIN, '', $urlFrom);
+            $urlToPostfix    = str_replace($urlFromPrepared, '', $currentUrl);
         }
 
         if ((isset($urlToPostfix) && $urlToPostfix

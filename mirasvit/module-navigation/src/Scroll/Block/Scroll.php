@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -55,20 +55,19 @@ class Scroll extends Template
         $nextText = $this->configProvider->getLoadNextText();
 
         return [
-            'mode'                => $this->configProvider->getMode(),
-            'pageLimit'           => $this->configProvider->getPageLimit(),
-            'pageNum'             => $currentPage,
-            'initPageNum'         => $currentPage,
-            'prevPageNum'         => $currentPage === 1 ? false : $currentPage - 1,
-            'nextPageNum'         => $currentPage === (int)$pager->getLastPageNum() ? false : $currentPage + 1,
-            'lastPageNum'         => $pager->getLastPageNum(),
-            'loadPrevText'        => (string)__($prevText),
-            'loadNextText'        => (string)__($nextText),
-            'itemsTotal'          => (int)$pager->getCollection()->getSize(),
-            'itemsLimit'          => (int)$pager->getLimit(),
-            'progressBarEnabled'  => $this->configProvider->isProgressBarEnabled(),
-            'progressBarText'     => $this->configProvider->getProgressBarLabel(),
-            'productListSelector' => $this->configProvider->getProductListSelector()
+            'mode'               => $this->configProvider->getMode(),
+            'pageLimit'          => $this->configProvider->getPageLimit(),
+            'pageNum'            => $currentPage,
+            'initPageNum'        => $currentPage,
+            'prevPageNum'        => $currentPage === 1 ? false : $currentPage - 1,
+            'nextPageNum'        => $currentPage === (int)$pager->getLastPageNum() ? false : $currentPage + 1,
+            'lastPageNum'        => $pager->getLastPageNum(),
+            'loadPrevText'       => (string)__($prevText),
+            'loadNextText'       => (string)__($nextText),
+            'itemsTotal'         => (int)$pager->getCollection()->getSize(),
+            'itemsLimit'         => (int)$pager->getLimit(),
+            'progressBarEnabled' => $this->configProvider->isProgressBarEnabled(),
+            'progressBarText'    => $this->configProvider->getProgressBarLabel(),
         ];
     }
 

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -30,12 +30,12 @@ class ExtraFilterConfigProvider
     const STOCK_FILTER                 = 'mst_stock_status';
     const IN_STOCK_FILTER              = 2;
     const OUT_OF_STOCK_FILTER          = 1;
-    const RATING_FILTER                = 'mst_rating_summary';
+    const RATING_FILTER                = 'rating_summary';
     const SEARCH_FILTER                = 'search';
     const NEW_FILTER_FRONT_PARAM       = 'mst_new_products';
     const ON_SALE_FILTER_FRONT_PARAM   = 'mst_on_sale';
     const STOCK_FILTER_FRONT_PARAM     = 'mst_stock';
-    const RATING_FILTER_FRONT_PARAM    = 'mst_rating';
+    const RATING_FILTER_FRONT_PARAM    = 'rating';
     const SEARCH_FILTER_FRONT_PARAM    = 'search';
     const NEW_FILTER_DEFAULT_LABEL     = 'New';
     const ON_SALE_FILTER_DEFAULT_LABEL = 'Sale';
@@ -172,12 +172,6 @@ class ExtraFilterConfigProvider
         return (bool)$this->scopeConfig->getValue('mst_nav/general/is_show_nested_categories', ScopeInterface::SCOPE_STORE);
     }
 
-    public function isCategoriesCollapsible(): bool
-    {
-        return $this->isShowNestedCategories()
-            && (bool)$this->scopeConfig->getValue('mst_nav/extra_filter/category/is_nested_collapsible', ScopeInterface::SCOPE_STORE);
-    }
-
     public function getCategoryFilterSortOptionsBy(): string
     {
         $value = $this->scopeConfig->getValue('mst_nav/extra_filter/category/sort_by', ScopeInterface::SCOPE_STORE);
@@ -192,7 +186,6 @@ class ExtraFilterConfigProvider
 
     public function transformToMethod(string $str): string
     {
-        $str = str_replace('mst_', '', $str);
         return str_replace('_', '', ucwords($str, '_'));
     }
 }

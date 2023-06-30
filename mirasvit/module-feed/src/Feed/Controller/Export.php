@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,7 +18,6 @@ namespace Mirasvit\Feed\Controller;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\Serialize\Serializer\Json;
 use Mirasvit\Feed\Model\FeedFactory;
 use Mirasvit\Feed\Model\Feed\Exporter;
 
@@ -35,19 +34,18 @@ abstract class Export extends Action
     protected $exporter;
 
     /**
-     * @var Json
+     * Export constructor.
+     * @param FeedFactory $feedFactory
+     * @param Exporter $exporter
+     * @param Context $context
      */
-    protected $serializer;
-
     public function __construct(
         FeedFactory $feedFactory,
         Exporter $exporter,
-        Json $serializer,
         Context $context
     ) {
         $this->feedFactory = $feedFactory;
         $this->exporter = $exporter;
-        $this->serializer = $serializer;
 
         parent::__construct($context);
     }

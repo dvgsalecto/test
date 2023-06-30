@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-report
- * @version   1.4.15
+ * @version   1.4.11
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -87,21 +87,9 @@ class DateService implements DateServiceInterface
         $intervals[self::THIS_QUARTER] = 'Quarter to date';
         $intervals[self::THIS_YEAR]    = 'Year to date';
 
-        if ($this->getFiscalYearStart()) {
-//            $intervals[self::FISCAL_THIS_MONTH]   = 'Month to Date (fiscal)';
-//            $intervals[self::FISCAL_THIS_QUARTER] = 'Quarter to Date (fiscal)';
-            $intervals[self::FISCAL_THIS_YEAR] = 'Year to date (fiscal)';
-        }
-
         $intervals[self::PREVIOUS_WEEK]  = 'Last week';
         $intervals[self::PREVIOUS_MONTH] = 'Last month';
         $intervals[self::PREVIOUS_YEAR]  = 'Last year';
-
-        if ($this->getFiscalYearStart()) {
-//            $intervals[self::FISCAL_PREV_MONTH]   = 'Last Month (fiscal)';
-//            $intervals[self::FISCAL_PREV_QUARTER] = 'Last Quarter (fiscal)';
-            $intervals[self::FISCAL_PREV_YEAR] = 'Last year (fiscal)';
-        }
 
         $intervals[self::LIFETIME] = 'Lifetime';
 
@@ -120,20 +108,6 @@ class DateService implements DateServiceInterface
         }
 
         return $intervals;
-    }
-
-    /**
-     * @return array|null
-     */
-    private function getFiscalYearStart()
-    {
-        $fiscalYearStart = $this->scopeConfig->getValue('reports/dashboard/ytd_start');
-
-        if (!$fiscalYearStart || $fiscalYearStart == '01,01' || $fiscalYearStart == '1,1') {
-            return null;
-        }
-
-        return explode(',', $fiscalYearStart);
     }
 
     /**
@@ -307,36 +281,6 @@ class DateService implements DateServiceInterface
 
                 break;
 
-            case self::FISCAL_THIS_YEAR:
-                list($month, $day) = $this->getFiscalYearStart();
-
-                $from->setDay((int)$day)
-                    ->setMonth((int)$month)
-                    ->setTime('00:00:00');
-
-                $to->setDay((int)$day)
-                    ->setMonth((int)$month)
-                    ->addDay($to->get(Date::LEAPYEAR) ? 365 : 364)
-                    ->setTime('23:59:59');
-
-                break;
-
-            case self::FISCAL_PREV_YEAR:
-                list($month, $day) = $this->getFiscalYearStart();
-
-                $from->setDay((int)$day)
-                    ->setMonth((int)$month)
-                    ->subYear(1)
-                    ->setTime('00:00:00');
-
-                $to->setDay((int)$day)
-                    ->setMonth((int)$month)
-                    ->addDay($to->get(Date::LEAPYEAR) ? 365 : 364)
-                    ->subYear(1)
-                    ->setTime('23:59:59');
-
-                break;
-
             case self::LIFETIME:
             case 'life':
                 $from->subYear(20);
@@ -364,7 +308,7 @@ class DateService implements DateServiceInterface
         switch ($code) {
             case self::TODAY:
             case self::YESTERDAY:
-                $hint = $from->get('M, d HH:mm') . ' - ' . $to->get('HH:mm');
+                $hint = $from->get('MMM, d HH:mm') . ' - ' . $to->get('HH:mm');
                 break;
 
             case self::THIS_WEEK:
@@ -377,22 +321,20 @@ class DateService implements DateServiceInterface
             case self::THIS_QUARTER:
             case self::PREVIOUS_QUARTER:
                 if ($from->get('YYYY') == $to->get('YYYY') && $from->get('YYYY') == date('Y')) {
-                    if ($from->get('M') == $to->get('M')) {
-                        $hint = $from->get('M, d') . ' - ' . $to->get('d');
+                    if ($from->get('MMM') == $to->get('MMM')) {
+                        $hint = $from->get('MMM, d') . ' - ' . $to->get('d');
                     } else {
-                        $hint = $from->get('M, d') . ' - ' . $to->get('M, d');
+                        $hint = $from->get('MMM, d') . ' - ' . $to->get('MMM, d');
                     }
                 } else {
-                    $hint = $from->get('M, d YYYY') . ' - ' . $to->get('M, d YYYY');
+                    $hint = $from->get('MMM, d YYYY') . ' - ' . $to->get('MMM, d YYYY');
                 }
 
                 break;
 
             case self::THIS_YEAR:
             case self::PREVIOUS_YEAR:
-            case self::FISCAL_THIS_YEAR:
-            case self::FISCAL_PREV_YEAR:
-                $hint = $from->get('M, d YYYY') . ' - ' . $to->get('M, d YYYY');
+                $hint = $from->get('MMM, d YYYY') . ' - ' . $to->get('MMM, d');
                 break;
 
             //            case self::LAST_24H:
@@ -400,7 +342,7 @@ class DateService implements DateServiceInterface
             //                break;
 
             case self::LIFETIME:
-                $hint = $from->get('M, d YYYY') . ' - ' . $to->get('M, d YYYY');
+                $hint = $from->get('MMM, d YYYY') . ' - ' . $to->get('MMM, d YYYY');
                 break;
         }
 

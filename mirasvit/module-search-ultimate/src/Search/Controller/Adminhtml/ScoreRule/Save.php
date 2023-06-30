@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -119,7 +119,7 @@ class Save extends AbstractScoreRule
 
             $conditions = $rule->getConditions()->asArray();
 
-            $conditions = $this->serializer->serialize($conditions);
+            $conditions = \Zend_Json::encode($conditions);
 
             $data[ScoreRuleInterface::CONDITIONS_SERIALIZED] = $conditions;
         }
@@ -129,7 +129,7 @@ class Save extends AbstractScoreRule
 
             $postConditions = $rule->getActions()->asArray();
 
-            $postConditions = $this->serializer->serialize($postConditions);
+            $postConditions = \Zend_Json::encode($postConditions);
 
             $data[ScoreRuleInterface::POST_CONDITIONS_SERIALIZED] = $postConditions;
         }

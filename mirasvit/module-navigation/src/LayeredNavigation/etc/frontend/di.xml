@@ -69,10 +69,10 @@
     <type name="Mirasvit\LayeredNavigation\Model\Layer\FilterList">
         <arguments>
             <argument name="additionalFilters" xsi:type="array">
-                <item name="mst_new" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\NewFilter</item>
-                <item name="mst_on_sale" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\OnSaleFilter</item>
-                <item name="mst_stock" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\StockFilter</item>
-                <item name="mst_rating" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\RatingFilter</item>
+                <item name="new" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\NewFilter</item>
+                <item name="on_sale" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\OnSaleFilter</item>
+                <item name="stock" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\StockFilter</item>
+                <item name="rating" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\RatingFilter</item>
                 <item name="search" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\SearchFilter</item>
             </argument>
         </arguments>
@@ -199,11 +199,6 @@
 
     <type name="Magento\Elasticsearch7\SearchAdapter\Mapper">
         <plugin name="Mirasvit_LayeredNavigation::MultiselectAndLogic"
-                type="Mirasvit\LayeredNavigation\Plugin\Frontend\Elasticsearch\SearchAdapter\Mapper\MultiselectAndLogicPlugin"/>
-    </type>
-
-    <type name="Magento\OpenSearch\SearchAdapter\Mapper">
-        <plugin name="Mirasvit_LayeredNavigation::OSMultiselectAndLogic"
                 type="Mirasvit\LayeredNavigation\Plugin\Frontend\Elasticsearch\SearchAdapter\Mapper\MultiselectAndLogicPlugin"/>
     </type>
 

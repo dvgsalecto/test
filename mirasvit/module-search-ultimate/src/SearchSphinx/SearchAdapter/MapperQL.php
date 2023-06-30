@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -21,7 +21,6 @@ use Magento\Framework\Indexer\ScopeResolver\IndexScopeResolver;
 use Magento\Framework\Search\Request\Query\BoolExpression as BoolQuery;
 use Magento\Framework\Search\Request\QueryInterface as RequestQueryInterface;
 use Magento\Framework\Search\RequestInterface;
-use Magento\Framework\Serialize\Serializer\Json;
 use Mirasvit\Search\Repository\IndexRepository;
 use Mirasvit\Search\Service\DebugService;
 use Mirasvit\SearchMysql\SearchAdapter\Index\IndexNameResolver;
@@ -65,15 +64,12 @@ class MapperQL
 
     private $indexNameResolver;
 
-    private $serializer;
-
     public function __construct(
         IndexRepository       $indexRepository,
         QueryContainerFactory $queryContainerFactory,
         MatchQuery            $matchBuilder,
         IndexScopeResolver    $scopeResolver,
         IndexNameResolver     $indexNameResolver,
-        Json                  $serializer,
         Engine                $engine
     ) {
         $this->queryContainerFactory = $queryContainerFactory;
@@ -81,7 +77,6 @@ class MapperQL
         $this->indexRepository       = $indexRepository;
         $this->scopeResolver         = $scopeResolver;
         $this->indexNameResolver     = $indexNameResolver;
-        $this->serializer            = $serializer;
         $this->engine                = $engine;
     }
 
@@ -176,7 +171,7 @@ class MapperQL
         $result = $sphinxQuery->execute();
 
         DebugService::log($sphinxQuery->getCompiled(), 'search_query');
-        DebugService::log($this->serializer->serialize($result), 'search_results');
+        DebugService::log(\Zend_Json::encode($result), 'search_results');
 
         $pairs = [];
         foreach ($result as $item) {

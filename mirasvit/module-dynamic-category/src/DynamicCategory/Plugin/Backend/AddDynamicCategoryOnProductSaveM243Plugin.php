@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-dynamic-category
- * @version   1.2.24
+ * @version   1.2.22
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -73,10 +73,6 @@ class AddDynamicCategoryOnProductSaveM243Plugin
         ) {
             return $product;
         }
-
-        $newCategories = (array_diff((array)$product->getCategoryIds(), (array)$product->getOrigData('category_ids')));
-
-        $this->registry->setNewCategoryIds($newCategories);
 
         $this->categoryLinkManagement->assignProductToCategories(
             $product->getSku(),

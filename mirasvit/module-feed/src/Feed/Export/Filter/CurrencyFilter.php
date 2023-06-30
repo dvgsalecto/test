@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -65,7 +65,8 @@ class CurrencyFilter
 
     /**
      * Convert
-     * | Converts price from base store currency to 'x' currency
+     *
+     * Convert price from base store currency to 'x' currency.
      *
      * @param string $input
      * @param string $toCurrency
@@ -84,7 +85,8 @@ class CurrencyFilter
 
     /**
      * Include Tax
-     * | Adds tax percent number to product price
+     *
+     * Add tax to product price
      *
      * @param float $price
      * @return float
@@ -107,7 +109,8 @@ class CurrencyFilter
 
     /**
      * Exclude Tax
-     * | Excludes tax percent number from the product price
+     *
+     * Exclude tax to product price
      *
      * @param float $price
      * @return float

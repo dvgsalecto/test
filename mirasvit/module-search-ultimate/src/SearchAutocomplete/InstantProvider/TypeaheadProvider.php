@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -30,7 +30,7 @@ if (stripos(__DIR__, 'vendor') !== false) {
 if (!file_exists($configFile)) {
     return;
 }
-$config = json_decode(file_get_contents($configFile));
+$config = \Zend_Json::decode(file_get_contents($configFile));
 
 if (!isset($config['-1/typeahead']) || $config['-1/typeahead'] == false) {
     return;

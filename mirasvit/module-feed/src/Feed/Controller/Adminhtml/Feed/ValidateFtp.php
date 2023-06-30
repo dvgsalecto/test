@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,7 +18,6 @@ namespace Mirasvit\Feed\Controller\Adminhtml\Feed;
 
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
-use Magento\Framework\Serialize\Serializer\Json;
 use Mirasvit\Feed\Controller\Adminhtml\Feed;
 use Mirasvit\Feed\Model\FeedFactory;
 use Mirasvit\Feed\Model\Feed\Deliverer;
@@ -29,8 +28,6 @@ class ValidateFtp extends Feed
      * @var Deliverer
      */
     protected $deliverer;
-
-    protected $serializer;
 
     /**
      * {@inheritdoc}
@@ -43,11 +40,9 @@ class ValidateFtp extends Feed
         Deliverer $deliverer,
         FeedFactory $feedFactory,
         Registry $registry,
-        Json $serializer,
         Context $context
     ) {
         $this->deliverer = $deliverer;
-        $this->serializer = $serializer;
 
         parent::__construct($feedFactory, $registry, $context);
     }
@@ -75,7 +70,7 @@ class ValidateFtp extends Feed
 
         /** @var \Magento\Framework\App\Response\Http\Interceptor $response */
         $response = $this->getResponse();
-        $response->representJson($this->serializer->serialize([
+        $response->representJson(\Zend_Json::encode([
             'status'  => $status,
             'message' => $message
         ]));

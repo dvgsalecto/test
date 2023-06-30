@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -38,7 +38,8 @@ class ArrayFilter
 
     /**
      * First
-     * | Return first element in array
+     *
+     * Return first element in array.
      *
      * @param array $input
      * @return string
@@ -50,7 +51,8 @@ class ArrayFilter
 
     /**
      * Last
-     * | Return last element in array
+     *
+     * Return last element in array.
      *
      * @param array $input
      * @return string
@@ -62,7 +64,8 @@ class ArrayFilter
 
     /**
      * Join
-     * | Join array to string using glue
+     *
+     * Join array to string using glue.
      *
      * @param array $input
      * @param string $glue
@@ -77,7 +80,6 @@ class ArrayFilter
 
     /**
      * Count
-     * | Counts the number of elements in array
      *
      * @param array $input
      * @return integer
@@ -89,7 +91,8 @@ class ArrayFilter
 
     /**
      * Select
-     * | Select values for key from array
+     *
+     * Select values for key from array
      *
      * @param array $input
      * @param string $key
@@ -112,7 +115,6 @@ class ArrayFilter
 
     /**
      * Convert array of object to array of scalars
-     *
      *
      * @param array $input
      * @return array

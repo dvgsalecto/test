@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -25,7 +25,6 @@ use Magento\Eav\Model\Entity\Attribute;
 use Magento\Framework\Data\FormFactory;
 use Magento\Framework\Registry;
 use Mirasvit\LayeredNavigation\Api\Data\AttributeConfigInterface;
-use Mirasvit\LayeredNavigation\Model\ConfigProvider;
 use Mirasvit\LayeredNavigation\Repository\AttributeConfigRepository;
 
 class Navigation extends Generic implements TabInterface
@@ -97,17 +96,6 @@ class Navigation extends Generic implements TabInterface
             return parent::_prepareForm();
         }
 
-        if (in_array($this->attribute->getAttributeCode(), ConfigProvider::ATTRIBUTES_EXCEPTIONS)) {
-            $form->addFieldset('base_fieldset', [
-                'legend' => __('Layered Navigation configuration is not available for this attribute'),
-                'class'  => 'fieldset-wide',
-            ]);
-
-            $this->setForm($form);
-
-            return parent::_prepareForm();
-        }
-
         $frontendInput = $this->attribute->getFrontendInput();
 
         $form->addField(AttributeConfigInterface::ATTRIBUTE_CODE, 'hidden', [
@@ -119,7 +107,7 @@ class Navigation extends Generic implements TabInterface
             AttributeConfigInterface::class => $attributeConfig,
             Attribute::class                => $this->attribute,
         ]);
-        
+
         $form->addField('visibility', Fieldset\VisibilityFieldset::class, [
             AttributeConfigInterface::class => $attributeConfig,
             Attribute::class                => $this->attribute,

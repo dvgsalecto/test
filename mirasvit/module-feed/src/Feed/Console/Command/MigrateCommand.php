@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -56,7 +56,10 @@ class MigrateCommand extends AbstractCommand
             $this->appState->setAreaCode('adminhtml');
         } catch (\Exception $e) {
         }
-        mkdir('app/code/Mirasvit/Feed',0777, true);
+
+        @mkdir('app/code');
+        @mkdir('app/code/Mirasvit');
+        @mkdir('app/code/Mirasvit/Feed');
 
         /** @var \Mirasvit\Feed\Model\Dynamic\Variable $dv */
         foreach ($this->collectionFactory->create() as $dv) {

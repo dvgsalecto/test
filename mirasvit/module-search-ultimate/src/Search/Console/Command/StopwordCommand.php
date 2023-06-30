@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -34,9 +34,8 @@ class StopwordCommand extends Command
     const INPUT_REMOVE = 'remove';
 
     private $repository;
-    private $service;
 
-    private $directoryList;
+    private $service;
 
     public function __construct(
         StopwordRepository $stopwordRepository,

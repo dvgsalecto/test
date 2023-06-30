@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -164,8 +164,7 @@ class TextProcessorService
         }
 
         $links = $this->getLinksCollection();
-        $links->getSelect()->where(implode(' OR ', $where))
-            ->order(['sort_order ASC', 'LENGTH(main_table.keyword) desc']);
+        $links->getSelect()->where(implode(' OR ', $where))->order('sort_order ASC');
 
         try {
             $links->load(); //need to load collection to catch SQLERROR if occured
@@ -514,7 +513,6 @@ class TextProcessorService
 
         if ($direct == 1) {
             $prepareSourse = strrev($prepareSourse);
-            $replace       = strrev($replace);
         }
 
         // return previously replaced part

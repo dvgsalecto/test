@@ -54,12 +54,12 @@
                 <label>Features</label>
 
                 <field id="search_in" translate="label" type="select" sortOrder="10" showInDefault="1">
-                    <label>Enable "Search In"</label>
+                    <label>Enable "Search In" </label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="category_search" translate="label" type="select" sortOrder="15" showInDefault="1">
-                    <label>Enable Search On Category Page</label>
+                    <label>Enable Search On Category Page </label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="min_products_qty_to_display" translate="label comment tooltip" type="text" sortOrder="16" showInDefault="1">
@@ -106,16 +106,14 @@
                 </field>
                 <field id="ignored_ips" translate="label comment tooltip" type="text" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Ignored IPs</label>
-                    <comment><![CDATA[Doesn't track search queries for these IPs, comma separated]]></comment>
+                    <comment>
+                        <![CDATA[
+                            Doesn't track search queries for these IPs, comma separated
+                        ]]>
+                    </comment>
                 </field>
-
                 <field id="allow_ascii_folding" translate="label" type="select" sortOrder="90" showInDefault="1">
                     <label>Enable ASCII Folding</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-
-                <field id="content_widget_indexation" translate="label" type="select" sortOrder="90" showInDefault="1">
-                    <label>Enable Content Widget Indexation</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>

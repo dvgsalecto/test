@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -54,8 +54,6 @@ class CssCreatorService
         $css = $this->getDisplayOptionsCss($storeId, $css);
         $css = $this->getShowOpenedFiltersCss($storeId, $css);
         $css = $this->getDisplayFilterCss($storeId, $css);
-
-        $css .= $this->configProvider->getAdditionalCss();
 
         return $css;
     }
@@ -159,25 +157,22 @@ class CssCreatorService
     private function getDisplayOptionsCss(int $storeId, string $css): string
     {
         if ($backgroundColor = $this->configProvider->getDisplayOptionsBackgroundColor()) {
-            $css .= '.mst-nav__label .mst-nav__label-item input[type="checkbox"], '
-                . '.mst-nav__label .mst-nav__label-item input[type="radio"] {background:'
-                . $backgroundColor . '!important;}';
+            $css
+                .= '.checkbox input[type="checkbox"]:checked + label::before,
+                      .checkbox input[type="radio"]:checked + label::before { background-color:'
+                . $backgroundColor . '; } ';
         }
         if ($borderColor = $this->configProvider->getDisplayOptionsBorderColor()) {
-            $css .= '.mst-nav__label .mst-nav__label-item input[type="checkbox"], '
-                . '.mst-nav__label .mst-nav__label-item input[type="radio"] {border-color:'
-                . $borderColor . '!important;}';
+            $css
+                .= '.checkbox input[type="checkbox"]:checked + label::before,
+                      .checkbox input[type="radio"]:checked + label::before { border-color:'
+                . $borderColor . '; } ';
         }
-        if ($checkedColor = $this->configProvider->getDisplayOptionsCheckedColor()) {
-            $css .= '.mst-nav__label .mst-nav__label-item input[type="checkbox"]:checked:before, '
-                . '.mst-nav__label .mst-nav__label-item input[type="radio"]:checked:before {background:'
-                . $checkedColor . '!important;}';
-        }
-        if ($sliderMainColor = $this->configProvider->getSliderMainColor()) {
-            $css .= '.mst-nav__slider .mst-nav__slider-slider .ui-slider-range {background:' . $sliderMainColor . ';}';
-        }
-        if ($sliderSecondaryColor = $this->configProvider->getSliderSecondaryColor()) {
-            $css .= '.mst-nav__slider .mst-nav__slider-slider {background:' . $sliderSecondaryColor . ';}';
+        if ($checkedLabelColor = $this->configProvider->getDisplayOptionsCheckedLabelColor()) {
+            $css
+                .= '.checkbox input[type="checkbox"]:checked+label::after,
+                     .checkbox input[type="radio"]:checked+label::after { color:'
+                . $checkedLabelColor . '; } ';
         }
 
         return $css;

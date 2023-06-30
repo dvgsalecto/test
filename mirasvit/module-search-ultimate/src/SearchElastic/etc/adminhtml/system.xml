@@ -9,7 +9,7 @@
                     <button_label>Check Status</button_label>
                     <frontend_model>Mirasvit\SearchElastic\Block\Adminhtml\Config\Form\Field\Command\Status</frontend_model>
                     <depends>
-                        <field id="engine" separator=",">elasticsearch8,opensearch,elasticsearch7,elasticsearch6,elasticsearch5</field>
+                        <field id="engine" separator=",">elasticsearch7,elasticsearch6,elasticsearch5</field>
                     </depends>
                 </field>
 
@@ -18,7 +18,7 @@
                     <comment><![CDATA[Deletes all indexes available for current Elasticsearch connection.]]></comment>
                     <frontend_model>Mirasvit\SearchElastic\Block\Adminhtml\Config\Form\Field\Command\Reset</frontend_model>
                     <depends>
-                        <field id="engine" separator=",">elasticsearch8,opensearch,elasticsearch7,elasticsearch6,elasticsearch5</field>
+                        <field id="engine" separator=",">elasticsearch7,elasticsearch6,elasticsearch5</field>
                     </depends>
                 </field>
 
@@ -27,7 +27,7 @@
                     <comment><![CDATA[Deletes all indexes by index prefix available for current Elasticsearch connection.]]></comment>
                     <frontend_model>Mirasvit\SearchElastic\Block\Adminhtml\Config\Form\Field\Command\ResetStore</frontend_model>
                     <depends>
-                        <field id="engine" separator=",">elasticsearch8,opensearch,elasticsearch7,elasticsearch6,elasticsearch5</field>
+                        <field id="engine" separator=",">elasticsearch7,elasticsearch6,elasticsearch5</field>
                     </depends>
                 </field>
             </group>

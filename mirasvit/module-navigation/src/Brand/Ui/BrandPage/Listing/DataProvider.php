@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -72,15 +72,6 @@ class DataProvider extends UiDataProvider
 
             if ($item->getData(BrandPageInterface::LOGO)) {
                 $itemData[BrandPageInterface::LOGO . '_src'] = $this->imageUrlService->getImageUrl($item->getLogo());
-            }
-
-            $itemData[BrandPageInterface::BRAND_TITLE] = $item->getBrandTitle();
-
-            if ($itemData['store_id'] != 0) { // remove admin store id if brand configured for particular stores
-                $stores = explode(',', $itemData['store_id']);
-                $stores = array_filter($stores);
-
-                $itemData['store_id'] = implode(',', $stores);
             }
 
             $arrItems['items'][] = $itemData;

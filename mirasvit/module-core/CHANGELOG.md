@@ -1,13 +1,4 @@
 # Change Log
-## 1.4.17
-*(2023-06-12)*
-
-#### Fixed
-* Issue with validation
-
----
-
-
 ## 1.4.16
 *(2023-05-19)*
 

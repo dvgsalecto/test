@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-optimize
- * @version   1.5.1
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.3.20
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -62,16 +62,8 @@ class WebpProcessor implements OutputProcessorInterface
             return $content;
         }
 
-        // Case 1: images with js code after src
         $content = preg_replace_callback(
-            '/(<\s*img[^>]+)src\s*=\s*["\']([^"\'\?]+)(\?[^"\']*)?[\'"]([^>]{0,}(?:=>)+[^>]{0,}>(\s*<\/picture>)?)/is',
-            [$this, 'replaceCallback'],
-            $content
-        );
-
-        // Case 2: images with possible js code before src
-        $content = preg_replace_callback(
-            '/(<\s*img[^>]+(?:=>[^>]+)*)src\s*=\s*["\']([^"\'\?]+)(\?[^"\']*)?[\'"]([^>]{0,}>(\s*<\/picture>)?)/is',
+            '/(<\s*img[^>]+)src\s*=\s*["\']([^"\'\?]+)(\?[^"\']*)?[\'"]([^>]{0,}>(\s*<\/picture>)?)/is',
             [$this, 'replaceCallback'],
             $content
         );
@@ -95,11 +87,6 @@ class WebpProcessor implements OutputProcessorInterface
         $url = $match[2];
 
         if (strpos($url, $this->mediaUrl) === false) {
-            return $match[0];
-        }
-
-        // already processed by first regex
-        if (strpos($url, Config::WEBP_SUFFIX) !== false) {
             return $match[0];
         }
 

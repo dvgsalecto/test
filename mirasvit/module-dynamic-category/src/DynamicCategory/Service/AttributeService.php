@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-dynamic-category
- * @version   1.2.24
+ * @version   1.2.22
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -60,25 +60,20 @@ class AttributeService
 
         $info = $this->getAttributeInfo($name);
 
-        $idField = 'entity_id';
-        if (!$this->resource->getConnection()->tableColumnExists($this->resource->getTableName($info['table']), 'entity_id')) {
-            $idField = 'row_id';
-        }
-
         $query = $this->resource->getConnection()
             ->select()
-            ->from(['ev' => $this->resource->getTableName($info['table'])], [$idField, 'value'])
+            ->from(['ev' => $this->resource->getTableName($info['table'])], ['entity_id', 'value'])
             ->where('ev.attribute_id = ?', $info['id'])
             ->where('ev.store_id IN(?)', $storeIds)
-            ->where('ev.' . $idField . ' IN(?)', $productIds)
+            ->where('ev.entity_id IN(?)', $productIds)
             ->order('ev.store_id')
-            ->group('ev.' . $idField);
+            ->group('ev.entity_id');
 
         $rows = $this->resource->getConnection()->fetchAll($query);
 
         $data = [];
         foreach ($rows as $row) {
-            $data[$row[$idField]] = $row['value'];
+            $data[$row['entity_id']] = $row['value'];
         }
 
         return $data;

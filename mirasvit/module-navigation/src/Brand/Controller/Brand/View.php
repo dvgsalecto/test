@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -29,7 +29,6 @@ use Mirasvit\Brand\Api\Data\BrandInterface;
 use Mirasvit\Brand\Registry;
 use Mirasvit\Brand\Repository\BrandRepository;
 use Mirasvit\Brand\Service\BrandPageMetaService;
-use Mirasvit\Brand\Service\BrandPageService;
 
 class View implements HttpGetActionInterface
 {
@@ -45,8 +44,6 @@ class View implements HttpGetActionInterface
 
     private $brandRepository;
 
-    private $brandPageService;
-
     private $context;
 
     public function __construct(
@@ -56,7 +53,6 @@ class View implements HttpGetActionInterface
         CategoryRepositoryInterface $categoryRepository,
         Session $catalogSession,
         BrandPageMetaService $brandPageMetaService,
-        BrandPageService $brandPageService,
         Context $context
     ) {
         $this->registry             = $registry;
@@ -65,7 +61,6 @@ class View implements HttpGetActionInterface
         $this->catalogSession       = $catalogSession;
         $this->brandPageMetaService = $brandPageMetaService;
         $this->brandRepository      = $brandRepository;
-        $this->brandPageService     = $brandPageService;
         $this->context              = $context;
     }
 
@@ -91,10 +86,6 @@ class View implements HttpGetActionInterface
             ->create(ResultFactory::TYPE_PAGE);
 
         $page->addPageLayoutHandles(['brand' => $brand->getPage()->getAttributeOptionId()]);
-
-        if ($this->brandPageService->shouldDisplayProducts()) {
-            $page->addPageLayoutHandles(['type' => 'layered'], null, false);
-        }
 
         return $this->brandPageMetaService->apply($page);
     }

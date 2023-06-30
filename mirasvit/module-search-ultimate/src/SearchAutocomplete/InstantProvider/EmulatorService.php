@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -19,13 +19,13 @@ declare(strict_types=1);
 namespace Mirasvit\SearchAutocomplete\InstantProvider;
 
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\State;
 use Magento\Framework\Phrase;
 use Magento\Framework\Phrase\Renderer\Composite;
 use Magento\Framework\Url;
 use Magento\Search\Model\QueryFactory;
-use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Model\App\Emulation;
+use Magento\Framework\App\State;
 
 class EmulatorService
 {
@@ -39,9 +39,9 @@ class EmulatorService
 
     public function __construct(
         StoreManagerInterface $storeManager,
-        Url                   $urlBuilder,
-        Emulation             $emulation,
-        State                 $state
+        Url $urlBuilder,
+        Emulation $emulation,
+        State $state
     ) {
         $this->storeManager = $storeManager;
         $this->urlBuilder   = $urlBuilder;
@@ -61,10 +61,7 @@ class EmulatorService
             }, [&$result, $sampleText, $params]);
         } catch (\Exception $e) {
         } finally {
-            try {
-                $this->emulation->stopEnvironmentEmulation();
-            } catch (\Exception $e) {
-            }
+            $this->emulation->stopEnvironmentEmulation();
         }
 
         return $result;

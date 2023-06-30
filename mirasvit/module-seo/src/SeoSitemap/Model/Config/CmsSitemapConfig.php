@@ -9,15 +9,13 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
 
 namespace Mirasvit\SeoSitemap\Model\Config;
-
-use Magento\Store\Model\ScopeInterface;
 
 class CmsSitemapConfig
 {
@@ -44,7 +42,7 @@ class CmsSitemapConfig
     {
         return $this->scopeConfig->getValue(
             'seositemap/frontend/is_show_cms_pages',
-            ScopeInterface::SCOPE_STORE,
+            \Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
             $store
         );
     }
@@ -57,7 +55,7 @@ class CmsSitemapConfig
     {
         $value = (string)$this->scopeConfig->getValue(
             'seositemap/frontend/ignore_cms_pages',
-            ScopeInterface::SCOPE_STORE,
+            \Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
             $store
         );
 

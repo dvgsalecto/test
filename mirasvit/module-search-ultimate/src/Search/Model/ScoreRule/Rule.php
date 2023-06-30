@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -134,7 +134,11 @@ class Rule extends AbstractModel
         if ($this->hasPostConditionsSerialized()) {
             $conditions = $this->getPostConditionsSerialized();
             if (!empty($conditions)) {
-                $conditions = $this->serializer->unserialize($conditions);
+                if (CompatibilityService::is21()) {
+                    $conditions = $this->serializer->unserialize($conditions);
+                } else {
+                    $conditions = \Zend_Json::decode($conditions);
+                }
                 if (is_array($conditions) && !empty($conditions)) {
                     $this->_postConditions->loadArray($conditions);
                 }

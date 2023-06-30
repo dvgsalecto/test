@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-report-api
- * @version   1.0.60
+ * @version   1.0.58
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 

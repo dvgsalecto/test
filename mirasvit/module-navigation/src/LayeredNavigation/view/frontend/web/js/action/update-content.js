@@ -1,7 +1,6 @@
 define([
     'jquery',
-    'Mirasvit_LayeredNavigation/js/config',
-    'mage/cookies'
+    'Mirasvit_LayeredNavigation/js/config'
 ], function ($, config) {
     'use strict';
 
@@ -42,20 +41,6 @@ define([
                         });
                     });
                 }
-
-                // update form_key
-                let formKey = $.mage.cookies.get('form_key');
-
-                $('input[name="form_key"]', $(config.getAjaxProductListWrapperId())).each(function (idx, elem) {
-                    const $elem = $(elem);
-                    if (!formKey) {
-                        formKey = $elem.val();
-                    }
-
-                    if ($elem.val() !== formKey) {
-                        $elem.val(formKey);
-                    }
-                });
             }
         },
 

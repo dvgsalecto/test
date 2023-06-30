@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-optimize
- * @version   1.5.1
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.3.20
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -65,7 +65,7 @@ class FotoramaProcessor implements OutputProcessorInterface
         }
 
         $content = preg_replace_callback(
-            '/<script type="text\/x-magento-init">([^<]*?magnifier\\\\?\/magnify.*?)<\/script>/ims',
+            '/<script type="text\/x-magento-init">([^<]*?magnifier\/magnify.*?)<\/script>/ims',
             [$this, 'replaceCallback'],
             $content
         );
@@ -73,18 +73,6 @@ class FotoramaProcessor implements OutputProcessorInterface
         $content = preg_replace_callback(
             '/<div[^>]*class=["\']notorama[^"\']*["\'][^>]*data-mage-init=[\']([^\']*)[\'][^>]*>/ims',
             [$this, 'replaceNotoramaCallback'],
-            $content
-        );
-
-        $content = preg_replace_callback(
-            '/<div[^>]*data-mage-init=[\']([^\']*)[\'][^>]*>/ims',
-            [$this, 'replaceBreezeMageInitCallback'],
-            $content
-        );
-
-        $content = preg_replace_callback(
-            '/<script type="text\/x-magento-init">([^<]*?data-gallery-id.*?)<\/script>/ims',
-            [$this, 'replaceBreezeScriptCallback'],
             $content
         );
 
@@ -100,17 +88,61 @@ class FotoramaProcessor implements OutputProcessorInterface
      */
     private function replaceCallback(array $match)
     {
-        $config       = SerializeService::decode($match[1]);
+        $imgKeys = ['thumb', 'img', 'full'];
+        $config  = SerializeService::decode($match[1]);
         $widgetConfig = $config["[data-gallery-role=gallery-placeholder]"];
-        $dataKey      = array_keys($widgetConfig)[0];
+
+        $dataKey = array_keys($widgetConfig)[0];
 
         if (!isset($widgetConfig[$dataKey]["data"])) {
             return $match[0];
         }
 
-        $imagesConfig = $this->prepareImagesConfig($widgetConfig[$dataKey]["data"]);
+        $data = $widgetConfig[$dataKey]["data"];
 
-        $config["[data-gallery-role=gallery-placeholder]"][$dataKey]["data"] = $imagesConfig;
+        foreach ($data as $idx => $imageConfig) {
+            if ($imageConfig["type"] !== 'image' && $imageConfig["type"] !== 'video') {
+                continue;
+            }
+
+            foreach ($imageConfig as $key => $value) {
+                if(!in_array($key, $imgKeys) || strpos($value, '.webp') !== false) {
+                    continue;
+                }
+
+                preg_match('/\?.*/is', $value, $query);
+
+                $query = count($query) ? $query[0] : '';
+                $value = str_replace($query, '', $value);
+
+                $absolutePath = $this->config->retrieveImageAbsPath($value);
+
+                if (!$absolutePath) {
+                    continue;
+                }
+
+                $image = $this->syncService->ensureFile($absolutePath);
+
+                if($image && $image->getWebpPath()) {
+                    $path     = str_replace($this->mediaUrl, '', $value);
+                    $webpPath = $path . Config::WEBP_SUFFIX;
+
+                    if (!$this->mediaDir->isExist($webpPath)) {
+                        $image->setWebpPath(null);
+                        $this->fileRepository->save($image);
+                        continue;
+                    }
+
+                    $webpUrl = str_replace($path, $webpPath, $value);
+
+                    $imageConfig[$key] = $webpUrl . $query;
+                }
+            }
+
+            $data[$idx] = $imageConfig;
+        }
+
+        $config["[data-gallery-role=gallery-placeholder]"][$dataKey]["data"] = $data;
 
         $serializedKey = str_replace('/', '\/', $dataKey);
 
@@ -119,100 +151,6 @@ class FotoramaProcessor implements OutputProcessorInterface
         $script = str_replace('magnifier\/magnify', 'magnifier/magnify', $script);
 
         return '<script type="text/x-magento-init">' . $script . '</script>';
-    }
-
-    private function prepareImagesConfig(array $imagesConfig): array
-    {
-        $imgKeys = ['thumb', 'img', 'full'];
-
-        foreach ($imagesConfig as $idx => $imgConfig) {
-            if (!isset($imgConfig['type']) || ($imgConfig["type"] !== 'image' && $imgConfig["type"] !== 'video')) {
-                continue;
-            }
-
-            foreach ($imgConfig as $key => $value) {
-                if ($key == 'srcset' && is_array($value)) {
-                    $imgConfig[$key] = $this->processSrcset($value);
-                    continue;
-                }
-
-                if(!in_array($key, $imgKeys)) {
-                    continue;
-                }
-
-                $imgConfig[$key] = $this->getImageWebpUrl($value);
-            }
-
-            $imagesConfig[$idx] = $imgConfig;
-        }
-
-        return $imagesConfig;
-    }
-
-    private function processSrcset(array $srcset): array
-    {
-        foreach ($srcset as $key => $set) {
-            if (!is_string($set)) {
-                continue;
-            }
-
-            $config = explode(',', $set);
-
-            foreach ($config as $idx => $item) {
-                preg_match('/([\S]*)\s+\d+w/s', trim($item), $match);
-
-                if (!isset($match[1])) {
-                    continue;
-                }
-
-                $config[$idx] = str_replace(
-                    $match[1],
-                    $this->getImageWebpUrl($match[1]),
-                    $item
-                );
-            }
-
-            $srcset[$key] = implode(',', $config);
-        }
-
-        return $srcset;
-    }
-
-    private function getImageWebpUrl(string $imageUrl): string
-    {
-        if (strpos($imageUrl, '.webp') !== false) {
-            return $imageUrl;
-        }
-
-        preg_match('/\?.*/is', $imageUrl, $query);
-
-        $query = count($query) ? $query[0] : '';
-        $value = str_replace($query, '', $imageUrl);
-
-        $absolutePath = $this->config->retrieveImageAbsPath($value);
-
-        if (!$absolutePath) {
-            return $imageUrl;
-        }
-
-        $image = $this->syncService->ensureFile($absolutePath);
-
-        if($image && $image->getWebpPath()) {
-            $path     = str_replace($this->mediaUrl, '', $value);
-            $webpPath = $path . Config::WEBP_SUFFIX;
-
-            if (!$this->mediaDir->isExist($webpPath)) {
-                $image->setWebpPath(null);
-                $this->fileRepository->save($image);
-                return $imageUrl;
-            }
-
-            $webpUrl = str_replace($path, $webpPath, $value);
-
-            $imageUrl = $webpUrl . $query;
-        }
-
-        return $imageUrl;
     }
 
     /**
@@ -224,58 +162,58 @@ class FotoramaProcessor implements OutputProcessorInterface
      */
     private function replaceNotoramaCallback(array $match)
     {
-        $config       = SerializeService::decode($match[1]);
+        $imgKeys = ['thumb', 'img', 'full'];
+        $config  = SerializeService::decode($match[1]);
         $imagesConfig = SerializeService::decode($config['notorama']['initialImages']);
-        $imagesConfig = $this->prepareImagesConfig($imagesConfig);
+
+        foreach ($imagesConfig as $idx => $imgConfig) {
+            if (!isset($imgConfig['type']) || $imgConfig['type'] !== 'image') {
+                continue;
+            }
+
+            foreach ($imgConfig as $key => $value) {
+                if(!in_array($key, $imgKeys) || strpos($value, '.webp') !== false) {
+                    continue;
+                }
+
+                preg_match('/\?.*/is', $value, $query);
+
+                $query = count($query) ? $query[0] : '';
+                $value = str_replace($query, '', $value);
+
+                $absolutePath = $this->config->retrieveImageAbsPath($value);
+
+                if (!$absolutePath) {
+                    continue;
+                }
+
+                $image = $this->syncService->ensureFile($absolutePath);
+
+                if($image && $image->getWebpPath()) {
+                    $path     = str_replace($this->mediaUrl, '', $value);
+                    $webpPath = $path . Config::WEBP_SUFFIX;
+
+                    if (!$this->mediaDir->isExist($webpPath)) {
+                        $image->setWebpPath(null);
+                        $this->fileRepository->save($image);
+                        continue;
+                    }
+
+                    $webpUrl = str_replace($path, $webpPath, $value);
+
+                    $imgConfig[$key] = $webpUrl . $query;
+                }
+            }
+
+            $imagesConfig[$idx] = $imgConfig;
+        }
 
         $config['notorama']['initialImages'] = SerializeService::encode($imagesConfig);
 
         $config = SerializeService::encode($config);
 
-        return str_replace($match[1], $config, $match[0]);
-    }
+        $content = str_replace($match[1], $config, $match[0]);
 
-    private function replaceBreezeMageInitCallback(array $match): string
-    {
-        if (
-            strpos($match[0], 'data-gallery-role') === false
-            || strpos($match[0], 'gallery-placeholder') === false
-        ) {
-            return $match[0];
-        }
-
-        $initConfig = SerializeService::decode($match[1]);
-
-        if (!isset($initConfig['mage/gallery/gallery']['data'])) {
-            return $match[0];
-        }
-
-        $initConfig['mage/gallery/gallery']['data'] = $this->prepareImagesConfig($initConfig['mage/gallery/gallery']['data']);
-
-        $serialized = SerializeService::encode($initConfig);
-        $serialized = str_replace('mage\/gallery\/gallery', 'mage/gallery/gallery', $serialized);
-
-        return str_replace($match[1], $serialized, $match[0]);
-    }
-
-    private function replaceBreezeScriptCallback(array $match): string
-    {
-        $config    = SerializeService::decode($match[1]);
-        $configKey = array_keys($config)[0];
-
-        $initConfig = $config[$configKey];
-
-        if (!isset($initConfig['mage/gallery/gallery']['data'])) {
-            return $match[0];
-        }
-
-        $initConfig['mage/gallery/gallery']['data'] = $this->prepareImagesConfig($initConfig['mage/gallery/gallery']['data']);
-
-        $config[$configKey] = $initConfig;
-
-        $serialized = SerializeService::encode($initConfig);
-        $serialized = str_replace('mage\/gallery\/gallery', 'mage/gallery/gallery', $serialized);
-
-        return str_replace($match[1], $serialized, $match[0]);
+        return $content;
     }
 }

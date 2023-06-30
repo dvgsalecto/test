@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,7 +18,6 @@ namespace Mirasvit\Feed\Controller\Adminhtml\Feed;
 
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
-use Magento\Framework\Serialize\Serializer\Json;
 use Mirasvit\Feed\Controller\Adminhtml\Feed;
 use Mirasvit\Feed\Model\FeedFactory;
 use Mirasvit\Feed\Model\Feed\Exporter;
@@ -41,11 +40,9 @@ class Progress extends Feed
         Exporter $exporter,
         FeedFactory $feedFactory,
         Registry $registry,
-        Json $serializer,
         Context $context
     ) {
         $this->exporter = $exporter;
-        $this->serializer = $serializer;
 
         parent::__construct($feedFactory, $registry, $context);
     }
@@ -61,6 +58,6 @@ class Progress extends Feed
 
         /** @var \Magento\Framework\App\Response\Http\Interceptor $response */
         $response = $this->getResponse();
-        $response->representJson($this->serializer->serialize($progress));
+        $response->representJson(\Zend_Json::encode($progress));
     }
 }

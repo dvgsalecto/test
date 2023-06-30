@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -75,11 +75,7 @@ class ProductUrlKeyPlugin
      */
     public function afterGenerateForGlobalScope($subject, array $result, $productCategories, Product $product) :array
     {
-        if (
-            !$product->isObjectNew()
-            && !($this->productUrlTemplateConfig->getRegenerateUrlKeyOnVisibilityChange()
-            && $product->dataHasChangedFor('visibility'))
-        ) {
+        if (!$product->isObjectNew()) {
             return $result;
         }
 
@@ -116,12 +112,9 @@ class ProductUrlKeyPlugin
     {
         $urlKeyTemplate = $this->productUrlTemplateConfig->getProductUrlKey($storeId);
 
-        $shouldGenerateUrlKey = !$this->seoConfig->isApplyUrlKeyForNewProducts($storeId)
-            && !$this->productUrlTemplateConfig->getRegenerateUrlKeyOnVisibilityChange($storeId);
-
         if (
             !$urlKeyTemplate
-            || $shouldGenerateUrlKey
+            || !$this->seoConfig->isApplyUrlKeyForNewProducts($storeId)
             || $urlKeyTemplate == '[product_name]'
         ) {
             return $product->getUrlKey();

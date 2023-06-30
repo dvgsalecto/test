@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -21,7 +21,6 @@ use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as A
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\Directory\WriteFactory;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\StoreManagerInterface;
 use Mirasvit\Search\Api\Data\IndexInterface;
 use Mirasvit\Search\Repository\IndexRepository;
@@ -70,8 +69,6 @@ class Engine
 
     private $indexNameResolver;
 
-    private $serializer;
-
     public function __construct(
         Filesystem                 $fs,
         WriteFactory               $writeFactory,
@@ -81,7 +78,6 @@ class Engine
         IndexService               $indexService,
         IndexNameResolver          $indexNameResolver,
         StoreManagerInterface      $storeManager,
-        Json $serializer,
         AttributeCollectionFactory $productAttributeCollectionFactory
     ) {
         $this->config                            = $config;
@@ -90,7 +86,6 @@ class Engine
         $this->indexService                      = $indexService;
         $this->indexNameResolver                 = $indexNameResolver;
         $this->storeManager                      = $storeManager;
-        $this->serializer = $serializer;
         $this->productAttributeCollectionFactory = $productAttributeCollectionFactory;
 
         $this->directory = $fs->getDirectoryWrite(DirectoryList::VAR_DIR);
@@ -130,15 +125,15 @@ class Engine
         ]);
 
         if (file_exists($this->absConfigFilePath . '.attr')) {
-            $this->availableAttributes = $this->serializer->unserialize(file_get_contents($this->absConfigFilePath . '.attr'));
+            $this->availableAttributes = \Zend_Json::decode(file_get_contents($this->absConfigFilePath . '.attr'));
         }
     }
 
     public function isAvailable(string &$output = ''): bool
     {
         /** mp uncomment start
-         return true;
-        mp uncomment end **/
+         * return true;
+         * mp uncomment end **/
         if ($this->config->isSameServer() == false) {
             return true;
         }
@@ -217,7 +212,7 @@ class Engine
                 ->value('id', $id);
 
             if (isset($document['_instant'])) {
-                $query->value('`autocomplete`', json_encode($document['_instant']));
+                $query->value('`autocomplete`', \Zend_Json::encode($document['_instant']));
                 unset($document['_instant']);
             }
 

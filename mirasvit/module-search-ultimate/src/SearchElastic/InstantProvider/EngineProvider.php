@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -20,9 +20,8 @@ namespace Mirasvit\SearchElastic\InstantProvider;
 
 use Elasticsearch\Client;
 use Mirasvit\SearchAutocomplete\InstantProvider\InstantProvider;
-use Mirasvit\SearchElastic\SearchAdapter\QueryBuilder;
 
-class  EngineProvider extends InstantProvider
+class   EngineProvider extends InstantProvider
 {
     private $query          = [];
 
@@ -32,17 +31,15 @@ class  EngineProvider extends InstantProvider
 
     private $filtersToApply = [];
 
-    private $searchTerms    = [];
+    private $searchTerms = [];
 
-    private $buckets        = [];
+    private $buckets = [];
 
     public function getResults(string $indexIdentifier): array
     {
-        $queryBuilder = new QueryBuilder($this->queryService);
-
         $this->query = [
-            'index'            => $this->configProvider->getIndexName($indexIdentifier),
-            'body'             => [
+            'index' => $this->configProvider->getIndexName($indexIdentifier),
+            'body'  => [
                 'from'          => $this->getFrom($indexIdentifier),
                 'size'          => $this->getLimit($indexIdentifier),
                 'stored_fields' => [
@@ -59,21 +56,17 @@ class  EngineProvider extends InstantProvider
                 ],
                 'query'         => [
                     'bool' => [
-                        'minimum_should_match' => 0,
+                        'minimum_should_match' => 1,
                     ],
                 ],
             ],
             'track_total_hits' => true,
         ];
 
-        $fields          = $this->configProvider->getIndexFields($indexIdentifier);
-        $fields['_misc'] = 1;
-
-        $this->query['body']['query'] = $queryBuilder->build($this->query['body']['query'], (string)$this->getQueryText(), $fields);
-
         $this->setMustCondition($indexIdentifier);
+        $this->setShouldCondition($indexIdentifier);
 
-        if ($indexIdentifier === 'magento_catalog_product') {
+        if ($indexIdentifier === 'catalogsearch_fulltext') {
             $this->setBuckets();
         }
 
@@ -83,8 +76,7 @@ class  EngineProvider extends InstantProvider
             $correctedQuery = $this->suggest();
             if ($correctedQuery && $correctedQuery != $this->getQueryText()) {
                 $this->setQueryText($correctedQuery);
-
-                return $this->getResults($indexIdentifier);
+                $this->getResults($indexIdentifier);
             } else {
                 return [
                     'totalItems' => 0,
@@ -92,13 +84,6 @@ class  EngineProvider extends InstantProvider
                     'buckets'    => [],
                 ];
             }
-        }
-
-        if ($this->isDebug()) {
-            echo '<pre>';
-            print_r($this->query);
-            print_r($rawResponse);
-            die();
         }
 
         if ($this->configProvider->getEngine() == 'elasticsearch6') {
@@ -110,7 +95,6 @@ class  EngineProvider extends InstantProvider
         $correctedQuery = $this->suggest();
         if ($totalItems < 1 && $correctedQuery && $correctedQuery != $this->getQueryText()) {
             $this->setQueryText($correctedQuery);
-
             return $this->getResults($indexIdentifier);
         }
 
@@ -118,6 +102,10 @@ class  EngineProvider extends InstantProvider
 
         foreach ($rawResponse['hits']['hits'] as $data) {
             if (!isset($data['_source']['_instant'])) {
+                continue;
+            }
+
+            if (!$data['_source']['_instant']) {
                 continue;
             }
 
@@ -136,7 +124,7 @@ class  EngineProvider extends InstantProvider
                     continue;
                 }
 
-                $buckets[$code]       = $bucketData;
+                $buckets[$code] = $bucketData;
                 $this->buckets[$code] = $bucketData;
             }
 
@@ -156,7 +144,7 @@ class  EngineProvider extends InstantProvider
             foreach ($this->getActiveFilters() as $filterKey => $value) {
                 $this->filtersToApply[] = $filterKey;
 
-                $result  = $this->getResults($indexIdentifier);
+                $result = $this->getResults($indexIdentifier);
                 $buckets = $this->prepareBuckets($buckets);
                 foreach ($result['buckets'] as $bucketKey => $bucket) {
                     if (in_array($bucketKey, $this->filtersToApply)) {
@@ -177,44 +165,6 @@ class  EngineProvider extends InstantProvider
             'items'      => $items,
             'buckets'    => $this->buckets,
         ];
-    }
-
-    public function suggest(): ?string
-    {
-        if (!in_array('mst_misspell_index', $this->configProvider->getIndexes())) {
-            return null;
-        }
-
-        $query    = preg_split('/[\s]+/', $this->getQueryText());
-        $response = [];
-
-        if (!is_array($query)) {
-            $query = [$query];
-        }
-
-        try {
-            foreach ($query as $term) {
-                $result            = $this->getClient()->search($this->prepareTermSuggestQuery($term));
-                $processedResponse = $this->processResponse($result);
-
-                if (empty($processedResponse)) {
-                    $result            = $this->getClient()->search($this->preparePhraseSuggestQuery($term));
-                    $processedResponse = $this->processResponse($result);
-                }
-
-                $response[] = $processedResponse;
-            }
-        } catch (\Exception $e) {
-        }
-
-        $response = array_filter($response);
-        $response = array_unique($response);
-
-        if (empty($response)) {
-            return null;
-        }
-
-        return implode(' ', $response);
     }
 
     private function getActiveFilters(): array
@@ -238,7 +188,6 @@ class  EngineProvider extends InstantProvider
                     'visibility' => ['3', '4'],
                 ],
             ];
-
             if ($this->applyFilter) {
                 foreach ($this->getActiveFilters() as $filterCode => $filterValue) {
                     if ($filterCode == 'price') {
@@ -253,7 +202,7 @@ class  EngineProvider extends InstantProvider
 
                         $this->query['body']['query']['bool']['must'] = array_merge($this->query['body']['query']['bool']['must'], [$priceFilter]);
                     } else {
-                        $termStatement                                  = is_array($filterValue) ? 'terms' : 'term';
+                        $termStatement = is_array($filterValue)? 'terms':'term';
                         $this->query['body']['query']['bool']['must'][] = [
                             $termStatement => [
                                 $filterCode => $filterValue,
@@ -265,6 +214,233 @@ class  EngineProvider extends InstantProvider
         }
     }
 
+    private function setShouldCondition(string $indexIdentifier): void
+    {
+        $fields          = $this->configProvider->getIndexFields($indexIdentifier);
+        $fields['_misc'] = 1;
+
+        $searchQuery = $this->queryService->build($this->getQueryText());
+        $selectQuery   = [];
+        $queryValue = $searchQuery['query'];
+
+        if (!isset($selectQuery['bool'])) {
+            $selectQuery['bool'] = ['must' => []];
+        }
+
+        if (!$this->isKeyExists($selectQuery['bool']['must'], 'query_string')) {
+            $preparedFields = [];
+
+            $this->compileQuery($searchQuery['built']);           
+
+            $wildcardExceptions = $searchQuery['wildcardExceptions'];
+
+            if (empty($wildcardExceptions)) {
+                $processedQuery = $queryValue;
+            } else {
+                $processedQuery = $this->escape(preg_replace('~\b('. implode('|', $wildcardExceptions) .')\b~', " $1 ", $queryValue));
+            }
+
+            $terms = preg_split('~\s~', $processedQuery);
+
+            foreach ($fields as $field => $boost) {
+                $preparedFields[] = $field .'^'. $boost;
+
+                $selectQuery['bool']['should'][]['terms'] = [
+                    $field => $terms,
+                    'boost' => $boost,
+                ];
+
+                $selectQuery['bool']['should'][]['match_phrase'] = [
+                    $field => [
+                        'query' => $processedQuery,
+                        'boost' => (string) $boost * 2,
+                    ]
+                ];
+
+                $selectQuery['bool']['should'][]['wildcard'][$field] = [
+                    'value' => $processedQuery,
+                    'boost' => (string) $boost * 1.5,
+                ];
+
+                $selectQuery['bool']['should'][]['wildcard'][$field] = [
+                    'value' => $processedQuery.'*',
+                    'boost' => (string) $boost * 1.2,
+                ];
+
+                $selectQuery['bool']['should'][]['wildcard'][$field] = [
+                    'value' => '*'.$processedQuery,
+                    'boost' => (string) $boost * 1.2,
+                ];
+
+                $selectQuery['bool']['should'][]['wildcard'][$field] = [
+                    'value' => '*'. $processedQuery .'*',
+                    'boost' => (string) $boost * 1.1,
+                ];
+
+                foreach ($this->searchTerms as $term => $boostMultiplier) {
+                    $term = (string) $term;
+
+                    if (strlen($term) < 3) {
+                        $selectQuery['bool']['should'][]['wildcard'][$field] = [
+                            'value' => $term,
+                            'boost' => (string) $boost * 0.75 * (float)$boostMultiplier,
+                        ];
+                    } else {
+                        $selectQuery['bool']['should'][]['wildcard'][$field] = [
+                            'value' => $term,
+                            'boost' => (string) $boost * (float)$boostMultiplier,
+                        ];
+                    }
+                }
+            }
+            unset($processedQuery);
+
+            $cases = $this->getQueryStringCases($searchQuery);
+            $synonyms = $searchQuery['synonyms'];
+
+            foreach ($synonyms as $synonym) {
+                $cases[] = '('. $synonym .')^1.1';
+            }
+
+            $selectQuery['bool']['must'][]['query_string'] = [
+                'query'             => implode(' OR ', $cases),
+                'fields'            => $preparedFields,
+                'default_operator'  => strtoupper($searchQuery['matchMode']),
+            ];
+        }
+
+        if (!isset($this->query['body']['query']['bool']['should'])) {
+            $this->query['body']['query']['bool']['should'] = [];
+        }
+
+        $this->query['body']['query']['bool']['should'] = array_merge(
+            $this->query['body']['query']['bool']['should'],
+            $selectQuery['bool']['should']
+        );
+
+        if (!isset($this->query['body']['query']['bool']['must'])) {
+            $this->query['body']['query']['bool']['must'] = [];
+        }
+
+        $this->query['body']['query']['bool']['must'] = array_merge(
+            $this->query['body']['query']['bool']['must'],
+            $selectQuery['bool']['must']
+        );
+    }
+
+    private function getQueryStringCases($searchQuery):array
+    {
+        $cases = [];
+        $queryValue = $this->escape($searchQuery['query']);
+        $longTail = $searchQuery['long_tail'];
+        foreach ($longTail as $key => $expression) {
+            if ($queryValue == $this->escape($expression)) {
+                unset($longTail[$key]);
+            } else {
+                $longTail[$key] = $this->escape($expression);
+            }
+        }
+
+        unset($key);
+        unset($expression);
+        $wildcardExceptions = $searchQuery['wildcardExceptions'];
+
+        switch ($searchQuery['wildcardMode']) {
+            case $this->configProvider::WILDCARD_DISABLED:
+                $cases [] = '('. $queryValue .')^4';
+
+                if (!empty($longTail)) {
+                    $cases [] = '('. implode (' OR ', $longTail)  .')^4';
+                }
+
+                break;
+            case $this->configProvider::WILDCARD_PREFIX:
+                $cases [] = '('. $queryValue .')^4';
+
+                if (empty($wildcardExceptions)) {
+                    $processedQuery = $queryValue;
+                } else {
+                    $processedQuery = preg_replace('~\b('. implode('|', $wildcardExceptions) .')\b~', " $1 ", $queryValue);
+                }
+
+                $cases [] = '(*'. $processedQuery .')^3';
+                unset($processedQuery);
+
+                if (!empty($longTail)) {
+                    foreach ($longTail as $expression) {
+                    $cases [] = '(*'. $expression .')^3';
+                    }
+                }
+
+                break;
+            case $this->configProvider::WILDCARD_SUFFIX:
+                $cases [] = '('. $queryValue .')^4';
+
+                if (empty($wildcardExceptions)) {
+                    $processedQuery = $queryValue;
+                } else {
+                    $processedQuery = preg_replace('~\b('. implode('|', $wildcardExceptions) .')\b~', " $1 ", $queryValue);
+                }
+
+                $cases [] = '('. $processedQuery .'*)^3';
+                unset($processedQuery);
+
+                if (!empty($longTail)) {
+                    foreach ($longTail as $expression) {
+                    $cases [] = '('. $expression .'*)^3';
+                    }
+                }
+
+                break;
+            case $this->configProvider::WILDCARD_INFIX:
+                $cases [] = '('. $queryValue .')^4';
+
+                if (empty($wildcardExceptions)) {
+                    $processedQuery = $queryValue;
+                } else {
+                    $processedQuery = preg_replace('~\b('. implode('|', $wildcardExceptions) .')\b~', " $1 ", $queryValue);
+                }
+
+                $cases [] = '(*'. $processedQuery .' OR '. $processedQuery .'*)^3';
+                $processedQuery = preg_replace('~[\s]+~', '* *', $queryValue);
+
+                if (!empty($wildcardExceptions)) {
+                    $processedQuery = preg_replace('~\b('. implode('|', $wildcardExceptions) .')\b~', " $1 ", $processedQuery);
+                }
+
+                $cases [] = '('. $processedQuery .')^2';
+                $cases [] = '(*'. $processedQuery .'*)';
+
+                if (!empty($longTail)) {
+                    foreach ($longTail as $expression) {
+                    $cases [] = '(*'. $expression .' OR '. $expression .'*)^3';
+                    $processedExpression = preg_replace('~[\s]+~', '* *', $expression);
+                    $cases [] = '('. $processedExpression .')^2';
+                    $cases [] = '(*'. $processedExpression .'*)';
+                    }
+                }
+
+                break;
+        }
+
+        return $cases;
+    }
+
+    private function isKeyExists(array $array, string $keySearch): bool
+    {
+        if (array_key_exists($keySearch, $array)) {
+            return true;
+        } else {
+            foreach ($array as $key => $item) {
+                if (is_array($item) && $this->isKeyExists($item, $keySearch)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private function setBuckets(): void
     {
         foreach ($this->getBuckets() as $fieldName) {
@@ -274,6 +450,61 @@ class  EngineProvider extends InstantProvider
                 $this->query['body']['aggregations'][$fieldName] = ['terms' => ['field' => $fieldName, 'size' => 500]];
             }
         }
+    }
+
+    private function compileQuery(array $query): string
+    {
+        $compiled = [];
+        foreach ($query as $directive => $value) {
+            switch ($directive) {
+                case '$like':
+                    $compiled[] = '(' . $this->compileQuery($value) . ')';
+                    break;
+
+                case '$and':
+                    $and = [];
+                    foreach ($value as $item) {
+                        $and[] = $this->compileQuery($item);
+                    }
+                    $compiled[] = '(' . implode(' AND ', $and) . ')';
+                    break;
+
+                case '$or':
+                    $or = [];
+                    foreach ($value as $item) {
+                        $or[] = $this->compileQuery($item);
+                    }
+                    $compiled[] = '(' . implode(' OR ', $or) . ')';
+                    break;
+
+                case '$term':
+                    $phrase = $this->escape($value['$phrase']);
+                    switch ($value['$wildcard']) {
+                        case $this->configProvider::WILDCARD_INFIX:
+                            $compiled[] = "$phrase OR *$phrase*";
+                            $this->searchTerms[$phrase] = 1;
+                            $this->searchTerms["*$phrase*"] = 0.3;
+                            break;
+                        case $this->configProvider::WILDCARD_PREFIX:
+                            $compiled[] = "$phrase OR *$phrase";
+                            $this->searchTerms[$phrase] = 1;
+                            $this->searchTerms["*$phrase"] = 0.5;
+                            break;
+                        case $this->configProvider::WILDCARD_SUFFIX:
+                            $compiled[] = "$phrase OR $phrase*";
+                            $this->searchTerms[$phrase] = 1;
+                            $this->searchTerms["$phrase*"] = 0.5;
+                            break;
+                        case $this->configProvider::WILDCARD_DISABLED:
+                            $compiled[] = $phrase;
+                            $this->searchTerms[$phrase] = 1;
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        return implode(' OR ', $compiled);
     }
 
     private function prepareBuckets($buckets): array
@@ -292,6 +523,43 @@ class  EngineProvider extends InstantProvider
         return \Elasticsearch\ClientBuilder::fromConfig($this->configProvider->getEngineConnection(), true);
     }
 
+    public function suggest(): ?string
+    {
+        if (!in_array('mst_misspell_index', $this->configProvider->getIndexes())) {
+            return null;
+        }
+
+        $query = preg_split('/[\s]+/', $this->getQueryText());
+        $response   = [];
+
+        if (!is_array($query)) {
+            $query = [$query];
+        }
+
+        try {
+            foreach ($query as $term) {
+                $result = $this->getClient()->search($this->prepareTermSuggestQuery($term));
+                $processedResponse = $this->processResponse($result);
+
+                if (empty($processedResponse)) {
+                    $result = $this->getClient()->search($this->preparePhraseSuggestQuery($term));
+                    $processedResponse = $this->processResponse($result);
+                }
+
+                $response[] = $processedResponse;
+            }
+        } catch (\Exception $e) {}
+
+        $response = array_filter($response);
+        $response = array_unique($response);
+
+        if (empty($response)) {
+            return null;
+        }
+
+        return implode(' ', $response);
+    }
+
     private function prepareTermSuggestQuery(string $query): array
     {
         return [
@@ -299,11 +567,11 @@ class  EngineProvider extends InstantProvider
             'body'  => [
                 'suggest' => [
                     'suggestion' => [
-                        'text' => $query,
+                        'text'       => $query,
                         'term' => [
-                            'field'         => 'keyword',
-                            'size'          => 1,
-                            'prefix_length' => 0,
+                            'field'            => 'keyword',
+                            'size'             => 1,
+                            'prefix_length'    => 0,
                         ],
                     ],
                 ],
@@ -347,10 +615,8 @@ class  EngineProvider extends InstantProvider
         $result = null;
         if (isset($response['suggest']['suggestion'][0]['options'][0]['text'])) {
             $result = $response['suggest']['suggestion'][0]['options'][0]['text'];
-        } else {
-            if (isset($response['suggest']['suggestion'][0]['text'])) {
-                $result = $response['suggest']['suggestion'][0]['text'];
-            }
+        } else if (isset($response['suggest']['suggestion'][0]['text'])) {
+            $result = $response['suggest']['suggestion'][0]['text'];
         }
 
         return $result;

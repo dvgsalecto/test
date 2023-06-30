@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -21,7 +21,6 @@ class NumberFilter
 
     /**
      * Addition
-     * | Adds a number to another number
      *
      * @param int $input
      * @param int $operand
@@ -34,7 +33,6 @@ class NumberFilter
 
     /**
      * Subtraction
-     * | Subtracts a number from another number
      *
      * @param int $input
      * @param int $operand
@@ -47,7 +45,6 @@ class NumberFilter
 
     /**
      * Multiplication
-     * | Multiplies a number by another number
      *
      * @param int $input
      * @param int $operand
@@ -60,7 +57,6 @@ class NumberFilter
 
     /**
      * Division
-     * | Divides a number by another number
      *
      * @param int $input
      * @param int $operand
@@ -73,7 +69,6 @@ class NumberFilter
 
     /**
      * Modulo
-     * | Returns the remainder of a division operation
      *
      * @param int $input
      * @param int $operand
@@ -86,7 +81,8 @@ class NumberFilter
 
     /**
      * Ceil
-     * | Rounds an output up to the nearest integer
+     *
+     * Rounds an output up to the nearest integer.
      *
      * @param string $input
      * @return number
@@ -98,7 +94,8 @@ class NumberFilter
 
     /**
      * Floor
-     * | Rounds an output down to the nearest integer
+     *
+     * Rounds an output down to the nearest integer.
      *
      * @param string $input
      * @return number
@@ -110,7 +107,8 @@ class NumberFilter
 
     /**
      * Round
-     * | Rounds the output to the nearest integer or specified number of decimals
+     *
+     * Rounds the output to the nearest integer or specified number of decimals.
      *
      * @param string $input
      * @param number $precision
@@ -123,7 +121,8 @@ class NumberFilter
 
     /**
      * Number Format
-     * | Sets the format of the number
+     *
+     * Format
      *
      * @param string $input
      * @param int    $decimals
@@ -138,7 +137,6 @@ class NumberFilter
 
     /**
      * Price Format
-     * | Sets price number format with 2 decimals
      *
      * @param string $input
      * @return string
@@ -152,7 +150,8 @@ class NumberFilter
 
     /**
      * Append
-     * | Appends characters to a number
+     *
+     * Appends characters to a number.
      *
      * @param string $input
      * @param string $suffix

@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-core
- * @version   1.4.17
+ * @version   1.4.16
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -95,13 +95,13 @@ class License
      * @param DirReader           $dirReader
      */
     public function __construct(
-        UrlInterface        $urlManager,
+        UrlInterface $urlManager,
         ModuleListInterface $moduleList,
-        CurlFactory         $curlFactory,
-        FlagFactory         $flagFactory,
-        ProductMetadata     $productMetadata,
-        DeploymentConfig    $deploymentConfig,
-        DirReader           $dirReader
+        CurlFactory $curlFactory,
+        FlagFactory $flagFactory,
+        ProductMetadata $productMetadata,
+        DeploymentConfig $deploymentConfig,
+        DirReader $dirReader
     ) {
         $this->urlManager       = $urlManager;
         $this->moduleList       = $moduleList;
@@ -338,7 +338,7 @@ class License
 
         if ($flag->getFlagData()) {
             try {
-                $data = json_decode(base64_decode($flag->getFlagData()), true);
+                $data = json_decode(base64_decode($flag->getFlagData()));
 
                 if (is_array($data)) {
                     return $data;
@@ -377,7 +377,7 @@ class License
         $response = trim($response[1]);
 
         try {
-            $response = json_decode($response, true);
+            $response = json_decode($response);
 
             if (is_array($response)) {
                 return $response;

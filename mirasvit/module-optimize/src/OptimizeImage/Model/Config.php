@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-optimize
- * @version   1.5.1
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.3.20
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -31,11 +31,11 @@ use Mirasvit\OptimizeImage\Service\ResponsiveImageService;
 class Config
 {
     const CMD_CONVERT_RGB      = 'convert -colorspace RGB "%s" "%s"';
-    const CMD_PROCESS_WEBP     = 'cwebp -q %s "%s" -o "%s"';
-    const CMD_PROCESS_GIF2WEBP = 'gif2webp -q %s "%s" -o "%s"';
-    const CMD_PROCESS_PNG      = 'optipng "%s"';
-    const CMD_PROCESS_GIF      = 'gifsicle "%s" -o "%s"';
-    const CMD_PROCESS_JPG      = 'jpegoptim --all-progressive --strip-xmp --strip-com --strip-exif --strip-iptc "%s"';
+    const CMD_PROCESS_WEBP     = 'cwebp -q %s \'%s\' -o \'%s\'';
+    const CMD_PROCESS_GIF2WEBP = 'gif2webp -q %s \'%s\' -o \'%s\'';
+    const CMD_PROCESS_PNG      = 'optipng \'%s\'';
+    const CMD_PROCESS_GIF      = 'gifsicle \'%s\' -o \'%s\'';
+    const CMD_PROCESS_JPG      = 'jpegoptim --all-progressive --strip-xmp --strip-com --strip-exif --strip-iptc \'%s\'';
 
     const WEBP_SUFFIX    = '.mst.webp';
     const CONVERT_SUFFIX = '.mst.conv';

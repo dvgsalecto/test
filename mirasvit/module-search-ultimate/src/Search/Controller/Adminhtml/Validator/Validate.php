@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -152,7 +152,7 @@ class Validate extends AbstractValidator
             return false;
         }
 
-        if ($this->config->getEngine() != 'elasticsearch7' && $this->config->getEngine() != 'elasticsearch8') {
+        if ($this->config->getEngine() != 'elasticsearch7') {
             $this->result[] = '<p>Validation for '. $this->config->getEngine() .' engine is not supported</p>';
 
             return false;

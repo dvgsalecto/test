@@ -22,14 +22,6 @@ define([
                         e.preventDefault();
                     }
 
-                    const $target = $item.hasClass('mst-nav__label-item')
-                        ? $item
-                        : $item.parent('.mst-nav__label-item');
-
-                    if ($target.length && $target.hasClass('_disabled')) {
-                        return;
-                    }
-
                     if ($item.prop('tagName') !== 'A') {
                         if ($(e.target).prop('tagName') !== 'INPUT') {
                             this.toggleCheckbox($item);

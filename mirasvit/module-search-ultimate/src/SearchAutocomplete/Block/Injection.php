@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -19,7 +19,6 @@ declare(strict_types=1);
 namespace Mirasvit\SearchAutocomplete\Block;
 
 use Magento\Framework\Locale\FormatInterface;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Search\Helper\Data as SearchHelper;
@@ -35,26 +34,18 @@ class Injection extends Template
 
     protected $searchHelper;
 
-    protected $serializer;
-
     public function __construct(
-        Context         $context,
-        ConfigProvider  $config,
+        Context $context,
+        ConfigProvider $config,
         FormatInterface $localeFormat,
-        SearchHelper $searchHelper,
-        Json $serializer
+        SearchHelper $searchHelper
     ) {
         $this->storeManager = $context->getStoreManager();
         $this->config       = $config;
         $this->localeFormat = $localeFormat;
         $this->searchHelper = $searchHelper;
-        $this->serializer = $serializer;
 
         parent::__construct($context);
-    }
-
-    public function jsonEncode($data) {
-        return $this->serializer->serialize($data);
     }
 
     public function getJsConfig(): array
@@ -70,13 +61,6 @@ class Injection extends Template
             'storeId'            => $this->storeManager->getStore()->getId(),
             'delay'              => $this->config->getDelay(),
             'isAjaxCartButton'   => $this->config->isAjaxCartButton(),
-            'isShowCartButton'   => $this->config->isShowCartButton(),
-            'isShowImage'        => $this->config->isShowImage(),
-            'isShowPrice'        => $this->config->isShowPrice(),
-            'isShowSku'          => $this->config->isShowSku(),
-            'isShowRating'       => $this->config->isShowRating(),
-            'isShowDescription'  => $this->config->isShowShortDescription(),
-            'isShowStockStatus'  => $this->config->isShowStockStatus(),
             'layout'             => $this->config->getAutocompleteLayout(),
             'popularTitle'       => (string)__('Popular Suggestions'),
             'popularSearches'    => $this->config->isShowPopularSearches() ? $this->config->getPopularSearches() : [],
@@ -87,7 +71,7 @@ class Injection extends Template
             ),
             'minSuggestLength'   => 2,
             'currency'           => $this->storeManager->getStore()->getCurrentCurrency()->getCode(),
-            'limit'              => $this->config->getProductsPerPage(),
+            'limit'              => $this->config->getProductsPerPage()
         ];
 
     }
@@ -114,12 +98,12 @@ class Injection extends Template
         return $html;
     }
 
-    public function getLayeredNavigationPosition(): string
+    public function getLayeredNavigationPosition ():string
     {
         return $this->config->getLayeredNavigationPosition();
     }
 
-    public function getPaginationPosition(): string
+    public function getPaginationPosition ():string
     {
         return $this->config->getPaginationPosition();
     }

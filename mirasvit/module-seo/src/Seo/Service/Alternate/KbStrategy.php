@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -23,12 +23,12 @@ use Magento\Framework\Registry;
 use Mirasvit\Core\Model\ResourceModel\UrlRewrite\CollectionFactory;
 use Mirasvit\Seo\Api\Service\Alternate\UrlInterface;
 
-class KbStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterface
+class KbStrategy
 {
     private $collectionFactory;
 
     private $registry;
-
+    
     private $url;
 
     private $manager;
@@ -54,7 +54,7 @@ class KbStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterfac
         $config = $objectManager->create('Mirasvit\Kb\Model\Config');
         $storeUrls = $this->url->getStoresCurrentUrl();
         $currentKbUrl = $config->getBaseUrl();
-
+        
         if ($storeUrls) {
             foreach ($storeUrls as $storeId => $url) {
                 $storeKbUrl = $config->getBaseUrl($storeId);

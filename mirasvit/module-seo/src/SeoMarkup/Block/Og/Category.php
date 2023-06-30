@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -63,25 +63,12 @@ class Category extends AbstractBlock
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->_storeManager->getStore();
 
-        $imageUrl = $this->logo->getLogoSrc();
-
-        if ($catImgUrl = $category->getImageUrl()) {
-            if (class_exists('\Magento\Catalog\Model\Category\Image')) {
-                $categoryImage = \Magento\Framework\App\ObjectManager::getInstance()
-                    ->get('\Magento\Catalog\Model\Category\Image');
-
-                $imageUrl = $categoryImage->getUrl($category, 'image');
-            } else {
-                $imageUrl = $catImgUrl;
-            }
-        }
-
         $meta = [
             'og:type'        => 'product.group',
             'og:url'         => $this->_urlBuilder->escape($category->getUrl()),
             'og:title'       => $this->pageConfig->getTitle()->get(),
             'og:description' => $this->pageConfig->getDescription(),
-            'og:image'       => $imageUrl,
+            'og:image'       => $category->getImageUrl() ? $category->getImageUrl() : $this->logo->getLogoSrc(),
             'og:site_name'   => $store->getFrontendName(),
         ];
 

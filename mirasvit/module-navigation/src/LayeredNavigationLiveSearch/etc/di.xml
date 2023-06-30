@@ -8,17 +8,17 @@
     <type name="Mirasvit\LayeredNavigationLiveSearch\Plugin\LiveSearch\AddExtraFiltersMetadataPlugin">
         <arguments>
             <argument name="additionalFilters" xsi:type="array">
-                <item name="mst_new" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\NewFilter</item>
-                <item name="mst_on_sale" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\OnSaleFilter</item>
-                <item name="mst_stock" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\StockFilter</item>
-                <item name="mst_rating" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\RatingFilter</item>
+                <item name="new" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\NewFilter</item>
+                <item name="on_sale" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\OnSaleFilter</item>
+                <item name="stock" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\StockFilter</item>
+                <item name="rating" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\RatingFilter</item>
                 <item name="search" xsi:type="string">Mirasvit\LayeredNavigation\Model\Layer\Filter\SearchFilter</item>
             </argument>
             <argument name="dataMappers" xsi:type="array">
-                <item name="mst_new" xsi:type="string">Mirasvit\LayeredNavigation\Model\DataMapper\NewDataMapper</item>
-                <item name="mst_on_sale" xsi:type="string">Mirasvit\LayeredNavigation\Model\DataMapper\OnSaleDataMapper</item>
-                <item name="mst_stock" xsi:type="string">Mirasvit\LayeredNavigation\Model\DataMapper\StockDataMapper</item>
-                <item name="mst_rating" xsi:type="string">Mirasvit\LayeredNavigation\Model\DataMapper\RatingDataMapper</item>
+                <item name="new" xsi:type="string">Mirasvit\LayeredNavigation\Model\DataMapper\NewDataMapper</item>
+                <item name="on_sale" xsi:type="string">Mirasvit\LayeredNavigation\Model\DataMapper\OnSaleDataMapper</item>
+                <item name="stock" xsi:type="string">Mirasvit\LayeredNavigation\Model\DataMapper\StockDataMapper</item>
+                <item name="rating" xsi:type="string">Mirasvit\LayeredNavigation\Model\DataMapper\RatingDataMapper</item>
             </argument>
         </arguments>
     </type>

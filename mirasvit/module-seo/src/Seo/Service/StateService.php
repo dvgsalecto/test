@@ -9,15 +9,14 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
 
 namespace Mirasvit\Seo\Service;
 
-use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Model\Layer\Resolver as LayerResolver;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Registry;
@@ -51,15 +50,11 @@ class StateService implements StateServiceInterface
     }
 
     /**
-     * @return CategoryInterface|null
+     * @return false|\Magento\Catalog\Model\Category|mixed
      */
     public function getCategory()
     {
-        $category = $this->registry->registry('current_category');
-
-        return $category && $category instanceof CategoryInterface
-            ? $category
-            : null;
+        return $this->registry->registry('current_category');
     }
 
     /**

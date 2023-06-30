@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -18,13 +18,9 @@ declare(strict_types=1);
 
 namespace Mirasvit\Brand\Repository;
 
-use Magento\Catalog\Model\Product\Action as ProductAction;
-use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Framework\EntityManager\EntityManager;
 use Mirasvit\Brand\Api\Data\BrandPageInterface;
 use Mirasvit\Brand\Api\Data\BrandPageInterfaceFactory;
-use Mirasvit\Brand\Model\Config\GeneralConfig;
 use Mirasvit\Brand\Model\ResourceModel\BrandPage\Collection;
 use Mirasvit\Brand\Model\ResourceModel\BrandPage\CollectionFactory;
 
@@ -36,27 +32,14 @@ class BrandPageRepository
 
     private $entityManager;
 
-    private $productAction;
-
-    private $config;
-
-    private $productCollectionFactory;
-
     public function __construct(
-        ProductCollectionFactory $productCollectionFactory,
-        ProductAction $productAction,
-        GeneralConfig $config,
         BrandPageInterfaceFactory $factory,
         CollectionFactory $collectionFactory,
         EntityManager $entityManager
     ) {
-        $this->productAction     = $productAction;
-        $this->config            = $config;
         $this->factory           = $factory;
         $this->collectionFactory = $collectionFactory;
         $this->entityManager     = $entityManager;
-
-        $this->productCollectionFactory = $productCollectionFactory;
     }
 
     public function create(): BrandPageInterface
@@ -81,48 +64,11 @@ class BrandPageRepository
 
     public function save(BrandPageInterface $brandPage): BrandPageInterface
     {
-        if ($brandPage->getData('products')) {
-            $this->updateProductsBrand($brandPage);
-        }
-
         return $this->entityManager->save($brandPage);
     }
 
     public function delete(BrandPageInterface $brandPage): void
     {
         $this->entityManager->delete($brandPage);
-    }
-
-    private function updateProductsBrand(BrandPageInterface $brandPage): void
-    {
-        $attributeCode = $this->config->getBrandAttribute();
-        $ids           = $brandPage->getData('products');
-        $brandId       = $brandPage->getAttributeOptionId();
-
-        // Set brand
-        $this->productAction->updateAttributes(
-            $ids,
-            [$attributeCode => $brandId],
-            0
-        );
-
-        // Unset brand
-        $collection = $this->productCollectionFactory->create()
-            ->addAttributeToFilter($attributeCode, ['eq' => $brandId])
-            ->addFieldToFilter('entity_id', ['nin' => $ids]);
-
-        $idsToUnset = [];
-
-        foreach ($collection as $item) {
-            $idsToUnset[] = $item->getId();
-        }
-
-        if (count($idsToUnset)) {
-            $this->productAction->updateAttributes(
-                $idsToUnset,
-                [$attributeCode => ''],
-                0
-            );
-        }
     }
 }

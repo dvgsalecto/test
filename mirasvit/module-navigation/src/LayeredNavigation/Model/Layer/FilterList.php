@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -160,8 +160,6 @@ class FilterList extends Layer\FilterList
         $additionalFilters = [];
 
         foreach ($this->additionalFilters as $filter => $class) {
-
-
             if ($this->extraFilterConfigProvider->isFilterEnabled($filter)) {
                 $position = $this->extraFilterConfigProvider->getFilterPosition($filter);
 
@@ -183,13 +181,7 @@ class FilterList extends Layer\FilterList
             if ($this->isSearchFilter($filter)) {
                 $request = $this->objectManager->get(RequestInterface::class);
 
-                if (
-                    strpos($request->getFullActionName(), 'catalogsearch') !== false
-                    || $request->getParam('amp')
-                ) {
-                    // 1. search results with custom search modules can conflicts with search filter
-                    // 2. amp pages uses their own filter renderer
-                    // So we remove search filter in those 2 cases to prevent errors on store front
+                if (strpos($request->getFullActionName(), 'catalogsearch') !== false) {
                     unset($this->filters[$key]);
                     continue;
                 }

@@ -12,7 +12,6 @@
                 <google_sitelinks>1</google_sitelinks>
                 <redirect_on_single_result>0</redirect_on_single_result>
                 <allow_ascii_folding>0</allow_ascii_folding>
-                <content_widget_indexation>0</content_widget_indexation>
             </feature>
         </search>
         <general>

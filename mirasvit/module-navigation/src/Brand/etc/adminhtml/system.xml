@@ -67,12 +67,6 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <tooltip><![CDATA[If enabled show all categories in filter. If disabled show only top level categories.]]></tooltip>
                 </field>
-
-                <field id="show_products_in_page_form" translate="label" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="80">
-                    <label>Show Products Assigned to Brand in Brand Page Edit Form</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <tooltip><![CDATA[If enabled show all categories in filter. If disabled show only top level categories.]]></tooltip>
-                </field>
             </group>
 
             <group id="brand_page" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="1000">

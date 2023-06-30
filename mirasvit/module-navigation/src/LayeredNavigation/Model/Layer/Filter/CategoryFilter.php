@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -20,22 +20,20 @@ namespace Mirasvit\LayeredNavigation\Model\Layer\Filter;
 
 use Magento\Catalog\Model\Layer;
 use Magento\Catalog\Model\Layer\Filter\DataProvider\CategoryFactory;
-use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Catalog\Model\Layer\Resolver as LayerResolver;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\RequestInterface;
 use Magento\Catalog\Model\Product\Attribute\Repository as AttributeRepository;
-use Mirasvit\Core\Service\CompatibilityService;
 use Mirasvit\LayeredNavigation\Api\Data\AttributeConfigInterface;
 use Mirasvit\LayeredNavigation\Model\Config\ExtraFilterConfigProvider;
 use Mirasvit\LayeredNavigation\Model\Config\SizeLimiterConfigProvider;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
 class CategoryFilter extends AbstractFilter
 {
     const ATTRIBUTE = 'category_ids';
     const CATEGORY  = 'category';
+
+    private $layer;
 
     private $dataProvider;
 
@@ -47,16 +45,14 @@ class CategoryFilter extends AbstractFilter
 
     private $sizeLimiterConfigProvider;
 
-    private $scopeConfig;
-
     /**
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
         AttributeRepository $attributeRepository,
         CategoryFilter\TreeBuilder $treeBuilder,
         CategoryFactory $categoryDataProviderFactory,
+        LayerResolver $layerResolver,
         RequestInterface $request,
         ExtraFilterConfigProvider $extraFilterConfigProvider,
         SizeLimiterConfigProvider $sizeLimiterConfigProvider,
@@ -69,11 +65,11 @@ class CategoryFilter extends AbstractFilter
         $this->_requestVar  = 'cat';
         $this->treeBuilder  = $treeBuilder;
         $this->dataProvider = $categoryDataProviderFactory->create(['layer' => $this->getLayer()]);
+        $this->layer        = $layerResolver->get();
         $this->request      = $request;
 
         $this->extraFilterConfigProvider = $extraFilterConfigProvider;
         $this->sizeLimiterConfigProvider = $sizeLimiterConfigProvider;
-        $this->scopeConfig               = $scopeConfig;
 
         $this->setAttributeModel($attributeRepository->get('category_ids'));
     }
@@ -94,21 +90,6 @@ class CategoryFilter extends AbstractFilter
         if ($request->getParam('id') != $categoryId) {
             $this->getProductCollection()
                 ->addFieldToFilter('category_ids', $categoryIds);
-
-            // fix for Magento 2.4.5 error on search result page after filtering by category with "Display Out of Stock Products" enabled
-            // @see Magento\Elasticsearch\Model\ResourceModel\Fulltext\Collection\SearchResultApplier::getProductIdsBySaleability()
-            list($a, $b, $c) = explode('.', CompatibilityService::getVersion());
-
-            // to consider patched versions like 2.4.5-p1 as 2.4.5
-            $is245 = (int)$a == 2 && (int)$b == 4 && (int)$c == 5;
-
-            if (
-                $is245 && $this->hasShowOutOfStockStatus()
-                && strpos($request->getFullActionName(), 'search') !== false
-            ) {
-                $this->getProductCollection()->setFlag('has_category_filter', false);
-                $this->getProductCollection()->setFlag('has_stock_status_filter', false);
-            }
 
             $category = $this->getLayer()->getCurrentCategory();
             /** @var \Magento\Catalog\Model\ResourceModel\AbstractCollection $collection */
@@ -176,8 +157,7 @@ class CategoryFilter extends AbstractFilter
     }
 
     /**
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function _initItems(): self
     {
@@ -194,18 +174,12 @@ class CategoryFilter extends AbstractFilter
             return $this;
         }
 
-        if (
-            $this->request->getParam($this->getRequestVar())
-            && !$this->configProvider->isMultiselectEnabled(self::ATTRIBUTE)
-        ) {
-            return $this; // do not show category filter when multiselect is disabled and category filter already selected
-        }
-
         $isShowNestedCategories = $this->isShowNestedCategories();
 
         $optionsFacetedData = $this->getProductCollection()->getExtendedFacetedData(
             self::CATEGORY,
-            $this->configProvider->isMultiselectEnabled(self::ATTRIBUTE)
+            $this->configProvider->isMultiselectEnabled(self::ATTRIBUTE),
+            (int)$category->getId()
         );
 
         $items = $this->treeBuilder->getItems(
@@ -274,13 +248,5 @@ class CategoryFilter extends AbstractFilter
     public function isShowNestedCategories(): bool
     {
         return $this->extraFilterConfigProvider->isShowNestedCategories();
-    }
-
-    private function hasShowOutOfStockStatus(): bool
-    {
-        return (bool) $this->scopeConfig->getValue(
-            \Magento\CatalogInventory\Model\Configuration::XML_PATH_SHOW_OUT_OF_STOCK,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
-        );
     }
 }

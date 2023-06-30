@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -20,35 +20,24 @@ namespace Mirasvit\Search\Index\Magento\Catalog\Category;
 
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Model\CategoryFactory;
-use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Model\StoreManagerInterface;
 use Mirasvit\Search\Index\AbstractInstantProvider;
 use Mirasvit\Search\Service\IndexService;
-use Mirasvit\Search\Service\MapperService;
 
 class InstantProvider extends AbstractInstantProvider
 {
-    private $resource;
-
     private $categoryFactory;
 
     private $storeManager;
 
-    private $mapperService;
-
     public function __construct(
-        ResourceConnection    $resource,
-        CategoryFactory       $categoryFactory,
+        CategoryFactory $categoryFactory,
         StoreManagerInterface $storeManager,
-        IndexService          $indexService,
-        MapperService         $mapperService
+        IndexService $indexService
     ) {
-        $this->resource        = $resource;
-        $this->categoryFactory = $categoryFactory;
-        $this->storeManager    = $storeManager;
-        $this->mapperService   = $mapperService;
+        $this->categoryFactory    = $categoryFactory;
+        $this->storeManager       = $storeManager;
 
         parent::__construct($indexService);
     }
@@ -65,41 +54,6 @@ class InstantProvider extends AbstractInstantProvider
         return $items;
     }
 
-    public function getSize(int $storeId): int
-    {
-        return $this->getCollection(0)->getSize();
-    }
-
-    public function map(array $documentData, int $storeId): array
-    {
-        foreach ($documentData as $entityId => $itm) {
-            $entity = ObjectManager::getInstance()->create('\Magento\Catalog\Model\Category')
-                ->load($entityId);
-
-            $map = $this->mapCategory($entity, $storeId);
-
-            $documentData[$entityId]['_instant'] = $map;
-        }
-
-        return $documentData;
-    }
-
-    private function getUrlRewritePath(int $storeId, int $categoryId): string
-    {
-        $data = $this->resource->getConnection()->fetchOne(
-            $this->resource->getConnection()
-                ->select()
-                ->from([$this->resource->getTableName('url_rewrite')], ['request_path'])
-                ->where('entity_id = ?', $categoryId)
-                ->where('entity_type = ? ', CategoryUrlRewriteGenerator::ENTITY_TYPE)
-                ->where('store_id IN(?)', [0, $storeId])
-                ->where('redirect_type = 0')
-                ->group('entity_id')
-        );
-
-        return (string)$data;
-    }
-
     /**
      * @param \Magento\Catalog\Model\Category $category
      * @param int                             $storeId
@@ -111,10 +65,9 @@ class InstantProvider extends AbstractInstantProvider
         $category = $this->categoryFactory->create()->setStoreId($storeId)
             ->load($category->getId());
 
-
         return [
             'name' => $this->getFullPath($category, $storeId),
-            'url'  => $this->mapperService->getBaseUrl($storeId).$this->getUrlRewritePath($storeId, (int)$category->getId()),
+            'url'  => $category->getUrl(),
         ];
     }
 
@@ -145,5 +98,24 @@ class InstantProvider extends AbstractInstantProvider
         $result = array_reverse($result);
 
         return implode('<i>›</i>', $result);
+    }
+
+    public function getSize(int $storeId): int
+    {
+        return $this->getCollection(0)->getSize();
+    }
+
+    public function map(array $documentData, int $storeId): array
+    {
+        foreach ($documentData as $entityId => $itm) {
+            $entity = ObjectManager::getInstance()->create('\Magento\Catalog\Model\Category')
+                ->load($entityId);
+
+            $map = $this->mapCategory($entity, $storeId);
+
+            $documentData[$entityId]['_instant'] = $map;
+        }
+
+        return $documentData;
     }
 }

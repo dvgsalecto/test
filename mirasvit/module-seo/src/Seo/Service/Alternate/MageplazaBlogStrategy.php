@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -20,7 +20,7 @@ namespace Mirasvit\Seo\Service\Alternate;
 
 use Magento\Framework\App\RequestInterface;
 
-class MageplazaBlogStrategy implements \Mirasvit\Seo\Api\Service\Alternate\StrategyInterface
+class MageplazaBlogStrategy
 {
     private $manager;
 
@@ -72,10 +72,5 @@ class MageplazaBlogStrategy implements \Mirasvit\Seo\Api\Service\Alternate\Strat
     public function getRequest(): RequestInterface
     {
         return $this->request;
-    }
-
-    public function getAlternateUrl(array $storeUrls): array
-    {
-        return [];
     }
 }

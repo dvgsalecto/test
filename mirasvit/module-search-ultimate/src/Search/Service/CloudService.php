@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -17,19 +17,9 @@
 
 namespace Mirasvit\Search\Service;
 
-use Magento\Framework\Serialize\Serializer\Json;
-
 class CloudService
 {
     const ENDPOINT = 'http://mirasvit.com/media/cloud/';
-
-    protected $serializer;
-
-    public function __construct(
-        Json $serializer
-    ) {
-        $this->serializer = $serializer;
-    }
 
     /**
      * {@inheritdoc}
@@ -80,7 +70,7 @@ class CloudService
         $query = http_build_query($args);
 
         try {
-            $result = $this->serializer->unserialize(file_get_contents(self::ENDPOINT . '?' . $query));
+            $result = \Zend_Json::decode(file_get_contents(self::ENDPOINT . '?' . $query));
 
             if ($result['success']) {
                 return $result['data'];

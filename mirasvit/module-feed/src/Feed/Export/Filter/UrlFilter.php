@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-feed
- * @version   1.2.11
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -48,8 +48,9 @@ class UrlFilter
     }
 
     /**
-     * Secure product URL
+     * To secure URL
      *
+     * Return secure url
      *
      * @param string $input
      * @return string
@@ -60,8 +61,9 @@ class UrlFilter
     }
 
     /**
-     * Usecure product URL
+     * To unsecure URL
      *
+     * Return secure url
      *
      * @param string $input
      * @return string
@@ -72,8 +74,9 @@ class UrlFilter
     }
 
     /**
-     * Secure Media URL
+     * Return secure media url
      *
+     * CDN
      *
      * @param string $input
      * @return string
@@ -84,8 +87,9 @@ class UrlFilter
     }
 
     /**
-     * Unsecure Media URL
+     * Return unsecure media url
      *
+     * CDN
      *
      * @param string $input
      * @return string
@@ -96,9 +100,6 @@ class UrlFilter
     }
 
     /**
-     * Replace media Url
-     *
-     *
      * @param string $url
      * @param bool   $secure
      * @return string

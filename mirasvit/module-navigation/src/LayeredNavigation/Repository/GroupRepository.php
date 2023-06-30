@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -59,13 +59,10 @@ class GroupRepository
      */
     public function getGroupsListByAttributeCode(string $attributeCode): array
     {
-        $collection = $this->getCollection()
+        return $this->getCollection()
             ->addFieldToFilter(GroupInterface::IS_ACTIVE, true)
-            ->addFieldToFilter(GroupInterface::ATTRIBUTE_CODE, $attributeCode);
-
-        $collection->getSelect()->order(GroupInterface::POSITION);
-
-        return $collection->getItems();
+            ->addFieldToFilter(GroupInterface::ATTRIBUTE_CODE, $attributeCode)
+            ->getItems();
     }
 
     public function get(int $id): ?GroupInterface

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo
- * @version   2.6.8
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.4.33
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -231,10 +231,9 @@ class JobCommand extends \Symfony\Component\Console\Command\Command
                         break 2;
                     }
 
-                    $url->setJobId($runningJob->getId());
-
                     $section = $output->section();
                     $section->writeln("Processing {$url->getUrl()} ({$url->getType()}) ... ");
+
                     $this->jobService->retrieveChildUrls($url, $runningJob->getId());
                     $section->overwrite("Processing {$url->getUrl()} ({$url->getType()}) ... <info>Crawled</info> ...");
                     $this->checkService->runChecksForUrl($url);

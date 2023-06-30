@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-seo-filter
- * @version   1.3.3
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   1.2.9
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -39,7 +39,7 @@ class ConfigProvider
     const FILTER_STOCK  = 'mst_stock';
     const FILTER_SALE   = 'mst_on_sale';
     const FILTER_NEW    = 'mst_new_products';
-    const FILTER_RATING = 'mst_rating';
+    const FILTER_RATING = 'rating';
 
     const LABEL_STOCK_IN  = 'instock';
     const LABEL_STOCK_OUT = 'outofstock';

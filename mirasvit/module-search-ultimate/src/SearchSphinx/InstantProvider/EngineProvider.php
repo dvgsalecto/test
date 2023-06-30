@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -69,7 +69,7 @@ class EngineProvider extends InstantProvider
 
     private function getSearchQuery(): string
     {
-        return $this->compileQuery($this->queryService->build($this->getQueryText())['queryTree']);
+        return $this->compileQuery($this->queryService->build($this->getQueryText())['built']);
     }
 
     private function compileQuery(array $query): string
@@ -172,7 +172,7 @@ class EngineProvider extends InstantProvider
             ];
 
             try {
-                $item = array_merge($item, $this->serializer->unserialize($hit['autocomplete']));
+                $item = array_merge($item, \Zend_Json::decode($hit['autocomplete']));
                 $items[] = $item;
             } catch (\Exception $e) {
             }

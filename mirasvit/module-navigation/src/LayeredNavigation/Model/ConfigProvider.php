@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -35,10 +35,6 @@ class ConfigProvider
     const NAV_REPLACER_TAG = '<div id="m-navigation-replacer"></div>'; //use for filter opener
 
     const MEDIA_FOLDER = 'mst_nav_group';
-
-    const DEFAULT_BREAKPOINT = 768;
-
-    const ATTRIBUTES_EXCEPTIONS = ['available_shipping_methods', 'shipping_class'];
 
     private $scopeConfig;
 
@@ -78,18 +74,6 @@ class ConfigProvider
     public function getApplyingMode(): string
     {
         return (string)$this->scopeConfig->getValue('mst_nav/general/filter_applying_mode', ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getIsConfirmOnMobile(): bool
-    {
-        return (bool)$this->scopeConfig->getValue('mst_nav/general/confirm_on_mobile', ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getBreakpointForModeSwitch(): int
-    {
-        $breakpoint = (int)$this->scopeConfig->getValue('mst_nav/general/mode_switch_breakpoint', ScopeInterface::SCOPE_STORE);
-
-        return $breakpoint ?: self::DEFAULT_BREAKPOINT;
     }
 
     public function isShowNestedCategories(): bool
@@ -132,24 +116,9 @@ class ConfigProvider
         return (string)$this->scopeConfig->getValue('mst_nav/general/display_options_border_color', ScopeInterface::SCOPE_STORE);
     }
 
-    public function getDisplayOptionsCheckedColor(): string
+    public function getDisplayOptionsCheckedLabelColor(): string
     {
-        return (string)$this->scopeConfig->getValue('mst_nav/general/display_options_checked_color', ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getSliderMainColor(): string
-    {
-        return (string)$this->scopeConfig->getValue('mst_nav/styling/slider_main_color', ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getSliderSecondaryColor(): string
-    {
-        return (string)$this->scopeConfig->getValue('mst_nav/styling/slider_secondary_color', ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getAdditionalCss(): string
-    {
-        return (string)$this->scopeConfig->getValue('mst_nav/styling/additional_css', ScopeInterface::SCOPE_STORE);
+        return (string)$this->scopeConfig->getValue('mst_nav/general/display_options_checked_label_color', ScopeInterface::SCOPE_STORE);
     }
 
     public function isOpenFilter(): bool
@@ -216,7 +185,7 @@ class ConfigProvider
     public function getProductAttributeLinkTarget(): string
     {
         return $this->scopeConfig->getValue(
-            'mst_nav/product_attribute_linking/target',
+            'mst_nav/product_attribute_linking/target', 
             ScopeInterface::SCOPE_STORE
         ) ?: LinkTargetSource::TARGET_SELF;
     }

@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -36,14 +36,8 @@ class MultiselectAndLogicPlugin
 
     /**
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     *
-     * @param mixed $subject
-     * @param array $result
-     *
-     * @return array
-     *
      */
-    public function afterBuildQuery($subject, array $result): array
+    public function afterBuildQuery(Mapper $subject, array $result): array
     {
         $multiselectAndFilters = [];
 

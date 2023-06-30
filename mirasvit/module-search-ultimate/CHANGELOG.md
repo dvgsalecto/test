@@ -1,21 +1,4 @@
 # Change Log
-## 2.1.0
-*(2023-03-06)*
-
-#### Improvements
-* Improved indexation time with enabled fast mode
-* Rewamped search queries to elasticsearch
-* Added option to enable/disable indaxation widgets in the content
-
-#### Fixed
-* Issue with search by terms with "."
-* Issues with import stopwords and synonyms (wrong path to read files)
-* Fixed the conflict with Mirasvit_Scroll module
-* Fixed PHP8.2
-
----
-
-
 ## 2.0.97
 *(2023-02-23)*
 

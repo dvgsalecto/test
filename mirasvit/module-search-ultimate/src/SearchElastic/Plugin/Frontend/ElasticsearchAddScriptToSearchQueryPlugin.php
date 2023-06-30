@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.1.0
+ * @version   2.0.97
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -19,12 +19,13 @@ declare(strict_types=1);
 namespace Mirasvit\SearchElastic\Plugin\Frontend;
 
 use Magento\Elasticsearch\Elasticsearch5\SearchAdapter\Mapper as Mapper;
-use Magento\Elasticsearch\Elasticsearch5\SearchAdapter\Query\Builder as QueryBuilder;
-use Magento\Elasticsearch\SearchAdapter\Filter\Builder as FilterBuilder;
+use Mirasvit\SearchElastic\Plugin\PutScoreBoostBeforeAddDocsPlugin as ScoreBoostProcessor ;
 use Magento\Framework\Search\RequestInterface;
 use Mirasvit\Search\Repository\ScoreRuleRepository;
-use Mirasvit\SearchElastic\Plugin\PutScoreBoostBeforeAddDocsPlugin as ScoreBoostProcessor;
+
+use Magento\Elasticsearch\Elasticsearch5\SearchAdapter\Query\Builder as QueryBuilder;
 use Mirasvit\SearchElastic\SearchAdapter\Query\Builder\MatchCompatibility as MatchQueryBuilder;
+use Magento\Elasticsearch\SearchAdapter\Filter\Builder as FilterBuilder;
 
 /**
  * @see \Magento\Elasticsearch\Elasticsearch5\SearchAdapter\Mapper::buildQuery()
@@ -40,9 +41,9 @@ class ElasticsearchAddScriptToSearchQueryPlugin extends Mapper
     protected $scoreRuleRepository;
 
     public function __construct(
-        QueryBuilder        $queryBuilder,
-        MatchQueryBuilder   $matchQueryBuilder,
-        FilterBuilder       $filterBuilder,
+        QueryBuilder $queryBuilder,
+        MatchQueryBuilder $matchQueryBuilder,
+        FilterBuilder $filterBuilder,
         ScoreRuleRepository $scoreRuleRepository
     ) {
         $this->scoreRuleRepository = $scoreRuleRepository;
@@ -56,29 +57,13 @@ class ElasticsearchAddScriptToSearchQueryPlugin extends Mapper
         if ($request->getQuery()->getName() == 'quick_search_container'
             && $this->scoreRuleRepository->getCollection()->getSize() > 0
         ) {
-            $searchQuery['body']['query']['script_score']['query']  = $searchQuery['body']['query'];
+            $searchQuery['body']['query']['script_score']['query'] = $searchQuery['body']['query'];
             $searchQuery['body']['query']['script_score']['script'] = [
-                'source' => '10000 + _score * doc[\'' . ScoreBoostProcessor::MULTIPLY_ATTRIBUTE . '\'].value' .
-                    ' + doc[\'' . ScoreBoostProcessor::SUM_ATTRIBUTE . '\'].value',
+                'source' => '_score * doc[\''. ScoreBoostProcessor::MULTIPLY_ATTRIBUTE .'\'].value'.
+                    ' + doc[\''. ScoreBoostProcessor::SUM_ATTRIBUTE .'\'].value'
             ];
 
             unset($searchQuery['body']['query']['bool']);
-        }
-
-        if (isset($searchQuery['body'])
-            && isset($searchQuery['body']['query'])
-            && isset($searchQuery['body']['query']['bool'])
-            && isset($searchQuery['body']['query']['bool']['minimum_should_match'])) {
-            $searchQuery['body']['query']['bool']['minimum_should_match'] = 0;
-        }
-
-        if (isset($searchQuery['body'])
-            && isset($searchQuery['body']['query'])
-            && isset($searchQuery['body']['query']['script_score'])
-            && isset($searchQuery['body']['query']['script_score']['query'])
-            && isset($searchQuery['body']['query']['script_score']['query']['bool'])
-            && isset($searchQuery['body']['query']['script_score']['query']['bool']['minimum_should_match'])) {
-            $searchQuery['body']['query']['script_score']['query']['bool']['minimum_should_match'] = 0;
         }
 
         return $searchQuery;

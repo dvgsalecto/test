@@ -9,8 +9,8 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-navigation
- * @version   2.6.0
- * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
+ * @version   2.2.32
+ * @copyright Copyright (C) 2022 Mirasvit (https://mirasvit.com/)
  */
 
 
@@ -22,7 +22,6 @@ use Magento\Catalog\Model\Layer\Filter\Item;
 use Magento\Framework\UrlInterface;
 use Magento\Theme\Block\Html\Pager as PagerBlock;
 use Mirasvit\LayeredNavigation\Model\ConfigProvider;
-use Mirasvit\LayeredNavigation\Model\Layer\Filter\DecimalFilter;
 use Mirasvit\LayeredNavigation\Service\FilterService;
 
 /**
@@ -71,8 +70,7 @@ class UpdateFilterItemUrlPlugin
     }
 
     /**
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity) 
      */
     public function afterGetRemoveUrl(Item $item, string $url): string
     {
@@ -87,15 +85,7 @@ class UpdateFilterItemUrlPlugin
             $itemValue = preg_split('/\,|\;|\-/', (string)$itemValue[0]);
         }
 
-        if (is_array($itemValue)) {
-            $itemValues = $itemValue;
-        } elseif ($item->getFilter() instanceof DecimalFilter) {
-            $itemValues = preg_split('/\,|\;/', (string)$itemValue);
-        } else {
-            $itemValues = preg_split('/\,|\;|\-/', (string)$itemValue);
-        }
-
-//        $itemValues    = is_array($itemValue) ? $itemValue : preg_split('/\,|\;|\-/', (string)$itemValue);
+        $itemValues    = is_array($itemValue) ? $itemValue : preg_split('/\,|\;|\-/', (string)$itemValue);
         $params        = $this->getFilterParams();
 
         if (!isset($params[$attributeCode])) {
