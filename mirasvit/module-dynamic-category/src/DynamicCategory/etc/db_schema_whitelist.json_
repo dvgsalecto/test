@@ -1,0 +1,13 @@
+{
+    "mst_dynamic_category": {
+        "column": {
+            "dynamic_category_id": true,
+            "category_id": true,
+            "conditions_serialized": true,
+            "is_active": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

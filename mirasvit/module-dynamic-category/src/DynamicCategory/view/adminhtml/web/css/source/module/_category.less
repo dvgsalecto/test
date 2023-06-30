@@ -1,0 +1,75 @@
+.x-tree-node-leaf.mst-dynamic-category-icon,
+.x-tree-node-expanded.mst-dynamic-category-icon {
+    > a {
+        position: relative;
+
+        &:after {
+            display:       block;
+            width:         5px;
+            height:        5px;
+            background:    #00b306;
+            content:       "";
+            position:      absolute;
+            left:          -18px;
+            top:           0;
+            border-radius: 50%;
+        }
+    }
+}
+
+.mst-category-reindex-fieldset {
+    width:         ~'calc(100% * 0.5 - 30px)';
+    margin-left:   ~'calc((25%) + 15px)' !important;
+    border-bottom: 0 !important;
+
+    .admin__fieldset {
+        padding-top: 0px;
+    }
+}
+
+#rule_dynamic_category_conditions_fieldset {
+    .rule-tree-wrapper {
+        margin-top: -18px;
+
+        .rule-param {
+            .label {
+                outline:    1px solid rgba(81, 73, 67, 0.05);
+                background: rgba(81, 73, 67, 0.05);
+                padding:    0 8px;
+                margin:     0 2px;
+                color:      #42352f;
+
+                &:hover {
+                    outline-color: rgba(81, 73, 67, 0.5);
+                    outline-style: dotted;
+                }
+            }
+
+            &.rule-param-new-child {
+                .label {
+                    outline:    none;
+                    background: none;
+                }
+            }
+        }
+    }
+}
+
+.mst-dynamic-category__status {
+    background: #fffbbb;
+    margin:     1.5rem 3rem;
+    padding:    1.5rem;
+
+    .category-queue-current {
+        font-weight:   600;
+        border-bottom: 1px solid rgba(0, 0, 0, .1);
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .category-queue-list {
+        .queue-item {
+            margin-top: .5rem;
+        }
+    }
+}
