@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Magento/Store/etc/config.xsd">
+    <default>
+        <dynamic_category>
+            <general>
+                <reindex_mode>on_save</reindex_mode>
+                <integrate_with_reindex>1</integrate_with_reindex>
+            </general>
+        </dynamic_category>
+    </default>
+</config>
