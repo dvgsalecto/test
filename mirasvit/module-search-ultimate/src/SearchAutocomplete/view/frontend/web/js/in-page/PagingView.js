@@ -1,17 +1,23 @@
 /*eslint-disable */
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 define(["underscore", "knockout"], function (_underscore, _knockout) {
   var PagingView = function PagingView(props) {
     "use strict";
 
     var _this = this;
+
     this.setPages = function (indexes, indexIdentifier) {
       var pages = [];
+
       _underscore.each(indexes, function (idx) {
         if (idx.identifier != indexIdentifier) {
           return;
         }
+
         var pageItems = [];
+
         _underscore.each(idx.pages, function (item, idx) {
           if (idx <= 8) {
             pageItems.push(_extends({}, item, {
@@ -21,13 +27,17 @@ define(["underscore", "knockout"], function (_underscore, _knockout) {
             }));
           }
         });
+
         idx.pages = pageItems;
+
         _this.pages(pageItems);
       });
     };
+
     this.selectItem = function (item) {
       _this.props.page(parseInt(item.label));
     };
+
     this.props = props;
     this.pages = _knockout.observableArray([]);
     this.setPages(props.result().indexes, props.activeIndex());
@@ -41,6 +51,7 @@ define(["underscore", "knockout"], function (_underscore, _knockout) {
       return _this.setPages(props.result().indexes, props.activeIndex());
     });
   };
+
   return {
     PagingView: PagingView
   };

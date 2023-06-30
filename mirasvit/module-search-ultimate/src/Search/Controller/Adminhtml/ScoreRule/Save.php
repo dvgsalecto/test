@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -17,7 +17,6 @@
 
 namespace Mirasvit\Search\Controller\Adminhtml\ScoreRule;
 
-use Mirasvit\Core\Service\SerializeService;
 use Mirasvit\Search\Api\Data\ScoreRuleInterface;
 use Mirasvit\Search\Controller\Adminhtml\AbstractScoreRule;
 
@@ -120,7 +119,7 @@ class Save extends AbstractScoreRule
 
             $conditions = $rule->getConditions()->asArray();
 
-            $conditions = SerializeService::encode($conditions);
+            $conditions = $this->serializer->serialize($conditions);
 
             $data[ScoreRuleInterface::CONDITIONS_SERIALIZED] = $conditions;
         }
@@ -130,7 +129,7 @@ class Save extends AbstractScoreRule
 
             $postConditions = $rule->getActions()->asArray();
 
-            $postConditions = SerializeService::encode($postConditions);
+            $postConditions = $this->serializer->serialize($postConditions);
 
             $data[ScoreRuleInterface::POST_CONDITIONS_SERIALIZED] = $postConditions;
         }

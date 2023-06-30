@@ -13,7 +13,6 @@ export interface Config {
     minSuggestLength: number
     currentPage: number
     limit: number
-    currency: string
 }
 
 export interface Result {

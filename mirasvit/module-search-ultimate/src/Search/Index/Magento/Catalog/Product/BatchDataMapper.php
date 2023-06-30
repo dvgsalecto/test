@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -66,23 +66,11 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
     {
         $documentData = $this->productDataMapper->map($documentData, $storeId, $context);
 
-        if (!$this->getIndex()) {
-            return $documentData;
-        }
-
         $documentData = $this->recursiveMap($documentData, $this->getLongTailApplicableAttributes());
         $documentData = $this->addCategoryData($documentData);
         $documentData = $this->addCustomOptions($documentData);
         $documentData = $this->addBundledOptions($documentData);
         $documentData = $this->addProductIdData($documentData);
-
-        foreach ($documentData as $id => $values) {
-            foreach ($values as $attr => $val) {
-                if (is_string($val) && strlen($val) > 32000) {
-                    $documentData[$id][$attr] = substr($val, 0, 32000); // prevent ES saving error
-                }
-            }
-        }
 
         return $documentData;
     }
@@ -148,13 +136,12 @@ class BatchDataMapper extends AbstractBatchDataMapper implements BatchDataMapper
             }
 
             $documentData[$row['product_id']]['_misc'] .= ' ' . strip_tags((string)$row['category']);
-            $documentData[$row['product_id']]['_misc'] = strtolower($documentData[$row['product_id']]['_misc']);
         }
 
         return $documentData;
     }
 
-    private function getIndex(): ?IndexInterface
+    private function getIndex(): IndexInterface
     {
         return $this->context->getIndexRepository()->getByIdentifier('catalogsearch_fulltext');
     }

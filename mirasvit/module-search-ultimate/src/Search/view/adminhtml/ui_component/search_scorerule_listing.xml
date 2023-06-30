@@ -8,11 +8,6 @@
         </item>
         <item name="spinner" xsi:type="string">scorerule_columns</item>
         <item name="buttons" xsi:type="array">
-            <item name="apply" xsi:type="array">
-                <item name="name" xsi:type="string">apply</item>
-                <item name="label" xsi:type="string" translate="true">Apply Rules</item>
-                <item name="url" xsi:type="string">*/*/applyAll</item>
-            </item>
             <item name="add" xsi:type="array">
                 <item name="name" xsi:type="string">add</item>
                 <item name="label" xsi:type="string" translate="true">Add New Rule</item>

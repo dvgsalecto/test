@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -31,21 +31,19 @@ use Mirasvit\Search\Service\DebugService;
  */
 class ElasticsearchDebugLoggerAdapterPlugin
 {
-    private        $mapper;
+    private $mapper;
 
-    private        $connectionManager;
+    private $connectionManager;
 
-    private        $debugService;
+    private $debugService;
 
-    private        $serializer;
-
-    private static $counter = 1;
+    private $serializer;
 
     public function __construct(
         Mapper            $mapper,
         ConnectionManager $connectionManager,
         DebugService      $debugService,
-        Json              $serializer
+        Json $serializer
     ) {
         $this->mapper            = $mapper;
         $this->connectionManager = $connectionManager;
@@ -62,19 +60,17 @@ class ElasticsearchDebugLoggerAdapterPlugin
 
             $indexName = $request->getName();
 
-            DebugService::log($this->serializer->serialize($query), 'query' . self::$counter . ': ' . $indexName);
+            DebugService::log($this->serializer->serialize($query), 'query: ' . $indexName);
 
             try {
                 $rawResponse = $client->query($query);
             } catch (\Exception $e) {
-                DebugService::log($e->getMessage(), 'exception' . self::$counter . ': ' . $indexName);
+                DebugService::log($e->getMessage(), 'exception: ' . $indexName);
                 $rawResponse = [];
             }
 
-            DebugService::log($this->serializer->serialize($rawResponse), 'response' . self::$counter . ': ' . $indexName);
+            DebugService::log($this->serializer->serialize($rawResponse), 'response: ' . $indexName);
         }
-
-        self::$counter++;
 
         return $proceed($request);
     }

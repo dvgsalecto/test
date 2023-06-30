@@ -1,5 +1,5 @@
 /*eslint-disable */
 define([], function () {
-  return {};
+  "use strict";
 });
 //# sourceMappingURL=types.js.map

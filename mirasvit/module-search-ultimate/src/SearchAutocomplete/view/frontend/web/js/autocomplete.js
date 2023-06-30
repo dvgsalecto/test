@@ -11,7 +11,6 @@ define([
     
     var Autocomplete = function (input) {
         this.$input = $(input);
-        this.$cat = $('[name=cat]', this.$input.closest('form'));
         this.isVisible = false;
         this.isShowAll = true;
         this.loading = false;
@@ -89,7 +88,6 @@ define([
                     this.result = this.search();
                     if (this.result) {
                         this.setActiveState(true);
-                        this.ensurePosition();
                     }
                 }
             } else {
@@ -191,7 +189,7 @@ define([
                 data:     {
                     q:        query,
                     store_id: this.config.storeId,
-                    cat:      this.$cat.val(),
+                    cat:      false,
                     currency: this.config.currency
                 },
                 success:  function (data) {

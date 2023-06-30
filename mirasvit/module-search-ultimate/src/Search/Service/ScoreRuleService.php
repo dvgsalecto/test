@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -18,10 +18,11 @@ declare(strict_types=1);
 
 namespace Mirasvit\Search\Service;
 
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Search\Request;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\StoreManagerInterface;
-use Mirasvit\Core\Service\SerializeService;
 use Mirasvit\Search\Api\Data\ScoreRuleInterface;
 use Mirasvit\Search\Model\ScoreRule\Indexer\ScoreRuleIndexer;
 use Mirasvit\Search\Repository\ScoreRuleRepository;
@@ -34,22 +35,26 @@ class ScoreRuleService
 
     private $scoreRuleRepository;
 
+    private $request;
+
+    private $serializer;
+
     public function __construct(
         ResourceConnection    $resource,
         StoreManagerInterface $storeManager,
-        ScoreRuleRepository   $scoreRuleRepository
+        ScoreRuleRepository   $scoreRuleRepository,
+        Json $serializer,
+        RequestInterface      $request
     ) {
         $this->resource            = $resource;
         $this->storeManager        = $storeManager;
         $this->scoreRuleRepository = $scoreRuleRepository;
+        $this->serializer = $serializer;
+        $this->request             = $request;
     }
 
     public function applyScores(array $results, Request $request): array
     {
-        if (count($results) <= 1) {
-            return $results;
-        }
-
         $storeId  = $this->storeManager->getStore()->getId();
         $storeIds = [0, $storeId];
         $ruleIds  = [0];// include Search Weight Virtual Rule
@@ -59,14 +64,12 @@ class ScoreRuleService
         }
 
         $connection = $this->resource->getConnection();
-
-        $select = $connection->select()->from(['index' => $this->getIndexTable()], ['*'])
+        $select     = $connection->select()->from(['index' => $this->getIndexTable()], ['*'])
             ->where('index.store_id IN (?)', $storeIds)
             ->where('index.rule_id IN (?)', $ruleIds)
             ->where('index.product_id IN (?)', array_keys($results));
 
-        $rows = $connection->fetchAll($select);
-
+        $rows    = $connection->fetchAll($select);
         $actions = [];
 
         foreach ($rows as $row) {
@@ -78,11 +81,9 @@ class ScoreRuleService
             $actions[$scoreFactor][] = $row[ScoreRuleIndexer::PRODUCT_ID];
         }
 
-        $results = $this->leadTo100($results);
-
         foreach ($actions as $action => $productIds) {
             $productIds = array_filter($productIds);
-
+            $results    = $this->leadTo100($results);
             foreach ($productIds as $id) {
                 $score        = $results[$id];
                 $score        = $this->calculate($score, (string)$action);
@@ -90,8 +91,7 @@ class ScoreRuleService
             }
         }
 
-        DebugService::log(SerializeService::encode($actions), 'scores: ' . $request->getName());
-        DebugService::log(SerializeService::encode($results), 'applyScore: ' . $request->getName());
+        DebugService::log($this->serializer->serialize($results), 'applied scores: ' . $request->getName());
 
         return $results;
     }

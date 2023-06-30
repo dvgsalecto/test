@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -152,13 +152,6 @@ class Result
     protected function getPageNum(): int
     {
         return (int)$this->getParam('p') ?? 1;
-    }
-
-    protected function getCategoryId(): ?int
-    {
-        $id = (int)$this->getParam('p');
-
-        return $id > 0 ? $id : null;
     }
 
     private function getPaginationData(int $limit, int $resultsQTY)

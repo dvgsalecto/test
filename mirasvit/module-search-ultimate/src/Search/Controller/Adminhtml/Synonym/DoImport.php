@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -31,7 +31,7 @@ class DoImport extends AbstractSynonym
         $data = $this->getRequest()->getPostValue();
 
         if ($data) {
-            $generator = $this->synonymService->import($data['dictionary'], [(int)$data['store_id']]);
+            $generator = $this->synonymService->import($data['dictionary'], $data['store_id']);
 
             $result = [
                 'synonyms' => 0,

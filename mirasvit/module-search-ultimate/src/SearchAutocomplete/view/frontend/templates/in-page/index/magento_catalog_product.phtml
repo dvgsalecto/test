@@ -31,7 +31,7 @@
         <div class="mst__product-cart">
             <!-- ko if: (addToCartUrl && $parents[2].config.isShowCartButton) -->
             <div class="to-cart">
-                <a class="action primary mst__add_to_cart" data-bind="attr: { href: addToCartUrl }">
+                <a class="action primary mst__add_to_cart" data-bind="attr: { _href: addToCartUrl }">
                     <span><?= __('Add To Cart') ?></span>
                 </a>
             </div>

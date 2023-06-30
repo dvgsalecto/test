@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -23,9 +23,6 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
 use Mirasvit\Search\Service\MapperService;
-use Magento\Tax\Helper\Data as TaxHelper;
-use Magento\Catalog\Helper\Data as CatalogHelper;
-use Magento\Tax\Model\Config as TaxConfig;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -48,26 +45,19 @@ class Mapper
 
     private $imageHelper;
 
+
     private $pricingHelper;
-
-    private $taxHelper;
-
-    private $catalogHelper;
 
     public function __construct(
         ResourceConnection $resource,
         MapperService      $mapperService,
         ImageHelper        $imageHelper,
-        PricingHelper      $pricingHelper,
-        TaxHelper          $taxHelper,
-        CatalogHelper      $catalogHelper
+        PricingHelper      $pricingHelper
     ) {
         $this->resource      = $resource;
         $this->mapperService = $mapperService;
         $this->imageHelper   = $imageHelper;
         $this->pricingHelper = $pricingHelper;
-        $this->taxHelper     = $taxHelper;
-        $this->catalogHelper = $catalogHelper;
     }
 
     public function mapProductSku(int $storeId, array $productIds): array
@@ -115,7 +105,7 @@ class Mapper
                 ->from([$this->resource->getTableName('url_rewrite')], ['entity_id', 'request_path'])
                 ->where('entity_id IN(?)', $productIds)
                 ->where('entity_type = ? ', ProductUrlRewriteGenerator::ENTITY_TYPE)
-                ->where('store_id IN(?)', [$storeId])
+                ->where('store_id IN(?)', [0, $storeId])
                 ->where('redirect_type = 0')
                 ->group('entity_id')
         );
@@ -169,8 +159,6 @@ class Mapper
 
     public function mapProductPrice(int $storeId, array $productIds): array
     {
-        $priceDisplayType = $this->taxHelper->getPriceDisplayType($storeId);
-
         $data = $this->resource->getConnection()->fetchAll(
             $this->resource->getConnection()
                 ->select()
@@ -186,8 +174,6 @@ class Mapper
             $map[$productId] = '';
         }
 
-        $taxClassIds = $this->attributeSelectQuery($storeId, $productIds, 'tax_class_id', 'int');
-
         foreach ($data as $item) {
             $productId = $item['entity_id'];
 
@@ -202,29 +188,11 @@ class Mapper
                 $price = $item['final_price'];
             }
 
-            if ($item['min_price'] != 0
-                && $item['final_price'] != 0
-                && $item['min_price'] < $item['final_price']) {
-                $price = $item['min_price'];
-            }
-
             if ($price <= 0) {
                 continue;
             }
 
-            if ($priceDisplayType === TaxConfig::DISPLAY_TYPE_INCLUDING_TAX) {
-                $product = new \Magento\Framework\DataObject([
-                    'tax_class_id' => $taxClassIds[$productId],
-                ]);
-
-                $price = $this->catalogHelper->getTaxPrice($product, $price, true, null, null, null, $storeId, null, true);
-            }
-
-            try {
-                $map[$productId] = $this->pricingHelper->currencyByStore($price, $storeId, true, false);
-            } catch (\Exception $e) {
-                $map[$productId] = (string)$price;
-            }
+            $map[$productId] = $this->pricingHelper->currencyByStore($price, $storeId, true, false);
         }
 
         return $map;
@@ -331,6 +299,66 @@ class Mapper
             $map[$productId] = self::UNSET_STOCK;
         }
 
+        //        if ($this->moduleManager->isEnabled('Magento_Inventory')) {
+        //            $connection = $this->resource->getConnection();
+        //
+        //            $select = $connection->select();
+        //
+        //            $select->from(
+        //                ['store' => $this->resource->getTableName('store')],
+        //                ['website_id', 'store_id']
+        //            )->joinInner(
+        //                ['store_website' => $this->resource->getTableName('store_website')],
+        //                'store.website_id = store_website.website_id',
+        //                null
+        //            )->joinInner(
+        //                ['stock' => $this->resource->getTableName('inventory_stock_sales_channel')],
+        //                'store_website.code = stock.code',
+        //                null
+        //            )->joinInner(
+        //                ['source_link' => $this->resource->getTableName('inventory_source_stock_link')],
+        //                'stock.stock_id = source_link.stock_id',
+        //                ['stock_id']
+        //            )->where('store.store_id = ?', $storeId);
+        //
+        //            $stmt = $connection->query($select);
+        //
+        //            foreach ($stmt->fetchAll() as $row) {
+        //                $stockSelect = $connection->select();
+        //                $stockId     = $row['stock_id'];
+        //
+        //                if ($connection->isTableExists($this->resource->getTableName("inventory_stock_$stockId"))) {
+        //                    if ($connection->tableColumnExists($this->resource->getTableName("inventory_stock_$stockId"), 'product_id')) {
+        //                        $stockSelect->from(
+        //                            ['stock' => $this->resource->getTableName("inventory_stock_$stockId")],
+        //                            ['value' => 'is_salable', 'entity_id' => 'product_id']
+        //                        )->where('stock.product_id IN (?)', $productIds);
+        //                    } else {
+        //                        $stockSelect->from(
+        //                            ['stock' => $this->resource->getTableName("inventory_stock_$stockId")],
+        //                            ['value' => 'is_salable']
+        //                        )->joinInner(
+        //                            ['e' => $this->resource->getTableName('catalog_product_entity')],
+        //                            'e.sku = stock.sku',
+        //                            ['entity_id']
+        //                        )->where('e.entity_id IN (?)', $productIds);
+        //                    }
+        //                } else {
+        //                    $stockSelect->from(
+        //                        ['stock' => $this->resource->getTableName("cataloginventory_stock_item")],
+        //                        ['value' => 'is_in_stock']
+        //                    )->joinInner(
+        //                        ['e' => $this->resource->getTableName('catalog_product_entity')],
+        //                        'e.entity_id = stock.product_id',
+        //                        ['entity_id']
+        //                    )->where('e.entity_id IN (?)', $productIds);
+        //                }
+        //
+        //                foreach ($connection->fetchAll($stockSelect) as $item) {
+        //                    $map[$item['entity_id']] = $item['value'] == 1 ? self::IN_STOCK : self::OUT_OF_STOCK;
+        //                }
+        //            }
+        //        } else {
         $data = $this->resource->getConnection()->fetchPairs(
             $this->resource->getConnection()->select()
                 ->from(
@@ -349,27 +377,7 @@ class Mapper
             $map[$productId] = $stockStatus == 1 ? self::IN_STOCK : self::OUT_OF_STOCK;
         }
 
-        if ($this->resource->getConnection()->isTableExists($this->resource->getTableName('inventory_source_item'))) {
-            $data = $this->resource->getConnection()->fetchPairs(
-                $this->resource->getConnection()->select()
-                    ->from(
-                        ['e' => $this->resource->getTableName('catalog_product_entity')],
-                        ['entity_id']
-                    )->joinInner(
-                        ['isi' => $this->resource->getTableName('inventory_source_item')],
-                        'isi.sku = e.sku',
-                        ['status' => 'MAX(status)']
-                    )
-                    ->where('e.entity_id IN (?)', $productIds)
-                    ->group('e.entity_id')
-            );
-
-            foreach ($data as $productId => $stockStatus) {
-                if ($map[$productId] == self::OUT_OF_STOCK) {
-                    $map[$productId] = $stockStatus == 1 ? self::IN_STOCK : self::OUT_OF_STOCK;
-                }
-            }
-        }
+        //        }
 
         return $map;
     }
@@ -383,32 +391,19 @@ class Mapper
 
         $mainTable = 'catalog_product_entity_' . $type;
 
-        foreach ([$storeId, 0, 1] as $sid) {
-            $query = $this->resource->getConnection()
-                ->select()
-                ->from(['ev' => $this->resource->getTableName($mainTable)], ['entity_id', 'value'])
-                ->where('ev.attribute_id = ?', $this->getAttributeId($attribute))
-                ->where('ev.store_id = ?', $sid)
-                ->where('ev.entity_id IN(?)', $productIds)
-                ->order('ev.store_id')
-                ->group('ev.entity_id');
-
-            if ($this->getPkField() == 'row_id') {
-                $query = $this->resource->getConnection()
+        foreach ([$storeId, 0] as $sid) {
+            $data = $this->resource->getConnection()->fetchPairs(
+                $this->resource->getConnection()
                     ->select()
-                    ->from(['e' => $this->resource->getTableName('catalog_product_entity')], ['entity_id'])
-                    ->joinLeft(['ev' => $this->resource->getTableName($mainTable)], 'e.row_id = ev.row_id', ['value'])
+                    ->from(['ev' => $this->resource->getTableName($mainTable)], [$this->getPkField(), 'value'])
                     ->where('ev.attribute_id = ?', $this->getAttributeId($attribute))
                     ->where('ev.store_id = ?', $sid)
-                    ->where('e.entity_id IN(?)', $productIds)
+                    ->where(sprintf('ev.%1$s IN(?)', $this->getPkField()), $productIds)
                     ->order('ev.store_id')
-                    ->group('e.entity_id');
-            }
-
-            $data = $this->resource->getConnection()->fetchPairs($query);
-
+                    ->group('ev.' . $this->getPkField())
+            );
             foreach ($data as $productId => $value) {
-                if ($map[$productId] == '' || $map[$productId] == 'no_selection') {
+                if ($map[$productId] == '') {
                     $map[$productId] = $value;
                 }
             }

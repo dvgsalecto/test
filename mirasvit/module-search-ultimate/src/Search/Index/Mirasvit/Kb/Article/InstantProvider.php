@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -41,8 +41,8 @@ class InstantProvider extends AbstractInstantProvider
     private function mapItem($model, int $storeId): array
     {
         return [
-            'name' => (string)$model->getName(),
-            'url'  => '/kbase/article/view/id/' . $model->getId(),
+            'name' => $model->getName(),
+            'url'  => $model->getUrl(),
         ];
     }
 
@@ -58,10 +58,9 @@ class InstantProvider extends AbstractInstantProvider
         }
 
         foreach ($documentData as $entityId => $itm) {
-            $om     = ObjectManager::getInstance();
+            $om = ObjectManager::getInstance();
             $entity = $om->create('Mirasvit\Kb\Model\Article')->load($entityId);
-            $map    = $this->mapItem($entity, $storeId);
-
+            $map = $this->mapItem($entity, $storeId);
             $documentData[$entityId][self::INSTANT_KEY] = $map;
         }
 

@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -31,6 +31,8 @@ class  EngineProvider extends InstantProvider
     private $applyFilter    = false;
 
     private $filtersToApply = [];
+
+    private $searchTerms    = [];
 
     private $buckets        = [];
 
@@ -67,20 +69,12 @@ class  EngineProvider extends InstantProvider
         $fields          = $this->configProvider->getIndexFields($indexIdentifier);
         $fields['_misc'] = 1;
 
-        $this->query['body']['query'] = $queryBuilder->build($this->query['body']['query'], $this->getQueryText(), $fields);
+        $this->query['body']['query'] = $queryBuilder->build($this->query['body']['query'], (string)$this->getQueryText(), $fields);
 
         $this->setMustCondition($indexIdentifier);
 
         if ($indexIdentifier === 'magento_catalog_product') {
             $this->setBuckets();
-
-            if ($this->getCategoryId()) {
-                $this->query['body']['query']['bool']['must'][] = [
-                    'term' => [
-                        'category_ids' => $this->getCategoryId(),
-                    ],
-                ];
-            }
         }
 
         try {
@@ -157,9 +151,8 @@ class  EngineProvider extends InstantProvider
             }
         }
 
-        if (count($this->getActiveFilters()) > 0 && !$this->applyFilter) {
+        if (!empty($this->getActiveFilters()) && $this->applyFilter == false) {
             $this->applyFilter = true;
-
             foreach ($this->getActiveFilters() as $filterKey => $value) {
                 $this->filtersToApply[] = $filterKey;
 
@@ -171,6 +164,7 @@ class  EngineProvider extends InstantProvider
                     }
 
                     $this->buckets[$bucketKey] = $bucket;
+
                 }
 
                 $totalItems = $result['totalItems'];
@@ -238,7 +232,7 @@ class  EngineProvider extends InstantProvider
 
     private function setMustCondition(string $indexIdentifier): void
     {
-        if ($indexIdentifier === 'magento_catalog_product') {
+        if ($indexIdentifier === 'catalogsearch_fulltext') {
             $this->query['body']['query']['bool']['must'][] = [
                 'terms' => [
                     'visibility' => ['3', '4'],
@@ -259,8 +253,7 @@ class  EngineProvider extends InstantProvider
 
                         $this->query['body']['query']['bool']['must'] = array_merge($this->query['body']['query']['bool']['must'], [$priceFilter]);
                     } else {
-                        $termStatement = is_array($filterValue) ? 'terms' : 'term';
-
+                        $termStatement                                  = is_array($filterValue) ? 'terms' : 'term';
                         $this->query['body']['query']['bool']['must'][] = [
                             $termStatement => [
                                 $filterCode => $filterValue,

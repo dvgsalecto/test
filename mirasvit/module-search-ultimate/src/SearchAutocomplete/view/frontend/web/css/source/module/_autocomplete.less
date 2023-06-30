@@ -32,19 +32,10 @@
         }
 
         .mst-searchautocomplete__wrapper {
-            overflow:       hidden;
-            display:        flex;
+            overflow-y: scroll;
+            display: flex;
             flex-direction: column;
-            max-height:     70vh;
-        }
-
-        .mst-searchautocomplete__results {
-            height:     100%;
-            overflow-y: auto;
-
-            &.__all {
-                margin-bottom: 40px;
-            }
+            max-height: 70vh;
         }
 
         .mst-searchautocomplete__spinner {
@@ -52,6 +43,7 @@
             position: absolute;
             top:      5px;
             right:    10px;
+            //margin-left: -90px;
         }
 
         &._loading {
@@ -72,11 +64,7 @@
         .mst-searchautocomplete__show-all {
             border-top: 1px solid @header-bg;
             text-align: center;
-            position:   absolute;
-            left:       0;
-            bottom:     0;
-            width:      100%;
-            height:     40px;
+            margin:     0 10px;
 
             a {
                 font-weight: 600;
@@ -112,11 +100,11 @@
                 .lib-clearfix();
 
                 margin:  0;
-                padding: 7px 10px;
+                padding: 1rem;
                 cursor:  pointer;
 
                 a.title {
-                    font-weight:     500;
+                    font-weight:     600;
                     margin-bottom:   0;
                     color:           @text-color;
                     text-decoration: none;
@@ -148,9 +136,8 @@
                     margin:  0;
 
                     a {
-                        font-size:   1.3rem;
-                        color:       #575757;
-                        font-weight: 600;
+                        font-size: 1.3rem;
+                        color:     #575757;
                     }
 
                     &:hover {
@@ -164,18 +151,14 @@
                 }
             }
         }
-
-        &.magento_catalog_product {
-            border-left: 1px solid transparent;
-        }
     }
 
     .mst-searchautocomplete__item {
+
         &.magento_catalog_product {
             display:       flex;
             border-bottom: 1px solid @hr-color;
             align-items:   center;
-            padding:       10px;
 
             &:last-child {
                 border-bottom: none;
@@ -243,16 +226,16 @@
             }
 
             .to_cart_message {
-                padding:   5px 10px;
+                padding: 5px 10px;
                 font-size: 1.2rem;
 
                 &.error {
-                    color:      #e02b27;
+                    color: #e02b27;
                     background: #fae5e5;
                 }
 
                 &.success {
-                    color:      #006400;
+                    color: #006400;
                     background: #e5efe5;
                 }
             }
@@ -263,11 +246,11 @@
                 margin-bottom: .5rem;
             }
 
-            .inStock {
+            .inStock{
                 color: #76bd76;
             }
 
-            .outOfStock {
+            .outOfStock{
                 color: #a96565;
             }
 
@@ -376,14 +359,10 @@
                         float:          left;
                         display:        block;
                         position:       relative;
-                        max-width:      223px;
-                        width:          223px;
+                        max-width:      240px;
+                        width:          240px;
                         padding-bottom: 2rem;
                         box-sizing:     border-box;
-
-                        .mst-searchautocomplete__index-title {
-                            margin-right: 0;
-                        }
                     }
 
                     div.magento_catalog_product {

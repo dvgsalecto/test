@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -23,7 +23,6 @@ use Magento\CatalogGraphQl\DataProvider\Product\LayeredNavigation\LayerBuilder;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
-use Mirasvit\Search\Repository\IndexRepository;
 use Mirasvit\Search\Model\Index\Context as IndexContext;
 
 class Product implements ResolverInterface
@@ -34,12 +33,11 @@ class Product implements ResolverInterface
 
     private $layerBuilder;
 
-    private $defaultParams
-        = [
-            'sort'   =>
-                ['relevance' => 'DESC'],
-            'filter' => [],
-        ];
+    private $defaultParams = ['sort' => ['relevance' => 'DESC'], 'filter' => []];
+
+    private $size          = 0;
+
+    private $aggregations  = null;
 
     public function __construct(
         LayerResolver $layerResolver,
@@ -53,23 +51,25 @@ class Product implements ResolverInterface
 
     public function resolve(Field $field, $context, ResolveInfo $info, array $value = null, array $args = null)
     {
+        if (empty($args)) {
+            if ($field->getName() == 'size') {
+                return $this->size;
+            } elseif ($field->getName() == 'aggregations') {
+                return $this->getAggregations($context);
+            }
+        }
+
         foreach ($this->defaultParams as $parameter => $defaultValue) {
             if (!isset($args[$parameter])) {
                 $args[$parameter] = $defaultValue;
             }
         }
 
-        $result = $value['catalogsearch_fulltext'] ?? null;
-        if (!$result) {
-            return null;
-        }
-
         $layer      = $this->layerResolver->get();
         $collection = $layer->getProductCollection();
         $collection->addAttributeToSelect('*');
-
         $searcher = $this->indexContext->getSearcher();
-        $searcher->setInstance($result['instance']);
+        $searcher->setInstance($value['instance']);
 
         if (str_contains((string)$collection->getSelect(), '`e`')) {
             $searcher->joinMatches($collection, 'e.entity_id', $args);
@@ -84,33 +84,31 @@ class Product implements ResolverInterface
         foreach ($collection as $product) {
             $productData          = $product->getData();
             $productData['model'] = $product;
-
-            $items[] = $productData;
+            $items[]              = $productData;
         }
 
-        $totalCount = $searcher->getTotal();
+        $this->size         = $searcher->getTotal();
+        $this->aggregations = $searcher->getAggregations();
 
-        return [
-            ...$result,
-            'items'        => $items,
-            'total_count'  => $totalCount,
-            'aggregations' => $this->getAggregations($context, $searcher->getAggregations()),
-            'page_info'    => [
-                'total_pages'  => ceil($totalCount / $args['pageSize']),
-                'page_size'    => $args['pageSize'],
-                'current_page' => $args['currentPage'],
-            ],
-        ];
+        return $items;
     }
 
-
-    private function getAggregations($context, $aggregations)
+    private function getSearcher(array $value)
     {
-        if ($aggregations) {
+        $layer    = $this->layerResolver->get();
+        $searcher = $this->indexContext->getSearcher();
+        $searcher->setInstance($value['instance']);
+
+        return $searcher;
+    }
+
+    private function getAggregations($context)
+    {
+        if ($this->aggregations) {
             $store   = $context->getExtensionAttributes()->getStore();
             $storeId = (int)$store->getId();
 
-            return $this->layerBuilder->build($aggregations, $storeId);
+            return $this->layerBuilder->build($this->aggregations, $storeId);
         } else {
             return [];
         }

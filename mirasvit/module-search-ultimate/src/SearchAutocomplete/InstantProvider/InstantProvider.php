@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -163,13 +163,6 @@ class InstantProvider
         $p = (int)$this->getParam('p');
 
         return $p <= 0 ? 1 : $p;
-    }
-
-    protected function getCategoryId(): ?int
-    {
-        $id = (int)$this->getParam('cat');
-
-        return $id > 0 ? $id : null;
     }
 
     protected function getBuckets(): array

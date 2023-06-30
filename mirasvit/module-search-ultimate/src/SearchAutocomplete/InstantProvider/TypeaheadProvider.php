@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -30,8 +30,9 @@ if (stripos(__DIR__, 'vendor') !== false) {
 if (!file_exists($configFile)) {
     return;
 }
-$config = json_decode(file_get_contents($configFile), true);
-if (!isset($config['0/typeahead']) || $config['0/typeahead'] == false) {
+$config = json_decode(file_get_contents($configFile));
+
+if (!isset($config['-1/typeahead']) || $config['-1/typeahead'] == false) {
     return;
 }
 
@@ -45,7 +46,7 @@ class TypeaheadProvider
     public function __construct(
         QueryConfigProviderInterface $configProvider
     ) {
-        $this->configProvider = $configProvider;
+        $this->configProvider   = $configProvider;
     }
 
     public function process(): ?string
@@ -72,10 +73,10 @@ class TypeaheadProvider
 }
 
 $configProvider = new ConfigProvider($config);
-$provider       = new TypeaheadProvider($configProvider);
-$html           = $provider->process();
+$provider = new TypeaheadProvider($configProvider);
+$html     = $provider->process();
 /** mp comment start */
-if (!CompatibilityService::isMarketplace()) {
+if (! CompatibilityService::isMarketplace()) {
     if ($html) {
         // @codingStandardsIgnoreStart
         echo $html;

@@ -13,12 +13,7 @@
 
 <script id="searchAutocompleteWrapper" type="text/x-custom-template">
     <div class="mst-searchautocomplete__wrapper">
-        <div class="mst-searchautocomplete__results" data-bind="{
-            visible: result().noResults == false,
-            css: {
-                __all: result().urlAll && result().totalItems > 0
-            }
-        }">
+        <div data-bind="visible: result().noResults == false">
             <div data-bind="foreach: { data: result().indexes, as: 'index' }">
                 <div data-bind="visible: index.totalItems, attr: {class: 'mst-searchautocomplete__index ' + index.identifier}">
                     <div class="mst-searchautocomplete__index-title">

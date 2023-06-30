@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -32,16 +32,20 @@ class SearchResult implements ResolverInterface
 {
     private $indexRepository;
 
+    private $indexProvider;
+
     private $queryFactory;
 
     private $layerResolver;
 
     public function __construct(
         IndexRepository $indexRepository,
+        IndexProvider   $indexProvider,
         QueryFactory    $queryFactory,
         LayerResolver   $layerResolver
     ) {
         $this->indexRepository = $indexRepository;
+        $this->indexProvider   = $indexProvider;
         $this->queryFactory    = $queryFactory;
         $this->layerResolver   = $layerResolver;
     }
@@ -63,19 +67,22 @@ class SearchResult implements ResolverInterface
             ->setOrder(IndexInterface::POSITION, 'asc');
 
         $this->layerResolver->create(LayerResolver::CATALOG_LAYER_SEARCH);
+        $indexList = [];
 
-        $result = [];
         foreach ($collection as $index) {
-            $indexInstance = $this->indexRepository->getInstance($index);
-
-            $result[$index->getIdentifier()] = [
+            $indexItem = [
                 IndexInterface::IDENTIFIER => $index->getIdentifier(),
                 IndexInterface::TITLE      => $index->getTitle(),
                 IndexInterface::POSITION   => $index->getPosition(),
-                'instance'                 => $indexInstance,
             ];
+
+            $indexInstance                      = $this->indexRepository->getInstance($index);
+            $indexItem['instance']              = $indexInstance;
+            $indexItem['size']                  = 0;
+            $indexItem['aggregations']          = [];
+            $indexList[$index->getIdentifier()] = $indexItem;
         }
 
-        return $result;
+        return $indexList;
     }
 }

@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -33,96 +33,95 @@ class ConfigProvider extends AbstractConfigProvider
 
     public function getEngine(): string
     {
-        $engine = (string)$this->getConfigData('engine');//$this->configData["$this->storeId/engine"];
+        $engine = (string)$this->configData["$this->storeId/engine"];
         if ($engine == 'opensearch') {
             $engine = 'elasticsearch7';
         }
-
         return $engine;
     }
 
     public function getIndexes(): array
     {
-        return (array)$this->getConfigData('indexes');//$this->configData["$this->storeId/indexes"];
+        return (array)$this->configData["$this->storeId/indexes"];
     }
 
     public function getIndexFields(string $indexIdentifier): array
     {
-        return (array)$this->getConfigData("index/$indexIdentifier/fields");//$this->configData["$this->storeId/index/$indexIdentifier/fields"];
+        return (array)$this->configData["$this->storeId/index/$indexIdentifier/fields"];
     }
 
     public function getIndexAttributes(string $indexIdentifier): array
     {
-        return (array)$this->getConfigData("index/$indexIdentifier/attributes");//$this->configData["$this->storeId/index/$indexIdentifier/attributes"];
+        return (array)$this->configData["$this->storeId/index/$indexIdentifier/attributes"];
     }
 
     public function getLimit(string $indexIdentifier): int
     {
-        return (int)$this->getConfigData("index/$indexIdentifier/limit");//$this->configData["$this->storeId/index/$indexIdentifier/limit"];
+        return (int)$this->configData["$this->storeId/index/$indexIdentifier/limit"];
     }
 
     public function getIndexName(string $indexIdentifier): string
     {
         $searchEngine = $this->getEngine();
 
-        return (string)$this->getConfigData($searchEngine)[$indexIdentifier];
+        return (string)$this->configData["$this->storeId/$searchEngine"][$indexIdentifier];
     }
 
     public function getEngineConnection(): array
     {
         $searchEngine = $this->getEngine();
 
-        return (array)$this->getConfigData($searchEngine)['connection'];
+        return (array)$this->configData["$this->storeId/$searchEngine"]['connection'];
     }
 
     public function getIndexPosition(string $indexIdentifier): int
     {
-        return (int)$this->getConfigData("index/$indexIdentifier/position");//$this->configData["$this->storeId/index/$indexIdentifier/position"];
+        return (int)$this->configData["$this->storeId/index/$indexIdentifier/position"];
     }
 
     public function getIndexTitle(string $indexIdentifier): string
     {
-        return (string)$this->getConfigData("index/$indexIdentifier/title");//$this->configData["$this->storeId/index/$indexIdentifier/title"];
+        return (string)$this->configData["$this->storeId/index/$indexIdentifier/title"];
     }
 
     public function getTextAll(): string
     {
-        return (string)$this->getConfigData('textAll');//$this->configData["$this->storeId/textAll"];
+        return (string)$this->configData["$this->storeId/textAll"];
     }
 
     public function getTextEmpty(): string
     {
-        return (string)$this->getConfigData('textEmpty');//$this->configData["$this->storeId/textEmpty"];
+        return (string)$this->configData["$this->storeId/textEmpty"];
     }
 
     public function getUrlAll(): string
     {
-        return (string)$this->getConfigData('urlAll');//$this->configData["$this->storeId/urlAll"];
+        return (string)$this->configData["$this->storeId/urlAll"];
     }
 
     public function getLongTailExpressions(): array
     {
-        return (array)$this->getConfigData('configuration/long_tail_expressions');//$this->configData["$this->storeId/configuration/long_tail_expressions"];
+        return (array)$this->configData["$this->storeId/configuration/long_tail_expressions"];
     }
 
     public function getReplaceWords(): array
     {
-        return (array)$this->getConfigData('configuration/replace_words');//$this->configData["$this->storeId/configuration/replace_words"];
+        return (array)$this->configData["$this->storeId/configuration/replace_words"];
     }
 
     public function getWildcardMode(): string
     {
-        return (string)$this->getConfigData('configuration/wildcard');//$this->configData["$this->storeId/configuration/wildcard"];
+        return $this->configData["$this->storeId/configuration/wildcard"];
     }
 
     public function getMatchMode(): string
     {
-        return (string)$this->getConfigData('configuration/match_mode');//$this->configData["$this->storeId/configuration/match_mode"];
+        return $this->configData["$this->storeId/configuration/match_mode"];
     }
 
     public function getWildcardExceptions(): array
     {
-        return (array)$this->getConfigData('configuration/wildcard_exceptions');//$this->configData["$this->storeId/configuration/wildcard_exceptions"];
+        return $this->configData["$this->storeId/configuration/wildcard_exceptions"];
     }
 
     public function getSynonyms(array $terms, int $storeId): array
@@ -134,7 +133,7 @@ class ConfigProvider extends AbstractConfigProvider
         $terms        = explode(' ', $terms);
         $terms[]      = $initialQuery;
 
-        foreach ((array)$this->getConfigData('synonymList') as $synonymsGroup) {
+        foreach ($this->configData["$this->storeId/synonymList"] as $synonymsGroup) {
             foreach (explode(',', $synonymsGroup) as $synonym) {
                 foreach ($terms as $term) {
                     $synonym = trim($synonym);
@@ -155,7 +154,7 @@ class ConfigProvider extends AbstractConfigProvider
 
     public function isStopword(string $term, int $storeId): bool
     {
-        return in_array($term, (array)$this->getConfigData('stopwordList'));
+        return in_array($term, $this->configData["$this->storeId/stopwordList"]);
     }
 
     public function applyStemming(string $term): string
@@ -182,7 +181,7 @@ class ConfigProvider extends AbstractConfigProvider
     public function getTypeaheadSuggestions(string $query): array
     {
         $suggestions = [];
-        foreach ((array)$this->getConfigData('typeahead') as $groupKey => $suggestionsGroup) {
+        foreach ($this->configData["$this->storeId/typeahead"] as $groupKey => $suggestionsGroup) {
             if (substr($query, 0, 2) == $groupKey) {
                 $suggestions = $suggestionsGroup;
                 break;
@@ -194,31 +193,30 @@ class ConfigProvider extends AbstractConfigProvider
 
     public function getAvailableBuckets(): array
     {
-        return array_keys((array)$this->getConfigData('buckets'));
+        return array_keys($this->configData["$this->storeId/buckets"]);
     }
 
     public function getBucketOptionsData(string $code, array $options): array
     {
-        $buckets = (array)$this->getConfigData('buckets');
-
-        if (!isset($buckets[$code]) || !isset($buckets[$code]['label'])) {
+        if (!isset($this->configData["$this->storeId/buckets"][$code])
+            || !isset($this->configData["$this->storeId/buckets"][$code]['label'])) {
             return [];
         }
 
         $bucketData          = [];
-        $bucketData['label'] = $buckets[$code]['label'];
+        $bucketData['label'] = $this->configData["$this->storeId/buckets"][$code]['label'];
         $bucketData['code']  = $code;
 
         if ($code == 'price') {
             return $this->renderPriceFilter($code, $options, $bucketData);
         }
 
-        if (!isset($buckets[$code]['options'])) {
+        if (!isset($this->configData["$this->storeId/buckets"][$code]['options'])) {
             return [];
         }
 
         $keys          = array_column($options, 'key');
-        $activeOptions = array_intersect_key($buckets[$code]['options'], array_flip($keys));
+        $activeOptions = array_intersect_key($this->configData["$this->storeId/buckets"][$code]['options'], array_flip($keys));
 
         foreach ($options as $option) {
             if ($option['doc_count'] == 0) {
@@ -260,17 +258,17 @@ class ConfigProvider extends AbstractConfigProvider
 
     public function getProductsPerPage(): int
     {
-        return (int)$this->getConfigData('productsPerPage');//$this->configData["$this->storeId/productsPerPage"];
+        return (int)$this->configData["$this->storeId/productsPerPage"];
     }
 
     public function getLayeredNavigationPosition(): string
     {
-        return (string)$this->getConfigData('displayFilters');//$this->configData["$this->storeId/displayFilters"];
+        return (string)$this->configData["$this->storeId/displayFilters"];
     }
 
     public function getPaginationPosition(): string
     {
-        return (string)$this->getConfigData('pagination');//$this->configData["$this->storeId/pagination"];
+        return (string)$this->configData["$this->storeId/pagination"];
     }
 
     private function renderPriceFilter(string $code, array $options, array $bucketData): array
@@ -288,7 +286,8 @@ class ConfigProvider extends AbstractConfigProvider
         $rangeLimits = range($minPrice, $maxPrice, 10);
         $ranges      = [];
 
-        $currencySymbol = $this->getConfigData('currencySymbol');//$this->configData["$this->storeId/currencySymbol"];
+
+        $currencySymbol = $this->configData["$this->storeId/currencySymbol"];
 
         foreach ($rangeLimits as $key => $rangeLimit) {
             if (!isset($rangeLimits[$key + 1])) {
@@ -319,14 +318,5 @@ class ConfigProvider extends AbstractConfigProvider
         }
 
         return $bucketData;
-    }
-
-    private function getConfigData(string $key)
-    {
-        if (isset($this->configData[$this->storeId . '/' . $key])) {
-            return $this->configData[$this->storeId . '/' . $key];
-        }
-
-        return false;
     }
 }

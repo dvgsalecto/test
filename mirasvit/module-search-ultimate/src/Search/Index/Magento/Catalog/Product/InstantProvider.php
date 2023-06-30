@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Mirasvit\Search\Index\Magento\Catalog\Product;
 
-use Magento\Framework\App\ObjectManager;
 use Mirasvit\Search\Index\AbstractInstantProvider;
 use Mirasvit\Search\Service\IndexService;
 
@@ -43,6 +42,7 @@ class InstantProvider extends AbstractInstantProvider
             ->addAttributeToSelect('short_description')
             ->addAttributeToSelect('description')
             ->setOrder('relevance');
+
 
         $entityIds = [];
         foreach ($collection as $product) {

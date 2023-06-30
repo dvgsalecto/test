@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Mirasvit\Search\Index\Magefan\Blog\Post;
 
-use Magento\Framework\App\ObjectManager;
 use Mirasvit\Search\Index\AbstractInstantProvider;
 
 class InstantProvider extends AbstractInstantProvider
@@ -41,20 +40,11 @@ class InstantProvider extends AbstractInstantProvider
 
     public function map(array $documentData, int $storeId): array
     {
-        foreach ($documentData as $entityId => $itm) {
-            $entity = ObjectManager::getInstance()->create('\Magefan\Blog\Model\Post')
-                ->load($entityId);
-
-            $map = $this->mapItem($entity, $storeId);
-
-            $documentData[$entityId]['_instant'] = $map;
-        }
-
         return $documentData;
     }
 
     /**
-     * @param \Magefan\Blog\Model\Post $model
+     * @param object $model
      */
     private function mapItem($model, int $storeId): array
     {

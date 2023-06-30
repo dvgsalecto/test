@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -23,9 +23,7 @@ use Mirasvit\Search\Service\QueryService;
 
 class QueryBuilder
 {
-    protected $searchTerms;
-
-    private   $queryService;
+    private $queryService;
 
     public function __construct(
         QueryService $queryService
@@ -35,8 +33,6 @@ class QueryBuilder
 
     public function build(array $selectQuery, string $searchTerm, array $fields): array
     {
-        $this->searchTerms = [];
-
         if (!isset($selectQuery['bool'])) {
             $selectQuery['bool'] = [];
         }
@@ -93,17 +89,17 @@ class QueryBuilder
                 ],
             ];
 
-            $selectQuery['bool']['should'][]['wildcard'][$field . '.keyword'] = [
+            $selectQuery['bool']['should'][]['wildcard'][$field] = [
                 'value' => $processedQuery . '*',
                 'boost' => (string)($boost + 50),
             ];
 
-            $selectQuery['bool']['should'][]['wildcard'][$field . '.keyword'] = [
+            $selectQuery['bool']['should'][]['wildcard'][$field] = [
                 'value' => '*' . $processedQuery,
                 'boost' => (string)($boost + 50),
             ];
 
-            $selectQuery['bool']['should'][]['wildcard'][$field . '.keyword'] = [
+            $selectQuery['bool']['should'][]['wildcard'][$field] = [
                 'value' => '*' . $processedQuery . '*',
                 'boost' => (string)($boost + 10),
             ];
@@ -112,12 +108,12 @@ class QueryBuilder
                 $term = (string)$term;
 
                 if (strlen($term) < 3) {
-                    $selectQuery['bool']['should'][]['wildcard'][$field . '.keyword'] = [
+                    $selectQuery['bool']['should'][]['wildcard'][$field] = [
                         'value' => $term,
                         'boost' => (string)$boost * 0.75 * (float)$boostMultiplier,
                     ];
                 } else {
-                    $selectQuery['bool']['should'][]['wildcard'][$field . '.keyword'] = [
+                    $selectQuery['bool']['should'][]['wildcard'][$field] = [
                         'value' => $term,
                         'boost' => (string)$boost * (float)$boostMultiplier,
                     ];
@@ -142,11 +138,15 @@ class QueryBuilder
 
     protected function escape(string $value): string
     {
+//        $value = str_replace('-', ' ', $value);
+
         $pattern = '/(\+|-|\/|&&|\|\||!|\(|\)|\{|}|\[|]|\^|"|~|\*|\?|:|\\\)/';
         $replace = '\\\$1';
 
         return preg_replace($pattern, $replace, $value);
     }
+
+    protected $searchTerms;
 
     private function compileQuery(array $query): string
     {
@@ -179,25 +179,25 @@ class QueryBuilder
 
                     switch ($value['$wildcard']) {
                         case QueryConfigProviderInterface::WILDCARD_INFIX:
-                            $compiled[]                     = "(*$phrase*)";
+                            $compiled[]                     = "*$phrase*";
                             $this->searchTerms[$phrase]     = 1;
                             $this->searchTerms["*$phrase*"] = 0.3;
                             break;
                         case QueryConfigProviderInterface::WILDCARD_PREFIX:
-                            $compiled[]                    = "(*$phrase)";
+                            $compiled[]                    = "*$phrase";
                             $this->searchTerms[$phrase]    = 1;
                             $this->searchTerms["*$phrase"] = 0.5;
                             break;
                         case QueryConfigProviderInterface::WILDCARD_SUFFIX:
-                            $compiled[]                    = "($phrase*)";
+                            $compiled[]                    = "$phrase*";
                             $this->searchTerms[$phrase]    = 1;
                             $this->searchTerms["$phrase*"] = 0.5;
                             break;
                         case QueryConfigProviderInterface::WILDCARD_DISABLED:
                             if (strpos($phrase, ' ') !== false) {
-                                $compiled[] = "(*$phrase*)";
+                                $compiled[] = "($phrase)";
                             } else {
-                                $compiled[] = '('.$phrase.')';
+                                $compiled[] = $phrase;
                             }
                             $this->searchTerms[$phrase] = 1;
                             break;

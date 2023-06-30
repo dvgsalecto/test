@@ -3,7 +3,7 @@
     <body>
         <referenceContainer name="content">
             <block class="Mirasvit\Misspell\Block\Misspell" name="misspell" template="misspell.phtml"
-                   before="-"/>
+				cacheable="false" before="-"/>
         </referenceContainer>
     </body>
 </page>

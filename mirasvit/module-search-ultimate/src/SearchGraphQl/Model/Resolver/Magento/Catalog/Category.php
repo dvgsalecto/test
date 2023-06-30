@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -30,8 +30,10 @@ class Category implements ResolverInterface
 
     private $attributesJoiner;
 
+    private $size = 0;
+
     public function __construct(
-        Hydrator         $hydrator,
+        Hydrator $hydrator,
         AttributesJoiner $attributesJoiner
     ) {
         $this->hydrator         = $hydrator;
@@ -39,19 +41,21 @@ class Category implements ResolverInterface
     }
 
     public function resolve(
-        Field       $field,
-                    $context,
+        Field $field,
+        $context,
         ResolveInfo $info,
-        array       $value = null,
-        array       $args = null
+        array $value = null,
+        array $args = null
     ) {
-        $result = $value[$field->getName()] ?? null;
-        if (!$result) {
-            return null;
+        if (empty($args)) {
+            if ($field->getName() == 'size') {
+                return $this->size;
+            }
         }
 
         /** @var \Magento\Catalog\Model\ResourceModel\Category\Collection $collection */
-        $collection = $result['instance']->getSearchCollection();
+        $collection = $value['instance']->getSearchCollection();
+        $this->size = $collection->getSize();
         $collection->setPageSize($args['pageSize'])
             ->setCurPage($args['currentPage']);
 
@@ -63,17 +67,7 @@ class Category implements ResolverInterface
             $items[] = $this->hydrator->hydrateCategory($category);
         }
 
-        $totalCount = $collection->getSize();
 
-        return [
-            ...$result,
-            'items'       => $items,
-            'total_count' => $totalCount,
-            'page_info'   => [
-                'total_pages'  => ceil($totalCount / $args['pageSize']),
-                'page_size'    => $args['pageSize'],
-                'current_page' => $args['currentPage'],
-            ],
-        ];
+        return $items;
     }
 }

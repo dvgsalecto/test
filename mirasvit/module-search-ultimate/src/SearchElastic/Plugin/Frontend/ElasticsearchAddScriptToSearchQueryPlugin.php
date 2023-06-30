@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -55,7 +55,6 @@ class ElasticsearchAddScriptToSearchQueryPlugin extends Mapper
 
         if ($request->getQuery()->getName() == 'quick_search_container'
             && $this->scoreRuleRepository->getCollection()->getSize() > 0
-            && $this->isSortByRelevance($request)
         ) {
             $searchQuery['body']['query']['script_score']['query']  = $searchQuery['body']['query'];
             $searchQuery['body']['query']['script_score']['script'] = [
@@ -66,37 +65,22 @@ class ElasticsearchAddScriptToSearchQueryPlugin extends Mapper
             unset($searchQuery['body']['query']['bool']);
         }
 
-        // change minimum_should_match only for search requests
-        if ($request->getQuery()->getName() !== 'catalog_view_container'
-            && $request->getQuery()->getName() !== 'advanced_search_container') {
-            if (isset($searchQuery['body'])
-                && isset($searchQuery['body']['query'])
-                && isset($searchQuery['body']['query']['bool'])
-                && isset($searchQuery['body']['query']['bool']['minimum_should_match'])) {
-                $searchQuery['body']['query']['bool']['minimum_should_match'] = 0;
-            }
+        if (isset($searchQuery['body'])
+            && isset($searchQuery['body']['query'])
+            && isset($searchQuery['body']['query']['bool'])
+            && isset($searchQuery['body']['query']['bool']['minimum_should_match'])) {
+            $searchQuery['body']['query']['bool']['minimum_should_match'] = 0;
+        }
 
-            if (isset($searchQuery['body'])
-                && isset($searchQuery['body']['query'])
-                && isset($searchQuery['body']['query']['script_score'])
-                && isset($searchQuery['body']['query']['script_score']['query'])
-                && isset($searchQuery['body']['query']['script_score']['query']['bool'])
-                && isset($searchQuery['body']['query']['script_score']['query']['bool']['minimum_should_match'])) {
-                $searchQuery['body']['query']['script_score']['query']['bool']['minimum_should_match'] = 0;
-            }
+        if (isset($searchQuery['body'])
+            && isset($searchQuery['body']['query'])
+            && isset($searchQuery['body']['query']['script_score'])
+            && isset($searchQuery['body']['query']['script_score']['query'])
+            && isset($searchQuery['body']['query']['script_score']['query']['bool'])
+            && isset($searchQuery['body']['query']['script_score']['query']['bool']['minimum_should_match'])) {
+            $searchQuery['body']['query']['script_score']['query']['bool']['minimum_should_match'] = 0;
         }
 
         return $searchQuery;
-    }
-
-    private function isSortByRelevance(RequestInterface $request): bool
-    {
-        foreach ($request->getSort() as $sort) {
-            if ($sort['field'] == 'relevance') {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

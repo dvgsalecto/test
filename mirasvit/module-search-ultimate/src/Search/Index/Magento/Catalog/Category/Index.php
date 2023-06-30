@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -32,8 +32,8 @@ class Index extends AbstractIndex
 
     public function __construct(
         CategoryCollectionFactory $collectionFactory,
-        ContentService            $contentService,
-        Context                   $context
+        ContentService $contentService,
+        Context $context
     ) {
         $this->collectionFactory = $collectionFactory;
         $this->contentService    = $contentService;
@@ -111,33 +111,27 @@ class Index extends AbstractIndex
             ->setPageSize($limit)
             ->setOrder('entity_id');
 
-        $isIncludeEmptyCategories = isset($props['empty_categories']) ? (bool)$props['empty_categories'] : true;
+        $collection->getSelect()
+            ->joinLeft(
+                ['category_product' => $collection->getResource()->getTable('catalog_category_product')],
+                'e.entity_id = category_product.category_id',
+                ['products_count' => 'count(category_product.product_id)']
+            )
+            ->group('e.entity_id');
 
-        if (!$isIncludeEmptyCategories) {
-            $collection->getSelect()
-                ->joinLeft(
-                    ['category_product' => $collection->getResource()->getTable('catalog_category_product')],
-                    'e.entity_id = category_product.category_id',
-                    ['products_count' => 'count(category_product.product_id)']
-                )
-                ->group('e.entity_id');
-
-            foreach ($collection as $item) {
-                $item->setData('landing_page', $this->renderCmsBlock($item->getData('landing_page'), $storeId));
-            }
-
-            $itemsCollection = $collection->toArray();
-
-            foreach ($collection->toArray() as $key => $item) {
-                if ($item['products_count'] == 0 && $item['children_count'] == 0) {
-                    unset($itemsCollection[$key]);
-                }
-            }
-
-            return $itemsCollection;
-        } else {
-            return $collection->toArray();
+        foreach ($collection as $item) {
+            $item->setData('landing_page', $this->renderCmsBlock($item->getData('landing_page'), $storeId));
         }
+
+        $itemsCollection = $collection->toArray();
+
+        foreach ($collection->toArray() as $key => $item) {
+            if ($item['products_count'] == 0 && $item['children_count'] == 0) {
+                unset($itemsCollection[$key]);
+            }
+        }
+
+        return $itemsCollection;
     }
 
     /**

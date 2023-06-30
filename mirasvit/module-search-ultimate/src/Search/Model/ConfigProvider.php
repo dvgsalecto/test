@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -226,7 +226,9 @@ class ConfigProvider extends AbstractConfigProvider
             $ignoredIps = preg_split('/\s*\,+\s*/', $this->scopeConfig->getValue('search/feature/ignored_ips'));
         }
 
-        return array_unique($ignoredIps);
+        $ignoredIps = array_unique($ignoredIps);
+
+        return $ignoredIps;
     }
 
     public function isAsciiFoldingAllowed(): bool
@@ -257,16 +259,5 @@ class ConfigProvider extends AbstractConfigProvider
     public function getMinProductsQtyToDisplay(): int
     {
         return (int)$this->scopeConfig->getValue('search/feature/min_products_qty_to_display', ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getIp(): string
-    {
-        if (isset($_SERVER['HTTP_CLIENT_IP']) && !empty($_SERVER['HTTP_CLIENT_IP'])) {
-            return $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            return $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            return $_SERVER['REMOTE_ADDR'];
-        }
     }
 }

@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -59,7 +59,7 @@ class InstantProvider extends AbstractInstantProvider
 
         /** @var \Magento\Catalog\Model\Category $category */
         foreach ($this->getCollection($limit) as $category) {
-            $items[] = $this->mapItem($category, $storeId);
+            $items[] = $this->mapCategory($category, $storeId);
         }
 
         return $items;
@@ -76,7 +76,7 @@ class InstantProvider extends AbstractInstantProvider
             $entity = ObjectManager::getInstance()->create('\Magento\Catalog\Model\Category')
                 ->load($entityId);
 
-            $map = $this->mapItem($entity, $storeId);
+            $map = $this->mapCategory($entity, $storeId);
 
             $documentData[$entityId]['_instant'] = $map;
         }
@@ -106,7 +106,7 @@ class InstantProvider extends AbstractInstantProvider
      *
      * @return array
      */
-    private function mapItem($category, int $storeId): array
+    private function mapCategory($category, int $storeId): array
     {
         $category = $this->categoryFactory->create()->setStoreId($storeId)
             ->load($category->getId());

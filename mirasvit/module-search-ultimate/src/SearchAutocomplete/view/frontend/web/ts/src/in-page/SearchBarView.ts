@@ -12,15 +12,7 @@ export class SearchBarView {
         this.props = props
 
         props.visible.subscribe(visible => {
-            visible && setTimeout(() => {
-                const interval = setInterval(() => {
-                    const el = $("[type=search]")[0]
-                    if (el) {
-                        el.focus()
-                        clearInterval(interval)
-                    }
-                }, 10)
-            }, 10)
+            visible && setTimeout(() => $("[type=search]")[0].focus(), 10)
         })
 
         $(document).on("keyup", e => {

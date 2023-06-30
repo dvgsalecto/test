@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -347,10 +347,6 @@ class Result extends Template
 
     private function processCategoryAggregation(array $categoryAggregation): array
     {
-        if (count($categoryAggregation) == 0) {
-            return [];
-        }
-
         $result     = [];
         $searchTerm = $this->searchQueryFactory->get()->getQueryText();
 

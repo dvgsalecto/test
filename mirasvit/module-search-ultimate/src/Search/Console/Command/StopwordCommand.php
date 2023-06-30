@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -100,9 +100,9 @@ class StopwordCommand extends Command
             return 0;
         }
 
-        if ($input->hasOption(self::INPUT_FILE)) {
+        if ($input->getOption(self::INPUT_FILE) && $input->getOption(self::INPUT_STORE)) {
             $file    = $input->getOption(self::INPUT_FILE);
-            $storeId = (int)$input->getOption(self::INPUT_STORE);
+            $storeId = $input->getOption(self::INPUT_STORE);
             if (file_exists($this->directoryList->getPath('var') .'/stopwords/'. $file)) {
                 $file = $this->directoryList->getPath('var') .'/stopwords/'. $file;
             }

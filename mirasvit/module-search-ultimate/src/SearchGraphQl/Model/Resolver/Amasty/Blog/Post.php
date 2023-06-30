@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -24,19 +24,23 @@ use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 
 class Post implements ResolverInterface
 {
+    private $size = 0;
+
     public function resolve(
-        Field       $field,
-                    $context,
+        Field $field,
+        $context,
         ResolveInfo $info,
-        array       $value = null,
-        array       $args = null
+        array $value = null,
+        array $args = null
     ) {
-        $result = $value[$field->getName()] ?? null;
-        if (!$result) {
-            return null;
+        if (empty($args)) {
+            if ($field->getName() == 'size') {
+                return $this->size;
+            }
         }
 
-        $collection = $result['instance']->getSearchCollection();
+        $collection = $value['instance']->getSearchCollection();
+        $this->size = $collection->getSize();
         $collection->setPageSize($args['pageSize'])
             ->setCurPage($args['currentPage']);
 
@@ -49,17 +53,6 @@ class Post implements ResolverInterface
             ];
         }
 
-        $totalCount = $collection->getSize();
-
-        return [
-            ...$result,
-            'items'       => $items,
-            'total_count' => $totalCount,
-            'page_info'   => [
-                'total_pages'  => ceil($totalCount / $args['pageSize']),
-                'page_size'    => $args['pageSize'],
-                'current_page' => $args['currentPage'],
-            ],
-        ];
+        return $items;
     }
 }

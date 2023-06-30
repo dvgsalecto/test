@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -21,10 +21,9 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\View\Result\ForwardFactory;
 use Magento\Framework\Registry;
-use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Framework\Stdlib\DateTime\Filter\Date;
 use Mirasvit\Search\Api\Data\ScoreRuleInterface;
 use Mirasvit\Search\Repository\ScoreRuleRepository;
+use Magento\Framework\Stdlib\DateTime\Filter\Date;
 
 abstract class AbstractScoreRule extends Action
 {
@@ -32,25 +31,30 @@ abstract class AbstractScoreRule extends Action
 
     protected $resultForwardFactory;
 
+    protected $serializer;
+
     protected $dateFilter;
 
     private   $context;
 
     private   $registry;
 
+    private   $session;
+
     public function __construct(
         ScoreRuleRepository $scoreRuleRepository,
-        Registry            $registry,
-        ForwardFactory      $resultForwardFactory,
-        Date                $dateFilter,
-        Context             $context
+        Registry $registry,
+        ForwardFactory $resultForwardFactory,
+        Date $dateFilter,
+        Context $context
     ) {
         $this->scoreRuleRepository  = $scoreRuleRepository;
         $this->registry             = $registry;
         $this->resultForwardFactory = $resultForwardFactory;
         $this->dateFilter           = $dateFilter;
 
-        $this->context = $context;
+        $this->context    = $context;
+        $this->session    = $context->getSession();
 
         parent::__construct($context);
     }
@@ -79,7 +83,7 @@ abstract class AbstractScoreRule extends Action
         $model = $this->scoreRuleRepository->create();
 
         if ($this->getRequest()->getParam(ScoreRuleInterface::ID)) {
-            $model = $this->scoreRuleRepository->get((int)$this->getRequest()->getParam(ScoreRuleInterface::ID));
+            $model = $this->scoreRuleRepository->get((int) $this->getRequest()->getParam(ScoreRuleInterface::ID));
         }
 
         $this->registry->register(ScoreRuleInterface::class, $model);

@@ -9,7 +9,7 @@
  *
  * @category  Mirasvit
  * @package   mirasvit/module-search-ultimate
- * @version   2.2.7
+ * @version   2.1.0
  * @copyright Copyright (C) 2023 Mirasvit (https://mirasvit.com/)
  */
 
@@ -22,8 +22,15 @@ use Magento\Framework\Indexer\IndexerRegistry;
 
 class MviewAction implements MviewActionInterface
 {
+    /**
+     * @var IndexerRegistry
+     */
     private $indexerRegistry;
 
+    /**
+     * MviewAction constructor.
+     * @param IndexerRegistry $indexerRegistry
+     */
     public function __construct(
         IndexerRegistry $indexerRegistry
     ) {
